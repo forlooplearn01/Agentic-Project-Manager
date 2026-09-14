@@ -1,0 +1,172 @@
+﻿Product & Engineering Extended Sync - Execution + Strategy Discussion
+
+
+Rahul: Alright guys, let’s get started. I know we blocked an hour for this, but given the number of things pending, this might stretch a bit. Let’s try to stay focused, but at the same time, I don’t want to rush through important points. The main goal today is to align on what’s actually getting done this week versus what is just being discussed without execution.
+
+
+Priya: Yeah, that makes sense. I think last week we had a lot of discussion but not enough clear ownership on some items, especially around documentation and monitoring. So maybe we should make sure we don’t repeat that.
+
+
+John: Agreed. Also, I think some of the blockers we discussed last time are still unresolved, so we should probably prioritize those first before taking on anything new.
+
+
+Rahul: Exactly. So let’s start with the payment integration work. John, can you give a detailed update?
+
+
+John: Sure. So I’ve implemented most of the integration logic for the payment gateway, including request handling and response parsing. The issue right now is that I’m completely blocked because I still don’t have the sandbox credentials from the vendor. I’ve tried using dummy data, but that only gets me so far. Without actual credentials, I can’t validate the flows end-to-end. So effectively, this task has been stalled for the last couple of days.
+
+
+Priya: Right, I remember we talked about this. I thought the vendor was supposed to share the credentials by early this week?
+
+
+John: Yeah, that’s what they said, but we haven’t received anything yet.
+
+
+Rahul: Okay, we can’t let this block the entire flow. Priya, can you take ownership of this and follow up with the vendor? Please make sure we get the sandbox credentials by tomorrow EOD. This is critical because multiple downstream tasks depend on this.
+
+
+Priya: Yeah, I’ll reach out to them today and escalate if needed. I’ll make sure we get it by tomorrow.
+
+
+Rahul: Perfect. John, once you receive the credentials, I don’t want any delay. Please resume the API integration immediately and complete it by Monday. We’ve already slipped a bit here.
+
+
+John: Yeah, once I have the credentials, I should be able to wrap it up quickly.
+
+
+Rahul: Good. Let’s move to the client proposal. Rahul continues: So the Phase 3 proposal - last time we discussed it was still in draft. What’s the current status?
+
+
+Rahul: I’ve worked on most sections, but I wouldn’t say it’s final yet. There are still a couple of areas where I need to refine the content and align it with the latest requirements.
+
+
+Priya: Do you think it’s realistic to close it this week?
+
+
+Rahul: Yes, I think so. I just need focused time.
+
+
+Rahul: Okay, then let’s lock this. Rahul, please finalize the client proposal and share the final version with the team by Friday. We cannot push this further.
+
+
+Rahul: Got it, I’ll make sure it’s done.
+
+
+John: And once it’s done, we send it to the client immediately, right?
+
+
+Rahul: Yes, no delay there. The client is expecting it before the weekend.
+
+
+Rahul: Now moving to QA and deployment. Anita, can you walk us through where things stand?
+
+
+Anita: So from the QA side, we’ve already prepared most of the test cases for the dashboard features. But actual execution hasn’t started because deployment hasn’t happened yet. So right now, QA is basically waiting.
+
+
+John: So testing is entirely dependent on deployment, correct?
+
+
+Anita: Yes, we can’t proceed without that.
+
+
+Rahul: Okay, so this is a clear dependency. Anita, please schedule the deployment and make sure it is completed by Thursday. We need QA to start immediately after that.
+
+
+Anita: Yeah, I’ll coordinate with the infra team and make sure deployment happens on time.
+
+
+Rahul: Great. And once deployment is done, QA should start testing without delay.
+
+
+Priya: Makes sense.
+
+
+Rahul: Now, analytics module. Karan, can you give a detailed update?
+
+
+Karan: Yeah, so I’ve been working on the analytics pipeline. I’d say it’s about 60% complete right now. Most of the ingestion logic is done, but I still need to finalize aggregation and reporting layers.
+
+
+Rahul: And what’s your expected timeline?
+
+
+Karan: I initially thought I’d finish by next Monday, but looking at the remaining work, I might need one extra day.
+
+
+Rahul: Okay, then let’s update the deadline. We’ll move it to next Tuesday.
+
+
+Karan: That works.
+
+
+Rahul: Also, once analytics is complete, we’ll need to validate the data pipelines. But we don’t have an owner for that yet.
+
+
+Priya: Yeah, we should probably assign someone, but maybe we can decide that in the next meeting.
+
+
+Rahul: Agreed, no action item for now.
+
+
+Rahul: Now let’s talk about performance. We’ve noticed that some dashboard queries are taking longer than expected, especially under load.
+
+
+John: Yeah, I’ve seen that too. Some queries are not optimized.
+
+
+Priya: We should definitely improve that.
+
+
+Rahul: Yes, but let’s not convert this into an action item yet. We’ll discuss the solution in the next tech deep dive.
+
+
+Rahul: Moving on to infrastructure issues. The staging environment has been unstable since yesterday, and this is affecting testing readiness.
+
+
+Arjun: Yeah, I’ve noticed that too. There are intermittent failures.
+
+
+Rahul: Can you take ownership of fixing this?
+
+
+Arjun: Yes, I’ll handle it.
+
+
+Rahul: Great. Arjun, please resolve the staging environment issues by Wednesday. This is blocking QA.
+
+
+Arjun: Got it.
+
+
+Rahul: Now, database migration. We have a blocker here - schema approval is still pending.
+
+
+John: Yeah, without schema approval, we can’t proceed with deployment.
+
+
+Rahul: Rohit, can you follow up with the database team and get schema approval by tomorrow?
+
+
+Rohit: Yes, I’ll reach out to them.
+
+
+Rahul: Good. Once schema approval is done, backend deployment should proceed immediately.
+
+
+Priya: And after that, integration testing can begin.
+
+
+Rahul: Exactly.
+
+
+Rahul: Now, just to touch on a few things quickly - onboarding documentation, monitoring dashboards, and deployment automation. These are all important, but we don’t have clear ownership or urgency.
+
+
+Priya: Yeah, we’ve been discussing these for a while.
+
+
+Rahul: Right, so let’s not treat them as action items for now. We’ll pick them up in future planning sessions.
+
+
+Rahul: Alright, I think that covers everything. Let’s focus on execution this week.

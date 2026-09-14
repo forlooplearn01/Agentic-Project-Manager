@@ -1,0 +1,11 @@
+Project: Mobile App Launch Preparation
+                                                                                                                                                                                           
+  The following work needs to be completed before the mobile app goes live:
+                                                                                                                                                                                           
+  1. Set up the CI/CD pipeline so automated builds and tests can run on every commit.                                                                                                      
+  2. Write unit and integration tests for the core authentication module.
+  3. Integrate the payment gateway with the checkout flow.                                                                                                                                 
+  4. Conduct end-to-end QA testing on staging before release.                                                                                                                              
+                                                                                                                                                                                           
+  Alex is responsible for CI/CD. Priya owns the authentication tests. Payment integration is assigned to Jordan.                                                                           
+  CI/CD pipeline must be done by April 18th. QA testing deadline is April 28th.  

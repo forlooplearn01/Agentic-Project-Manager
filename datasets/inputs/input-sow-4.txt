@@ -1,0 +1,317 @@
+STATEMENT OF WORK
+Project Name:
+Customer Name:
+
+ORT Broadcom Solutions SoW
+ORT Ancillary Services, Inc.
+
+CDW Affiliate:
+
+CDW Direct, LLC
+
+Date:
+
+January 15, 2025
+
+Drafted By
+
+Emily O'Neill
+
+Seller Representative:
+Scott Miller
++1 (763) 5925870
+smiller@cdw.com
+Solution Architect:
+Abby Munn
+Joe Lee
+
+This statement of work (“Statement of Work” or “SOW”) is made and entered into on the last date that this SOW is fully
+executed as set forth below (“SOW Effective Date”) by and between the undersigned, CDW Direct, LLC (“Provider,” and
+“Seller,”) and ORT Ancillary Services, Inc. (“Customer,” “ORT” and “Client,”).
+This SOW shall be governed by that certain Master Services Sales Agreement between CDW Direct, LLC and OLD
+REPUBLIC NATIONAL TITLE INSURANCE COMPANY dated the 31st day of October 2018, as amended (the
+“Agreement”). If there is a conflict between this SOW and the Agreement, then the Agreement will control, except as
+expressly amended in this SOW by specific reference to the Agreement.
+
+PROJECT SCOPE
+Seller will assist Customer with discovery, design, advisory and implementation services towards the following Customer
+objectives.
+
+ARIA OPERATIONS
+Environment sizing and deployment.
+Deploy and configure relevant TVS modules for our environment.
+Setup Integrations with NSX-T and other Aria products.
+Create two multi-tiered application monitoring dashboards.
+Configure Cost Reporting.
+Create process to address VMs with low disk space.
+
+ARIA AUTOMATION
+Environment sizing and deployment.
+IPAM integration with Infoblox BloxOne DDI.
+Build Windows server VM deployment blueprint.
+Build Windows server VM decommission blueprint.
+Create Service Catalog.
+Implement Freshservice ITSM Integration.
+
+BROWNFIELD VCF FOR WORKLOAD VCENTER/NSX/CLUSTERS
+Confirm if we can migrate our non-VCF managed hosts and NSX environment into VCF.
+Remediation steps to prepare for migration.
+Complete VCF Brownfield migration.
+
+Proprietary and Confidential
+SOW 150609
+
+Page 1
+
+CORP-4344 | CDW Direct, LLC
+
+ARIA OPERATIONS FOR NETWORKS
+Architecture review, health check and cleanup of existing environment.
+Add physical network infrastructure.
+Configure two multi-tiered applications for discovery.
+
+OUT OF SCOPE
+Changes to infrastructure or software outside of VMware products covered under this SOW.
+Troubleshooting of Network or Storage systems beyond the VMware systems covered under this SOW.
+Access, Recovery, Testing, or Impacting changes to virtual machines containing Production Data.
+Onsite work
+Services not specified in this SOW are considered out of scope and will be addressed with a separate SOW or Change Order.
+
+GENERAL RESPONSIBILITIES AND ASSUMPTIONS
+Customer is responsible for providing all access that is reasonably necessary to assist and accommodate Seller’s
+performance of the Services.
+Customer will provide in advance and in writing and Seller will follow, all applicable Customer’s facility’s safety
+and security rules and procedures.
+Customer is responsible for security at all Customer-Designated Locations; Seller is not responsible for lost or stolen
+equipment, other than solely as a result of Seller’s gross negligence and willful misconduct.
+Customer acknowledges that in order to efficiently and effectively perform the Services CDW may need to collect
+information from Customer’s systems by using software tools developed or used by CDW (“Tools”). In some cases,
+these Tools will need to be loaded onto the Customer’s systems to gather necessary information, and CDW may also
+use them to make changes in the Customer’s systems consistent with the agreed upon scope. Tools will be used
+only for purposes of performing the Services and will be removed or automatically deleted when CDW has
+completed use of them. Customer hereby consents to CDW’s reasonable use of the Tools to perform the Services as
+set forth in this paragraph.
+Upon completion of the Services, Customer is responsible for disabling or deleting all CDW coworker access
+credentials and completing any other necessary steps to ensure that access to all of Customer’s environments has
+been permanently terminated for all CDW coworkers and contractors that were part of this engagement.
+This SOW can be terminated by either party without cause upon at least fourteen (14) days’ advance written notice.
+If this SOW is terminated prior to completion of the work, (i) Seller will stop work upon notice of termination; (ii)
+Seller will be paid for work completed up to the termination notice; and (iii) customer will be able to utilize any
+unused funds from the Funding listed below for future SOWs.
+
+PROJECT OVERSIGHT
+Seller will assign an Associate Project Manager to perform the following activities during the project:
+Kickoff Meeting. Review SOW including project objectives and high-level schedule, logistics, identify
+and confirm project participants, and discuss project prerequisites.
+Milestone Project Schedule. A high-level project schedule and resources assigned to the project.
+Point of Contact. Act as a Point of Contact for changes or escalations that may arise during the project.
+Project Closure. Recap the project activities, provide required documentation, identify any next steps,
+and formally close the project
+
+Proprietary and Confidential
+SOW 150609
+
+Page 2
+
+CORP-4344 | CDW Direct, LLC
+
+CONTACT PERSONS
+Each Party will appoint a person to act as that Party’s point of contact (“Contact Person”) as the time for performance nears
+and will communicate that person’s name and information to the other Party’s Contact Person.
+Customer Contact Person is authorized to approve materials and Services provided by Seller, and Seller may rely on the
+decisions and approvals made by the Customer Contact Person (except that Seller understands that Customer may require a
+different person to sign any Change Orders amending this SOW). The Customer Contact Person will manage all
+communications with Seller, and when Services are performed at a Customer-Designated Location, the Customer Contact
+Person will be present or available. The Parties’ Contact Persons shall be authorized to approve changes in personnel and
+associated rates for Services under this SOW.
+
+CHANGE MANAGEMENT
+This SOW may be modified or amended only in a writing signed by both Customer and Seller, generally in the form provided
+by Seller (“Change Order”). Services not specified in this SOW are considered out of scope and will be addressed with a
+separate SOW or Change Order.
+In the event of a conflict between the terms and conditions set forth in a fully executed Change Order and those set forth in
+this SOW or a prior fully executed Change Order, the terms and conditions of the most recent fully executed Change Order
+shall prevail.
+
+PROJECT SCHEDULING
+Customer and Seller, who will jointly manage this project, will together develop timelines for an anticipated schedule
+(“Anticipated Schedule”) based on Seller’s project management methodology. Any dates, deadlines, timelines or schedules
+contained in the Anticipated Schedule, in this SOW or otherwise, are estimates only, and the Parties will not rely on them for
+purposes other than initial planning.
+The following scheduling scenarios that trigger delays and durations to extend beyond what's been planned may require a
+Change Order:
+Site preparation, such as power, cabling, physical access, system access, hardware/software issues, etc. must be
+completed in a timely manner.
+Project tasks delegated to Customer PMs/Engineers/Techs/Management/Resources must be completed in a timely
+manner. For example, in the event a project 's prioritization is demoted, and Customer resources are reallocated
+causing the project's schedule to extend on account of experiencing interruptions to its momentum
+requiring complete stop(s) and start(s).
+External projects/dependencies that may have significant impact on the timeline, schedule and deliverables. It is
+Seller's assumption that every reasonable attempt will be made to mitigate such situations.
+
+TOTAL FEES
+The total fees due and payable under this SOW (“Total Fees”) include both fees for Seller’s performance of work (“Services
+Fees”) and those other Customer approved costs and charges specified in the Expenses section (“Expenses”).
+Seller will provide funding in the amount of $115,590.00 (“Funding”).
+The Funding will be applied to the Total Fees. Once the Funding has been exhausted, Seller’s invoice(s) will reflect the
+balance of any fees due. Customer will pay invoices containing amounts authorized by this SOW in accordance with the
+terms of the Agreement. Unless otherwise specified, applicable taxes will be invoiced but are not included in any numbers
+or
+Proprietary and Confidential
+SOW 150609
+
+Page 3
+
+CORP-4344 | CDW Direct, LLC
+
+calculations provided herein. The pricing included in this SOW expires and will be of no force or effect unless it is signed by
+Customer and Seller within thirty (30) days from the Date listed on the SOW, except as otherwise agreed by Seller. Any
+objections to an invoice must be communicated to the Seller Contact Person within fifteen (15) days after receipt of the
+invoice.
+This SOW may include multiple types of Services Fees; please reference below Services Fees section(s) for further details.
+
+SERVICES FEES
+Services Fees will be calculated on a TIME AND MATERIALS basis.
+The invoiced amount of Services Fees will equal the rate applicable for a unit of a service or resource (“Unit Rate”)
+multiplied by the number of units being provided (“Billable Units”) for each unit type provided by Seller (see Table below).
+Services Fees of $115,590.00 is merely an estimate and does not represent a fixed fee. Neither the Billable Units of 528 nor
+the Services Fees are intended to limit the bounds of what may be requested or required for performance of the Services.
+The rates presented in the table below apply to scheduled Services that are performed during Standard Business Hours
+(meaning 8:00 a.m. to 5:00 p.m. local time, Monday through Friday, excluding holidays). When Seller invoices for scheduled
+Services that are not performed during Standard Business Hours, Services Fees will be calculated at 150% of the Unit Rates.
+For any unscheduled (i.e., emergency) Services performed at any time of the day, Services Fees will be calculated at 200% of
+the Unit Rates.
+Any non-Hourly Units will be measured in one (1) unit increments when Services are performed remotely
+Any Hourly Units will be measured in one (1) hour increments with a minimum of one (1) hour billed each day Services are
+performed remotely.
+When Hourly Seller personnel must travel more than two (2) hours a day to work at any Customer-Designated Location(s),
+there will be a minimum of eight (8) hours billed for each day (less travel time that is invoiced pursuant to the “Expenses”
+section below).
+Upon a mutual written agreement by Seller and Customer,, Seller may adjust the rates below, provided that the rates will
+remain fixed for at least one (1) year after the SOW Effective Date and then again for at least one (1) year after any
+subsequent adjustment with a limit of ten (10) percent raise on the agreed rates.
+The rates below only apply to Services specified in this SOW as it may be amended by one or more Change Order(s).
+
+Unit Type
+
+Unit Rate
+
+Billable
+
+Subtotal
+
+Units
+
+Senior VMware/ESXi Engineer - Per Hour
+
+$230.00
+
+438
+
+$100,740.00
+
+Associate Project Manager - Per Hour
+
+$165.00
+
+90
+
+$14,850.00
+
+528
+
+$115,590.00
+
+Subtotal
+Less Seller Funding
+
+($115,590.00)
+
+Estimated Totals
+
+Proprietary and Confidential
+SOW 150609
+
+$0.00
+
+Page 4
+
+CORP-4344 | CDW Direct, LLC
+
+Expenses
+All services under this SOW will be performed remotely; therefore, neither travel time nor any other expenses will be
+incurred for reimbursement or other payment by or on behalf of Customer or billed for this project.
+
+Travel Notice
+The parties agree that there will be no travel required for this project.
+
+CUSTOMER-DESIGNATED LOCATIONS
+Seller will provide Services benefiting the following locations (“Customer-Designated Locations”)
+Location
+
+Address
+
+ORT HQ
+
+11055 Wayzata Blvd, Minnetonka, MN 55305
+
+Proprietary and Confidential
+SOW 150609
+
+Page 5
+
+CORP-4344 | CDW Direct, LLC
+
+SIGNATURES
+In acknowledgement that the parties below have read and understood this Statement of Work and agree to be bound by it,
+each party has caused this Statement of Work to be signed and transferred by its respective authorized representative.
+This SOW and any Change Order may be signed in separate counterparts, each of which shall be deemed an original and all
+of which together will be deemed to be one original. Electronic signatures on this SOW or on any Change Order (or copies of
+signatures sent via electronic means) are the equivalent of handwritten signatures.
+CDW Direct, LLC
+
+ORT Ancillary Services, Inc.
+
+By:
+
+By:
+
+Name:
+
+Phil Birt
+
+Name:
+
+Title:
+
+Professional Services Manager
+
+Title:
+
+Date:
+
+01/22/2025
+
+Date:
+
+Mailing Address:
+
+Mailing Address:
+
+200 N. Milwaukee Ave.
+
+11055 WAYZATA BLVD., STE 250, ATTN:
+ACCOUNTS PAYABLE
+
+Vernon Hills, IL 60061
+
+MINNETONKA, MN 55305-1574
+
+Proprietary and Confidential
+SOW 150609
+
+Page 6
+
+CORP-4344 | CDW Direct, LLC
+
+

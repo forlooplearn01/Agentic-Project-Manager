@@ -1,0 +1,322 @@
+@import "tailwindcss";
+
+/* Two palettes, switched at runtime via [data-theme] on <html> (set by an inline
+   script in layout.tsx before first paint, to avoid a flash of the wrong theme).
+   Both share the same structure: depth comes from layered surfaces, not just color
+   (bg < surface < surface-solid < elevated in dark; shadow/border weight carries
+   that job in light, since surfaces can't get brighter than white). Every component
+   reads only the --color-* tokens below, never these base hex values directly, so
+   adding a theme here is the only change needed anywhere. */
+:root {
+  --bg-base: #050508;
+  --surface-base: #14141ac0;
+  --surface-solid-base: #16161d;
+  --elevated-base: #1c1c25;
+  --line-base: #2a2a35b0;
+  --line-strong-base: #38384a;
+  --text-primary-base: #f4f4f6;
+  --text-muted-base: #9696a3;
+  --text-faint-base: #5f5f6e;
+  --accent-from-base: #6366f1;
+  --accent-to-base: #c026d3;
+  --warning-base: #f59e0b;
+  --warning-bg-base: #f59e0b1a;
+  --warning-line-base: #f59e0b40;
+  --success-base: #22c55e;
+  --success-bg-base: #22c55e1a;
+  --danger-base: #f87171;
+  --danger-bg-base: #ef444422;
+  --info-base: #38bdf8;
+  --info-bg-base: #38bdf81a;
+  --link-base: #a5b4fc;
+
+  /* Vivid, distinct hues for dashboard stat cards and the activity feed - deliberately
+     not all the same accent gradient, so metrics read as lively, not monochrome. */
+  --stat-indigo: #818cf8;
+  --stat-blue: #38bdf8;
+  --stat-emerald: #34d399;
+  --stat-red: #fb7185;
+  --stat-amber: #fbbf24;
+  --stat-purple: #e879f9;
+
+  /* glass-panel's shadow + inset highlight differ enough between themes (a white
+     inset highlight is pointless on an already-white surface) that they're tokens
+     too, not hardcoded in .glass-panel. */
+  --panel-shadow: 0 20px 40px -24px rgba(0, 0, 0, 0.6);
+  --panel-inset-highlight: color-mix(in oklab, white 4%, transparent);
+}
+
+[data-theme="light"] {
+  --bg-base: #f5f5fa;
+  --surface-base: #ffffffb3;
+  --surface-solid-base: #ffffff;
+  --elevated-base: #ffffff;
+  --line-base: #e3e3ec;
+  --line-strong-base: #cbcbd9;
+  --text-primary-base: #17171f;
+  --text-muted-base: #67677a;
+  --text-faint-base: #9a9aab;
+  --accent-from-base: #6366f1;
+  --accent-to-base: #c026d3;
+  --warning-base: #b45309;
+  --warning-bg-base: #f59e0b1f;
+  --warning-line-base: #f59e0b55;
+  --success-base: #15803d;
+  --success-bg-base: #22c55e1f;
+  --danger-base: #dc2626;
+  --danger-bg-base: #ef444422;
+  --info-base: #0284c7;
+  --info-bg-base: #38bdf81f;
+  --link-base: #4338ca;
+
+  --stat-indigo: #4f46e5;
+  --stat-blue: #0284c7;
+  --stat-emerald: #059669;
+  --stat-red: #dc2626;
+  --stat-amber: #b45309;
+  --stat-purple: #a21caf;
+
+  /* Softer, cooler-toned shadow than pure black - typical for light UI, avoids a
+     muddy look under a white panel. No inset highlight - there's nothing for a
+     highlight to catch on a surface that's already white; border + shadow alone
+     carry the depth. */
+  --panel-shadow: 0 12px 28px -16px rgba(30, 30, 60, 0.12);
+  --panel-inset-highlight: transparent;
+}
+
+@theme inline {
+  --color-background: var(--bg-base);
+  --color-surface: var(--surface-base);
+  --color-surface-solid: var(--surface-solid-base);
+  --color-elevated: var(--elevated-base);
+  --color-line: var(--line-base);
+  --color-line-strong: var(--line-strong-base);
+  --color-text-primary: var(--text-primary-base);
+  --color-text-muted: var(--text-muted-base);
+  --color-text-faint: var(--text-faint-base);
+  --color-accent-from: var(--accent-from-base);
+  --color-accent-to: var(--accent-to-base);
+  --color-warning: var(--warning-base);
+  --color-warning-bg: var(--warning-bg-base);
+  --color-warning-line: var(--warning-line-base);
+  --color-success: var(--success-base);
+  --color-success-bg: var(--success-bg-base);
+  --color-danger: var(--danger-base);
+  --color-danger-bg: var(--danger-bg-base);
+  --color-info: var(--info-base);
+  --color-info-bg: var(--info-bg-base);
+
+  --color-stat-indigo: var(--stat-indigo);
+  --color-stat-blue: var(--stat-blue);
+  --color-stat-emerald: var(--stat-emerald);
+  --color-stat-red: var(--stat-red);
+  --color-stat-amber: var(--stat-amber);
+  --color-stat-purple: var(--stat-purple);
+
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  min-height: 100dvh;
+  letter-spacing: -0.01em;
+}
+
+.ambient-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 45% at 88% -8%, color-mix(in oklab, var(--color-accent-to) 22%, transparent), transparent 60%),
+    radial-gradient(45% 38% at 6% 8%, color-mix(in oklab, var(--color-accent-from) 20%, transparent), transparent 60%),
+    radial-gradient(50% 40% at 15% 105%, color-mix(in oklab, var(--stat-emerald) 10%, transparent), transparent 60%);
+}
+/* Same idea, much lower intensity - the vivid dark-mode glow reads as a muddy wash
+   over a white page at the same strength. A bare hint of color is enough here. */
+[data-theme="light"] .ambient-glow {
+  background:
+    radial-gradient(55% 45% at 88% -8%, color-mix(in oklab, var(--color-accent-to) 10%, transparent), transparent 60%),
+    radial-gradient(45% 38% at 6% 8%, color-mix(in oklab, var(--color-accent-from) 9%, transparent), transparent 60%),
+    radial-gradient(50% 40% at 15% 105%, color-mix(in oklab, var(--stat-emerald) 5%, transparent), transparent 60%);
+}
+
+/* Faint grain so large panels don't look like flat vector fills */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-theme="light"] .grain-overlay {
+  opacity: 0.02;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 999px;
+}
+
+.trace-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.trace-collapse[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.trace-collapse > div {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.hover-tint:hover {
+  /* background-color, not the `background` shorthand - the shorthand resets every
+     unspecified sub-property including background-image, which silently wiped out
+     any element's gradient background (e.g. an active nav item) the moment it was
+     hovered. background-color alone leaves an existing background-image intact,
+     since gradients paint on top of the color layer. */
+  background-color: color-mix(in oklab, currentColor 6%, transparent);
+}
+
+/* Chat message entrance */
+@keyframes message-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-message-in {
+  animation: message-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Chat assistant markdown rendering */
+.markdown-body {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+}
+.markdown-body > *:first-child { margin-top: 0; }
+.markdown-body > *:last-child { margin-bottom: 0; }
+.markdown-body p { margin: 0.6em 0; }
+.markdown-body strong { font-weight: 600; color: var(--color-text-primary); }
+.markdown-body ul, .markdown-body ol { margin: 0.5em 0; padding-left: 1.3em; }
+.markdown-body ul { list-style: disc; }
+.markdown-body ol { list-style: decimal; }
+.markdown-body li { margin: 0.25em 0; }
+.markdown-body li::marker { color: var(--color-text-faint); }
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 1em 0 0.4em;
+  line-height: 1.35;
+}
+.markdown-body h1 { font-size: 1.05em; }
+.markdown-body h2 { font-size: 1em; }
+.markdown-body h3 { font-size: 0.95em; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.markdown-body a { color: var(--link-base); text-underline-offset: 2px; }
+.markdown-body a:hover { opacity: 0.85; }
+.markdown-body code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.85em;
+  background: color-mix(in oklab, currentColor 8%, transparent);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+}
+.markdown-body blockquote {
+  border-left: 2px solid var(--color-line);
+  padding-left: 0.9em;
+  color: var(--color-text-muted);
+  margin: 0.6em 0;
+}
+
+@keyframes pulse-dot {
+  0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); }
+  40% { opacity: 1; transform: scale(1); }
+}
+.pulse-dot {
+  animation: pulse-dot 1.1s ease-in-out infinite;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-card-in {
+  animation: card-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Glass panel - the base surface treatment for every card in the app. Layered
+   gradient + inset highlight + real shadow gives actual depth instead of a flat
+   fill with a 1px border. */
+.glass-panel {
+  position: relative;
+  background:
+    linear-gradient(155deg, color-mix(in oklab, var(--color-elevated) 65%, transparent), color-mix(in oklab, var(--color-surface-solid) 80%, transparent));
+  border: 1px solid var(--color-line);
+  box-shadow:
+    0 1px 0 0 var(--panel-inset-highlight) inset,
+    var(--panel-shadow);
+  backdrop-filter: blur(16px);
+}
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+.stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, color-mix(in oklab, var(--stat-color, var(--color-accent-to)) 14%, transparent), transparent 55%);
+  pointer-events: none;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in oklab, var(--stat-color, var(--color-accent-to)) 50%, var(--color-line));
+  box-shadow:
+    0 1px 0 0 var(--panel-inset-highlight) inset,
+    0 16px 32px -12px color-mix(in oklab, var(--stat-color, var(--color-accent-to)) 40%, transparent);
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-count {
+  animation: count-up 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Live activity feed */
+@keyframes activity-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-activity-in {
+  animation: activity-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.activity-rail {
+  position: relative;
+}
+.activity-rail::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--color-line-strong), transparent);
+}

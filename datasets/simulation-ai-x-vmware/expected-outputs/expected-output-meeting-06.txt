@@ -1,0 +1,158 @@
+--- NEW TASKS (SHOULD BE EXTRACTED + DECOMPOSED) ---
+
+1.
+task: Fix all four integration test defects (scatter plot y-axis padding, pie chart label overflow with Other-slice merge, missing stat key user-facing warning, PDF table of contents two-pass rendering)
+owner: Jordan Mills
+deadline: May 8, 2026
+status: null
+blocker: null
+dependency: null
+
+2.
+task: Send UAT feedback form template to Priya
+owner: Marcus Webb
+deadline: May 6, 2026
+status: null
+blocker: null
+dependency: null
+
+3.
+task: Brief UAT participants and distribute participant guide and feedback form
+owner: Priya Nair
+deadline: May 7, 2026
+status: null
+blocker: null
+dependency: UAT feedback form template received from Marcus
+
+4.
+task: Conduct UAT with Rajan Verma and Lisa Chen
+owner: Priya Nair
+deadline: May 9, 2026
+status: null
+blocker: null
+dependency: All four integration test defects fixed by Jordan
+
+5.
+task: Send consolidated UAT feedback to Marcus
+owner: Priya Nair
+deadline: May 9, 2026
+status: null
+blocker: null
+dependency: UAT complete
+
+6.
+task: Regress all four integration test defect fixes
+owner: Marcus Webb
+deadline: May 9, 2026
+status: null
+blocker: null
+dependency: Defect fixes pushed by Jordan
+
+7.
+task: Deliver Integration Testing Report (Deliverable 4.6)
+owner: Marcus Webb
+deadline: May 12, 2026
+status: null
+blocker: null
+dependency: Regression of all defect fixes complete
+
+8.
+task: Deliver UAT Report (Deliverable 4.7)
+owner: Marcus Webb
+deadline: May 12, 2026
+status: null
+blocker: null
+dependency: Consolidated UAT feedback received from Priya
+
+9.
+task: Send Jordan production access package
+owner: Priya Nair
+deadline: May 8, 2026
+status: null
+blocker: null
+dependency: null
+
+10.
+task: Draft deployment runbook
+owner: Jordan Mills
+deadline: May 14, 2026
+status: null
+blocker: null
+dependency: Production access received
+
+11.
+task: Review and approve deployment runbook
+owner: Priya Nair
+deadline: May 15, 2026
+status: null
+blocker: null
+dependency: Deployment runbook draft received from Jordan
+
+12.
+task: Check production server Python version and report to Jordan
+owner: Priya Nair
+deadline: May 6, 2026
+status: null
+blocker: null
+dependency: null
+
+
+--- UPDATE EVENTS (SHOULD NOT BE DECOMPOSED) ---
+
+1.
+event_type: status_change
+task: Finalize integration test plan
+owner: Marcus Webb
+status: completed
+note: 18 scenarios executed over May 2-4 weekend
+
+2.
+event_type: status_change
+task: Complete report generation module edge case testing and deliver Deliverable 4.5
+owner: Jordan Mills
+status: completed
+
+3.
+event_type: status_change
+task: Identify and brief UAT participants
+owner: Priya Nair
+status: completed
+note: Three participants confirmed - Priya (technical), Rajan Verma (operational), Lisa Chen (management)
+
+4.
+event_type: status_change
+task: Confirm whitelist approval status
+owner: Priya Nair
+status: completed
+note: Whitelist approved May 1; api.openai.com port 443 approved for outbound connections
+
+
+--- SHOULD NOT BE PICKED (IGNORE) ---
+
+- Defect technical descriptions (context for the fix task, not separate tasks):
+  "Matplotlib default y-axis starts at zero for scatter plots"
+  "Twelve slices is too many for pie chart labels"
+  "ReportLab page break handling issue"
+  (All captured under task #1 - fix all four defects)
+
+- UAT participant roles and structure (informational context):
+  Rajan doing technical graph scenarios
+  Lisa evaluating report from management perspective
+  "Three UAT participants" - not a separate task
+
+- Integration test pass results (informational):
+  "All five data source selection scenarios passed"
+  "Two-cluster query works correctly"
+  "Single-graph PDF compiled correctly"
+
+- Marcus's positive feedback on agent behavior (informational):
+  Agent response to "show me something interesting about cluster-alpha"
+
+- General scheduling discussion:
+  "Jordan available May 8 and 9 for rapid response"
+  "I'd rather know on Wednesday than Friday" (vague check-in preference)
+
+- UAT scope management discussion:
+  "UAT is about validating existing functionality, not requesting new features"
+  "Include a future enhancements section in the feedback form"
+  (This is a process note, not a task)

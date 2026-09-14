@@ -1,0 +1,101 @@
+--- NEW TASKS (SHOULD BE EXTRACTED + DECOMPOSED) ---
+
+1.
+task: Push three minor CSV module fixes (null-column stats test, configurable sample size, test label rename)
+owner: Jordan Mills
+deadline: April 15, 2026
+status: null
+blocker: null
+dependency: null
+
+2.
+task: Implement 503 error handling with exponential backoff retry for Aria Operations API
+owner: Jordan Mills
+deadline: April 18, 2026
+status: null
+blocker: null
+dependency: null
+
+3.
+task: Follow up on whitelist approval status and copy Sarah on email
+owner: Priya Nair
+deadline: April 15, 2026
+status: null
+blocker: null
+dependency: null
+
+4.
+task: Run real-data validation of multi-cluster merge output using dev clusters and send findings to Jordan
+owner: Priya Nair
+deadline: April 23, 2026
+status: null
+blocker: null
+dependency: Multi-cluster merge logic working session complete
+
+5.
+task: Update requirements log with all items from Week 3 discussion
+owner: Marcus Webb
+deadline: April 15, 2026
+status: null
+blocker: null
+dependency: null
+
+6.
+task: Update project tracker with Week 3 progress
+owner: Marcus Webb
+deadline: April 15, 2026
+status: null
+blocker: null
+dependency: null
+
+
+--- UPDATE EVENTS (SHOULD NOT BE DECOMPOSED) ---
+
+1.
+event_type: status_change
+task: Complete CSV module coding and unit tests
+owner: Jordan Mills
+status: in_progress
+note: Complete pending 3 minor fixes (Deliverable 4.1 conditionally marked complete)
+
+2.
+event_type: status_change
+task: Share GitHub repository link with team
+owner: Jordan Mills
+status: completed
+
+3.
+event_type: status_change
+task: Follow up on whitelist approval if no confirmation by April 14
+owner: Priya Nair
+status: in_progress
+note: Within expected 10 business day window; follow-up email to be sent today
+
+4.
+event_type: dependency
+task: Run real-data validation of multi-cluster merge output
+depends_on: Jordan and Priya working session on multi-cluster merge logic (April 17)
+
+
+--- SHOULD NOT BE PICKED (IGNORE) ---
+
+- Technical implementation details discussed (not new tasks):
+  Token manager class design for 30-minute token expiry
+  ClusterComputeResource filter for resources endpoint
+  Pagination with page size 1000 for Stat Key queries
+  Timestamp alignment via time-based resampling to nearest minute
+  Column relevance scoring approach for LLM context truncation
+
+- AI agent design discussion (informational architecture decisions):
+  ReAct agent design and graph spec JSON schema
+  Semantic stat key fallback with user confirmation
+  Five-graph cap for autonomous generation
+
+- Scheduled working sessions (informational, outcome not yet known):
+  "Jordan and Priya working session April 17 at 2 PM CST"
+  (This is a calendar event, not an extractable task with owner/deadline/output)
+
+- General discussion and back-and-forth:
+  Jordan describing Week 4 plan ("probably a few hours Saturday")
+  Sarah's Wednesday status check request (informal check-in, not a formal task)
+  Priya's offer to help with merge logic (captured as task #4)

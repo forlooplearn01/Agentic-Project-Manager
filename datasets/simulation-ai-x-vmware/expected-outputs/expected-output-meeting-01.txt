@@ -1,0 +1,90 @@
+--- NEW TASKS (SHOULD BE EXTRACTED + DECOMPOSED) ---
+
+1.
+task: Send list of outbound API endpoints to Priya
+owner: Jordan Mills
+deadline: April 2, 2026
+status: null
+blocker: null
+dependency: null
+
+2.
+task: Deliver dev environment API credentials, endpoint documentation, and sample CSV files to Jordan
+owner: Priya Nair
+deadline: April 4, 2026
+status: null
+blocker: null
+dependency: null
+
+3.
+task: Deliver stat key reference document to Jordan
+owner: Priya Nair
+deadline: April 3, 2026
+status: null
+blocker: null
+dependency: null
+
+4.
+task: Initiate production network whitelist approval request and share reference number with Sarah
+owner: Priya Nair
+deadline: April 3, 2026
+status: null
+blocker: null
+dependency: null
+
+5.
+task: Share project tracker document in Slack channel
+owner: Marcus Webb
+deadline: April 1, 2026
+status: null
+blocker: null
+dependency: null
+
+6.
+task: Set up development environment
+owner: Jordan Mills
+deadline: April 4, 2026
+status: null
+blocker: null
+dependency: null
+
+7.
+task: Send meeting notes and action items summary to all attendees
+owner: Sarah Okonkwo
+deadline: April 1, 2026
+status: null
+blocker: null
+dependency: null
+
+
+--- UPDATE EVENTS (SHOULD NOT BE DECOMPOSED) ---
+
+(none - this is the project kickoff, no prior tasks to update)
+
+
+--- SHOULD NOT BE PICKED (IGNORE) ---
+
+- Risk items raised in discussion (not tasks):
+  "heatmap generation is medium confidence"
+  "stat key interpretation quality is a risk"
+  "production whitelist delay is a risk"
+  "API response payload size for large clusters"
+
+- Design decisions and architecture choices (informational, not tasks):
+  "planning to use LangChain with GPT-4o"
+  "planning to use Matplotlib and Seaborn"
+  "considering ReportLab for PDF generation"
+  "stat key needs normalization layer"
+
+- Information exchanges between attendees:
+  Priya explaining API response format and stat key structure
+  Jordan asking about dataset structure and column headers
+  Discussion about pipe-delimited stat key naming conventions
+
+- General project background:
+  "NovaTech has a large VMware environment"
+  "team spends days on manual data wrangling"
+
+- Vague improvement statements:
+  "NovaTech's environment can handle the compute"
+  "I'd rather know early than in Week 5"

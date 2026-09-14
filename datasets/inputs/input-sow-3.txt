@@ -1,0 +1,267 @@
+﻿Activities
+Aria AUTOMATION  
+Provider will assist with the development of the Customer's capability to do the following: 
+• Automate workload provisioning 
+• Enable continuous integration and deployment 
+• Ensure consistency and compliance for the cloud management platform 
+• Provide a self-service portal for IT users 
+Provider will provide the following Consulting Services: 
+• Design and implement VMware Aria Automation functional constructs for a VCF environment 
+• Get started with VMware Aria Automation for automated workload provisioning 
+• Get started with VMware Aria Automation for self-service catalogue and deployment model 
+• Build automation for Windows 2019 and 2022 Servers / Linux vRA (Aria) o 	Including - Dev, Test and Production in vRA (Aria) 
+• Leverage advanced automation for VMware Aria Automation post-deployment configuration 
+• Install Agents 
+o Centrify
+o Microsoft Defender
+o Rapid7
+o Azure ARC
+o SolarWinds (Linux Only)
+o MECM (Windows Only)
+o Foreman/Katello
+• Deprovision Server
+o  Shut Down
+o Set VM to "unmanaged" in Solar Winds
+o Power down VM
+o Full decommission (incl deletion)
+o Remove VM from 
+▪ Solar Winds
+▪ Active Directory
+▪ DNS
+▪ vCenter
+▪ MECM (Windows Only)
+▪ Foreman/Katello (Linux Only)
+▪ Rapid7
+▪ Azure ARC
+▪ Microsoft Defender
+▪ Update IPAM (SolarWinds)
+▪ Update CMDB (ServiceNow, but might be changing)
+▪ Licensing registration removal (Windows = KMS, Red hat =  RHEL Licensing, 
+o Notifications
+▪ Notify Data Protection Team of release/data destruction
+▪ Notify Security Team for removal of Firewalls
+• 
+  
+The following are the high-level activities included in this project: 
+• Execute: Assessment - Assess the current environment and evaluate readiness for Aria Automation 
+• Execute: Design - Solution design through a series of workshops and consultation. 
+• Execute: Implement - Deployment and verification of the solution. 
+• Execute: Knowledge Transfer - Knowledge transfer of the design, deployment, and operations procedures. 
+  
+This project requires the following VMware On-Premises, VMware SaaS and third-party products, with vendor-supported versions as agreed to by VMware and Customer at project kickoff, but limited to those that are in general availability (GA) on the date of SOW signing: 
+• VMware vSphere 8x or higher 
+• VCF 5.x 
+• VMware Aria Automation 8.8 or higher On-Premises (Also known as vRealize Automation) 
+Note: all references to vRealize Automation in this document refer to the Aria Automation product 
+                  
+
+
+             
+SELLER RESPONSIBILITIES 
+• Milestone 1: Initiate and Plan 
+• Milestone 2: Aria Automation Assessment 
+• Milestone 3: Design and Implement VMware vRA (Aria) 
+• Milestone 4: Develop vRA (Aria) Automation (Workflow and Blueprints) for DEV / TEST / PROD 
+• Milestone 5: Validate vRA (Aria) Automation 
+• Milestone 6: Knowledge Transfer 
+• Project Close-out 
+MILESTONE 1: INITIATE AND PLAN 
+The Provider project manager (PM) hosts one (1) project initiation call with key Customer and Provider stakeholders. Topics to be discussed include the following: 
+• Project business drivers, scope, and objectives. 
+• Project deadlines, estimated timelines, scheduling, and logistics. 
+• Identification of key Customer team members with whom the Provider will work to perform the tasks defined in this SOW. 
+• Participating team members are confirmed, and contact details are exchanged to schedule the project kick-off meeting. 
+Provider leads one (1) project kickoff meeting with Customer project sponsors and stakeholders to review expectations about the purpose of the engagement, the delivery approach, and estimated timelines. The following are the objectives of the meeting: 
+• Introducing the Provider team, roles, and responsibilities. 
+• Describing the project goals, phases, and key dates. 
+• Agreeing on communication and reporting process and creating a communications plan. 
+• Validating the project expectations and clarifying roles and responsibilities. 
+• Confirming prerequisites are met as detailed in the solution checklist for specified solutions. 
+• Presenting the solution overview for specified solutions including expected project results and deliverables. 
+
+
+The Design vRealize Automation for use in a private cloud service provides a solution design for automated provisioning of infrastructure based on a VMware architecture design for VMware vRealize(r) Automation(tm)(.(vRA) 
+
+Specification Parameters Description vRealize Automation Design Workshop Up to one (1) Design workshop to gather the requirements of the customer for the design of the vRealize Automation environment. vRealize Automation sites Up to one (1) Unique sites for which vRealize Automation is designed.       Workflow and Blueprint assessment   Review the current Workflows and Blueprints Determine integrations and dependency and any vRA configured Endpoints and 3rd party plugins Integration Assessment   Review all integrations such as but not limited to: 
+Infoblox 
+ServiceNow 
+ Windows VM Build and Deployment Process   Review in detail all the requirements and dependencies currently in place to deploy Windows 2019 and 2022 Server VMs. Current vRealize Automation (Aria) footprint   Review and assess the current licensing and configuration state and current use of vRA. Ensure proper configuration and RBAC assess as required by the customer MILESTONE 3: DESIGN AND DEPLOY VMWARE ARIA AUTOMATION 
+DEV / TEST / PROD 
+The Design and Implement vRealize Automation for Workload Provisioning in a Multi-Cloud Architecture service provides a solution design for vRealize Automation constructs. 
+Specification Parameters Description and Backlog items Cloud Assembly Constructs Design Workshop Up to one (1) Design workshop to gather the requirements of the Customer for the design of the vRealize Automation constructs. Review current customer server request form and process 
+Review current PowerShell scripting 
+Review current JSON file and Orchestrator integration 
+Auto Naming procedures Naming standards 
+Current IP Address Allocation 
+DNS record creation 
+Review the current entire automation process 
+Design new methods and process to be leveraged in vRA Assembly (Aria) Cloud Assembly Environment Configuration  Configuration of the designed Cloud Assembly constructs. Cloud Accounts Up to three (3) Cloud accounts will be configured which provide permissions that work with cloud proxies and/or endpoints in Cloud Assembly that is used to communicate with and provision workloads to the connected environments. Cloud Zones Up to three (3) Cloud zones will be configured to provide access to resources within your cloud account. Cloud zones are associated to a project. Flavor Mappings Up to three (3) Flavor mappings will be configured to provide sizing for provisioning workloads. Image Mappings Up to three (3) Image mappings will be configured, which provides specific OS specifications that will define the target deployment operating systems for a specific cloud account/region. Network Profiles Up to three (3) Network profiles will be configured to manage the networking for provisioned workloads. Storage Profiles Up to three (3) Storage profiles will be configured to manage the storage for provisioned workloads. Tags Up to three (3) Tags will be configured to drive the placement of deployments through matching of capabilities and constraints. Projects Up to three (3) Projects will be configured which controls who has access to vRealize Automation Cloud Assembly blueprints and where the blueprints are deployed. Blueprints Up to three (3) Blueprints will be configured for the provisioning of workloads and other components into the environment. Subscriptions and Actions Up to three (3) Creation of subscriptions for events, actions and workflows to respond to events that are defined by the Customer. Service Broker Policies Up to three (3) Service Broker policies will be configured to provide a set of rules or parameters that are applied to deployments 
+    
+DEPLOY VREALIZE AUTOMATION FOR A CLOUD AUTOMATION FOUNDATION 
+The Deploy vRealize Automation for use in a private cloud service provides the deployment of a prescribed design to provide a highly available foundation for Infrastructure as a Service (IaaS) using vRealize Suite LifeCycle Manager. 
+Specification Parameters Description vRealize Suite Installation Up to one (1) Deployment and configuration of vRealize Suite using the vRealize Easy Installer for the purpose of deploying vRealize LifeCycle Manager, VMware Identity Manager and vRealize Automation. Load Balancer   Guidance on configuration of DNS CNAME records and Load Balancers for the virtual IP addresses of the following: VMware Identity Manager Clusters, vRealize Automation Appliances, and vRealize Orchestrator Clusters. vRealize Automation with Distributed High Availability installation using vRealize Easy Installer Manager Up to one (1) Deployment of a distributed installation of vRealize Automation using the vRealize Easy Installer, within a single data center to facilitate provisioning workloads. vRealize Automation Appliances Up to three (3) Using vRealize Suite LifeCycle Manager the vRealize Automation appliances will be installed and configured with embedded database replication.       Projects Up to two (2) Project configurations that provide access to deploy workloads to the clouds that the project is entitled to. Custom Forms Up to three (3) Customization of the imported Blueprint request form which will allow for the Customer to provide Custom Fields for users that are requesting to deploy the imported blueprints. Policies Up to two (2) Creation of policies which will allow the Customer to define the leasing duration and enforcement type on provisioned workloads. MILE
+
+
+STONE 4: DEVELOP VRA (ARIA) AUTOMATION (WORKFBLUEPRINTS) 
+DEV / TEST / PROD 
+Develop vRealize Automation Cloud workflows and blueprints for DEV / TEST / PROD for a total of up to three configuration migrations for Dev, Test and Prod in total. 
+Specification Parameters Description and Backlog items Development  Single vCenter 
+OU XXX deployment 
+/WS2019 
+/WS2022 
+Development Integrations: 
+InfoBlox 
+ServiceNow 
+Azure Government Cloud Integration (SSO and 
+Deployment) Terraform 
+vRealize Automation Terraform Provider 
+Configuration / Remapping of existing Terraform 
+Modules & Artifacts to vRA / Aria 
+• Cloud Accounts 
+• Cloud Zone 
+• Projects 
+• Image Mapping 
+• Network Profiles 
+Git-Hub Enterprise 
+Active Directory Test   Single vCenter 
+OU XXX deployment 
+/WS2019 
+/WS2022 
+TEST Integrations: 
+InfoBlox 
+ServiceNow 
+Azure Government Cloud Integration (SSO and 
+Deployment) Terraform 
+vRealize Automation Terraform Provider 
+Configuration / Remapping of existing Terraform 
+Modules & Artifacts to vRA / Aria 
+• Cloud Accounts 
+• Cloud Zone 
+• Projects 
+• Image Mapping 
+• Network Profiles 
+Git-Hub Enterprise 
+Active Directory Production   OU for DEV / TEST / PROD 
+/WS2019 
+/WS2022 
+Prod Integrations: 
+InfoBlox 
+ServiceNow 
+Azure Government Cloud Integration (SSO and 
+Deployment) Terraform 
+vRealize Automation Terraform Provider 
+Configuration / Remapping of existing Terraform 
+Modules & Artifacts to vRA / Aria 
+• Cloud Accounts 
+• Cloud Zone 
+• Projects 
+• Image Mapping 
+• Network Profiles 
+Git-Hub Enterprise 
+Active Directory Validation of Cloud Assembly Configuration Up to three (3) Validation of the vRealize Automation environment. This activity will use the following actions for validation: Create, Deploy and Destroy Single Machine Blueprint. Finalize Documentation  Document the configuration of vRealize Automation. Service Catalog Management Workshop Up to one (1) Workshop to provide guidance and enablement on how to manage the service catalog in the vRealize Automation environment. Custom Forms, Actions, and Subscriptions Workshop  Workshop to provide guidance and enablement on how to use Custom Forms, Actions and Subscriptions. Workshop to provide guidance and enablement on how to troubleshoot the vRealize Automation environment using events and logs. Troubleshooting Events and Log Management Workshop Up to one (1)   
+  
+  
+  
+  
+  MILESTO
+
+
+
+NE 5: VALIDATE VRA (ARIA) AUTOMATION (WORKFLOWS AND 
+DEV / TEST / PROD 
+Validate and Test vRealize Automation Cloud workflows and blueprints for DEV / TEST / PROD for a total of up to three configuration validations for Dev, Test and Prod in total. 
+Specification Parameters Description and Backlog items Development  Single vCenter 
+OU XXX deployment 
+/WS2019 
+/WS2022 
+Development Integrations: 
+InfoBlox 
+ServiceNow 
+Azure Government Cloud Integration (SSO and 
+Deployment) Terraform 
+vRealize Automation Terraform Provider 
+Configuration / Remapping of existing Terraform 
+Modules & Artifacts to vRA / Aria 
+• Cloud Accounts 
+• Cloud Zone 
+• Projects 
+• Image Mapping 
+• Network Profiles 
+Git-Hub Enterprise 
+Active Directory Test   Single vCenter 
+OU XXX deployment 
+/WS2019 
+/WS2022 
+Prod Integrations: 
+InfoBlox 
+ServiceNow 
+Azure Government Cloud Integration (SSO and 
+Deployment) Terraform 
+vRealize Automation Terraform Provider 
+Configuration / Remapping of existing Terraform 
+Modules & Artifacts to vRA / Aria 
+• Cloud Accounts 
+• Cloud Zone 
+• Projects 
+• Image Mapping 
+• Network Profiles 
+Active Directory Production   Single vCenter OU for DEV / TEST / PROD 
+/WS2019 
+/WS2022 
+Prod Integrations: 
+InfoBlox 
+ServiceNow 
+Azure Government Cloud Integration (SSO and 
+Deployment) Terraform 
+Configuration / Remapping of existing Terraform 
+Modules & Artifacts to vRA / Aria 
+• Cloud Accounts 
+• Cloud Zone 
+• Projects 
+• Image Mapping 
+• Network Profiles 
+Active Directory   
+MILESTONE 6: KNOWLEDGE TRANSFER 
+The Seller provides the Customer the capability to design and deploy multitier applications on a multi-machine Cloud Template using VMware vRealize(r) Automation(tm) Software components and VMware vRealize(r) Orchestrator(tm) workflows in an automated way. 
+Specification Parameters Description and Backlog items vRA (Aria) Platform overview Up to one (1) Workshop to provide knowledge of the vRA (Aria) Platform. Including based concepts and design considerations. 
+  vRA  (Aria) Workflow Workshop Up to one (1) Workshop to provide knowledge of how to leverage various workflow used to build, place, configure and destroy VMs in the Cloud 
+  
+
+
+CUSTOMER RESPONSIBILITIES 
+1. Provide secure, remote access to Customer systems. 
+2. Customer must maintain current support agreements with the product vendors for systems covered under this SOW 3. Make appropriate system maintenance window(s) available for Provider as needed. 
+4. Customer will support and provide representation at project review meetings at a mutually agreed upon time and location to discuss the project status, issues, new requirements and overall project satisfaction. These meetings may also cover performance status updates, schedule updates, pending changes, open issues, and action items. 
+5. The Project Manager be involved in notifying all stakeholder of any changes the project as outlined in the SOW and represent all stakeholders in all matters related to this Service Proposal. the Project Manager will provide a single consolidated response to any review, approval, change, or decision request. 
+6. Customer is responsible for the design and implementation of all infrastructure necessary to support the deployment of VMware vRealize including vSphere, physical infrastructure, migration of workloads to the new environments, requisite physical network architecture and implementation changes 
+7. Customer will actively participate in this engagement, and individuals with relevant domain, business, and/or technical expertise will be available as required. These participants are the acknowledged spokespersons for the areas they represent, and the Provider team requires regular and timely access to them. If participants are unable to attend a scheduled meeting, then the Customer Project Manager becomes the final authority on all items of discussion. 
+8. Customer will provide necessary resources to development all workflows, scripts and automated processes as outlined in this statement of work. 
+ASSUMPTIONS 
+1. Seller is not responsible for modifications beyond the initial configuration engagement. 
+2. Customer has a current VMware license. 
+3. Customer has VMware Customer connect to access licensing for vRealize (Aria) Automation 
+4. Customer has reviewed each vendor's policy for operating system and application virtualization and is responsible for license compliance. 
+5. Customer is available for working sessions to execute the vRA Migration 
+6. Customer Environment is stable and will not be modified during the course of the project in a manner that would delay the project schedule. 
+7. Project management and site readiness tasks will be performed 
+8. Team member will be allowed access to leverage tools support remote assessment, design and deployment as needed Jump box, VPN or Virtual Desktop will be required for configuration (Zoom, WebEx, MS Teams is suitable only for training, workshops and discovery) 
+9. The remediation will be implemented with an additional statement of work or change order and is not included in this project scope 
+OUT OF SCOPE 
+Tasks outside the statement of work include, but are not limited to: 
+1. Installation and configuration of custom or third-party applications and operating systems on deployed virtual machines. 
+2. Operating system administration including the operating system itself or any operating system features or components. 
+3. Management of change to virtual machines, operating systems, custom or third-party applications, databases, and administration of general network changes within Customer control. 
+4. Remediation work associated with any problems resulting from the content, completeness, accuracy, and consistency of any data, materials, or information supplied by Customer. 
+5. Installation or configuration of VMware products not included in the scope of this document. 
+6. Installation and configuration of third-party software or other technical services that are not applicable to VMware components. 
+7. Configuration of VMware products used for the service other than those implemented for the mutually agreed to use cases. 
+8. Customer solution training other than the defined knowledge transfer session. 
+9. Resolving Physical Network Connectivity issues 
+10. Remediation work and delays associated with any deficiencies or inaccuracies resulting from the content, completeness, accuracy, and consistency of any data, materials, or information supplied by the customer. 
+Services not specified in this SOW are considered out of scope and will be addressed with a separate SOW or Change Order. 
+  
+  
+  
+ITEM(S) PROVIDED TO CUSTOMER 
+Table 1 - Item(s) Provided to Customer 
+Item Description Format Solution design document Documentation of Integration and Extensibility for the environment in addition to solution specifications PDF Development Workbook Validation Workbook for deployments xlsx Build documentAs-build document, design documentPDF

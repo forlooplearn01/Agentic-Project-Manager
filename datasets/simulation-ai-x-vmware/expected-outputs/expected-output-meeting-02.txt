@@ -1,0 +1,132 @@
+--- NEW TASKS (SHOULD BE EXTRACTED + DECOMPOSED) ---
+
+1.
+task: Complete CSV module coding and unit tests
+owner: Jordan Mills
+deadline: April 14, 2026
+status: null
+blocker: null
+dependency: null
+
+2.
+task: Send CSV module test case document to Marcus
+owner: Jordan Mills
+deadline: April 14, 2026
+status: null
+blocker: null
+dependency: CSV module coding complete
+
+3.
+task: Review CSV module test cases against acceptance criteria
+owner: Marcus Webb
+deadline: April 14, 2026
+status: null
+blocker: null
+dependency: CSV module test case document received from Jordan
+
+4.
+task: Create ai-x-vmware-api Slack channel and add Jordan and Priya
+owner: Marcus Webb
+deadline: April 8, 2026
+status: null
+blocker: null
+dependency: null
+
+5.
+task: Circulate updated requirements document for team review
+owner: Marcus Webb
+deadline: April 8, 2026
+status: null
+blocker: null
+dependency: null
+
+6.
+task: Send Derek Huang's contact details to Sarah
+owner: Priya Nair
+deadline: April 8, 2026
+status: null
+blocker: null
+dependency: null
+
+7.
+task: Follow up on whitelist approval if no confirmation by April 14
+owner: Priya Nair
+deadline: April 14, 2026
+status: null
+blocker: null
+dependency: null
+
+8.
+task: Prototype PDF library options and confirm choice between ReportLab and WeasyPrint
+owner: Jordan Mills
+deadline: April 12, 2026
+status: null
+blocker: null
+dependency: null
+
+9.
+task: Share GitHub repository link with team
+owner: Jordan Mills
+deadline: April 8, 2026
+status: null
+blocker: null
+dependency: null
+
+
+--- UPDATE EVENTS (SHOULD NOT BE DECOMPOSED) ---
+
+1.
+event_type: status_change
+task: Send list of outbound API endpoints to Priya
+owner: Jordan Mills
+status: completed
+
+2.
+event_type: status_change
+task: Deliver dev environment API credentials, endpoint documentation, and sample CSV files to Jordan
+owner: Priya Nair
+status: completed
+
+3.
+event_type: status_change
+task: Deliver stat key reference document to Jordan
+owner: Priya Nair
+status: completed
+
+4.
+event_type: status_change
+task: Initiate production network whitelist approval request
+owner: Priya Nair
+status: in_progress
+
+5.
+event_type: status_change
+task: Set up development environment
+owner: Jordan Mills
+status: completed
+
+
+--- SHOULD NOT BE PICKED (IGNORE) ---
+
+- Technical design details that are implementation context, not tasks:
+  CSV file size limit of 500MB (design decision)
+  Soft validation warnings instead of hard rejection (design decision)
+  Ten-row sample approach for LLM context (design decision)
+  Statistical summary alongside row sample (already captured as Jordan's coding task)
+
+- General discussion and confirmations:
+  "Marcus to note that as a design decision"
+  Priya confirming 500MB limit is fine
+  Jordan confirming dev credentials work
+
+- API rate limiting strategy discussion:
+  700-800ms delay between cluster requests (implementation detail of coding task)
+  Maximum 15-cluster cap (implementation detail)
+
+- Week 3 planning overview (not new assignments, just discussion):
+  Jordan describing his Week 3 approach to authentication and token management
+
+- Informational statements:
+  "Aria Operations tokens expire after thirty minutes"
+  "Our largest CSV exports are 200-300 megabytes"
+  "Whitelist expected by April 17"

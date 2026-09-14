@@ -1,0 +1,10 @@
+  Project: Middleware and DevOps Setup                                                                                                                                                     
+                                                                                                                                                                                           
+  The team needs to complete the following before go-live:                                                                                                                                 
+                                                                                                                                                                                           
+  1. Install and configure WAS on the production server.                                                                                                                                   
+  2. Set up the CI/CD pipeline using Jenkins.
+  3. Expose backend services via a REST API.                                                                                                                                               
+  4. Conduct UAT with the business stakeholders.                                                                                                                                           
+                                                                                                                                                                                           
+  Alex owns the WAS setup. Priya will handle CI/CD. Deadline for WAS installation is April 20th. 

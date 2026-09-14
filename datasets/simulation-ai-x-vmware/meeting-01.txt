@@ -1,0 +1,167 @@
+AI-X-VMware Project
+Meeting 1: Project Kickoff
+Date: April 1, 2026
+Time: 10:00 AM - 11:30 AM CST
+Location: Zoom (Meeting ID: 892-341-5567)
+Attendees:
+  - Sarah Okonkwo (Project Manager, QuantumEdge AI Consulting)
+  - Jordan Mills (AI Engineer, QuantumEdge AI Consulting)
+  - Marcus Webb (Business Analyst, QuantumEdge AI Consulting)
+  - Priya Nair (VMware Engineer, NovaTech Solutions)
+
+Recorder: Marcus Webb
+Next Meeting: April 8, 2026, 10:00 AM CST
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[TRANSCRIPT BEGINS]
+
+Sarah Okonkwo: Alright, good morning everyone. I think we've got all four of us on now. Priya, can you hear us okay?
+
+Priya Nair: Yes, loud and clear. Good morning, Sarah. Good morning everyone.
+
+Sarah Okonkwo: Perfect. Marcus, you okay to record notes for this one?
+
+Marcus Webb: Already on it. I've got the SOW open on my second screen as well, so I can cross-reference as we go.
+
+Sarah Okonkwo: Great. So welcome officially to the AI-X-VMware project kickoff. I know we've all had a chance to read through the SOW, but I want to use today to make sure we're all aligned on what we're building, who owns what, and what we need to get done this week to set up for success. I'll start with a quick project overview recap, then I want Jordan and Priya to walk us through any technical questions they have from reviewing the SOW, and then Marcus you can walk us through the tracking setup you've put together. Does that agenda work for everyone?
+
+Jordan Mills: Works for me.
+
+Priya Nair: Yes, that's fine.
+
+Marcus Webb: Yep, good agenda.
+
+Sarah Okonkwo: Okay. So at a high level - NovaTech has a large VMware environment and they need a better way to get performance insights and executive reports out of it without their team spending days on manual data wrangling. What we're building is an AI-powered analytics platform that gives their team two paths to get data: either they pick a CSV file from a local folder, or they pull live metrics directly from VMware Aria Operations through the Stat Key API. Once the data's in, the user describes in natural language what graphs they want, an AI agent figures out the relevant datasets, generates the graphs, and then compiles everything into a PDF report with an executive summary. The whole thing gets stored in an output directory that they can access anytime. Eight weeks, PROD deploy included. That's the mission. Any questions on the high level before I hand it over to Jordan?
+
+Jordan Mills: No, I'm clear on the vision. I do have a few technical questions I want to flag when it's my turn though.
+
+Priya Nair: Same. I've been looking at the Aria Operations API side and I want to make sure we're aligned on a few things.
+
+Sarah Okonkwo: Perfect. Jordan, go ahead.
+
+Jordan Mills: Okay. So I've been thinking through the architecture since I read the SOW last week. The part I want to make sure we nail from the start is, uh, the AI agent design. The SOW says the user describes what kind of graph they want in natural language, and the agent selects the datasets. I want to understand more about what "datasets" look like at that point. Priya, when the Stat Key API returns metrics - what does the payload actually look like? Is it structured JSON, flat arrays? Are the column headers meaningful enough for an LLM to reason about without additional context?
+
+Priya Nair: Good question. So the Stat Key API returns JSON. The structure is basically a list of stat keys, each with a resource ID, a stat key string like cpu.usage.average or mem.consumed, and then a list of timestamped data points. The stat key strings are fairly descriptive if you know VMware naming conventions, but they can look cryptic to someone who doesn't. Things like cpu|usage_average or mem|consumed_average with pipe separators.
+
+Jordan Mills: Okay, so the stat key itself is essentially the column descriptor. And the data points are time series - timestamp plus value pairs?
+
+Priya Nair: Exactly. And the value is usually a numeric metric, could be a percentage, could be KB, could be milliseconds depending on the stat key. The unit isn't always explicit in the response, it depends on the endpoint version.
+
+Jordan Mills: That's actually really useful to know early. So when I'm building the AI agent's dataset selection logic, I need to make sure it can, you know, map the stat key strings to human-readable concepts. Like cpu|usage_average needs to be understood as CPU utilization percentage. I'll probably need to build a stat key vocabulary or at least prompt the LLM with enough context about VMware naming conventions.
+
+Marcus Webb: Jordan, just to clarify - should I document that as a requirement? Like, the AI agent needs a stat key interpretation layer?
+
+Jordan Mills: Yes, please do. Let's call it stat key normalization. It's not in the SOW explicitly but it's clearly necessary.
+
+Sarah Okonkwo: Good catch, Jordan. Marcus, add that to the requirements log. We'll note it as a design decision within scope, not a scope change, since it's implementation detail for the AI agent module. Priya, does that sound right from your side?
+
+Priya Nair: Yeah, I think that's correct. It's part of making the data usable. I can also provide Jordan with a reference list of the most common stat keys we use at NovaTech with their human-readable descriptions. We have an internal wiki for this.
+
+Jordan Mills: That would be incredibly helpful. If you can share that by end of this week, I can start building the normalization layer in Week 2 alongside the data source module.
+
+Priya Nair: I'll send it over by Thursday. I'll include the stat key string, the unit, and what it represents in plain language for the most common ones - probably thirty to forty stat keys.
+
+Sarah Okonkwo: Perfect. Priya, I'm going to note that as an action item for you - deliver stat key reference document to Jordan by April 3. Jordan, anything else on the AI agent design before we get to Priya's questions?
+
+Jordan Mills: One more thing. The SOW mentions at least five graph types - line charts, bar charts, scatter plots, heatmaps, and pie charts. I want to flag that heatmaps are, honestly, the most complex to generate cleanly, especially when the data is time series from multiple resources. They're doable but I want to make sure we scope the complexity right. My plan is to use Matplotlib and Seaborn for rendering. For the AI agent orchestration I'm planning to use LangChain with GPT-4o. Any objections to that stack?
+
+Marcus Webb: From a requirements standpoint, no. As long as it meets the acceptance criteria in the SOW.
+
+Priya Nair: No objection from my side. NovaTech's environment can handle the compute for that.
+
+Sarah Okonkwo: Noted on the heatmap complexity. Jordan, flag it to me proactively if it looks like it's going to be a risk to the Week 4 deadline. I'd rather know early than find out in Week 5 that we need more time. What's your confidence level on the graph generation module right now?
+
+Jordan Mills: Honestly, pretty high for four of the five types. Heatmaps I'd say medium confidence only because the multi-resource layout gets complicated. But I have two weeks for that module so I think it's manageable.
+
+Sarah Okonkwo: Okay. Let's track heatmap generation as a risk item - medium severity, Jordan owns it. If by end of Week 3 the design isn't solid, we'll discuss options. Priya, your turn. What were your questions from the SOW review?
+
+Priya Nair: Thanks Sarah. So I have three main things. First, the SOW says I need to provide API credentials by April 4. I want to confirm - is that credentials for the dev environment, or do you need prod credentials as well at this stage?
+
+Sarah Okonkwo: Jordan, what do you need for Week 2 and 3 development?
+
+Jordan Mills: Dev environment credentials are fine for now. I just need to be able to hit the actual Stat Key endpoint and see real response structure. I don't need production data until UAT.
+
+Priya Nair: Okay, that's good because getting prod credentials approved goes through our IT security team and usually takes a week or two. Dev I can get you by Friday. I'll send the username, password, and the base URL for the dev environment. I'll also send the specific Stat Key endpoint path.
+
+Sarah Okonkwo: Perfect. Action item for Priya - deliver dev environment credentials and endpoint documentation to Jordan by April 4. Jordan, that gives you what you need to start the API integration in Week 3?
+
+Jordan Mills: Yes, that's the timeline I was working to. I'll spend Week 2 on the CSV module and then pick up the API integration in Week 3 once I have the credentials.
+
+Priya Nair: Right. Second question. The SOW mentions multi-cluster data aggregation - querying multiple clusters and merging datasets. I want to understand how the user will specify which clusters to query. Is the cluster a parameter the user inputs manually, or will the system discover available clusters automatically from the API?
+
+Jordan Mills: Great question. I was thinking the system would do a discovery call first - hit an endpoint to list available clusters, present them to the user, and let them select one or more. Is there a clusters or resources listing endpoint in Aria Operations?
+
+Priya Nair: Yes, there is. You can query the resources endpoint and filter by type to get all cluster resources. I can include that in the endpoint documentation I send you.
+
+Jordan Mills: That's perfect. So the flow would be: authenticate, get token, call resources endpoint to list clusters, user picks clusters, then query Stat Key endpoint per cluster and merge the results.
+
+Priya Nair: Exactly. One thing to watch out for - each cluster query can return a large payload depending on how many stat keys are configured. For our largest cluster we're talking potentially thousands of rows per stat key, per time range. You'll want to make sure the merge logic handles that without running into memory issues.
+
+Jordan Mills: Yeah, I was already thinking about that. I'll implement pagination handling and also give the user an option to specify a time range for the query - like last 24 hours, last 7 days - so we don't pull the entire history by default.
+
+Marcus Webb: Should I add time range filtering as a requirement?
+
+Jordan Mills: Yes. Add it as a required feature for the API integration module. Default time range should be last 24 hours, with the option to specify a custom range.
+
+Sarah Okonkwo: Marcus, add that. Priya, what was your third question?
+
+Priya Nair: The third one is about the production environment. The SOW says NovaTech needs to have prod access ready by May 10. I want to flag that our production environment has stricter security controls than dev. Specifically, outbound API calls from production servers need to go through a network proxy, and there's a whitelist approval process for any new outbound connections. I need to initiate that approval now to make sure it's ready by Week 7. It typically takes ten business days.
+
+Sarah Okonkwo: That's really important, Priya. Good that you're raising it now. So you need to start the approval process this week?
+
+Priya Nair: Yes. I'll submit the request today or tomorrow. I'll need Jordan to give me the list of external API endpoints the platform will call - primarily the AI model API endpoint and any other outbound dependencies.
+
+Jordan Mills: The main external calls will be to the OpenAI API for GPT-4o. I'll also check if there are any other external dependencies. I'll send you a full list of outbound endpoints by tomorrow EOD.
+
+Priya Nair: Perfect. That's exactly what I need to submit the whitelist request.
+
+Sarah Okonkwo: Okay. Action item for Jordan - send Priya the full list of outbound API endpoints by April 2 EOD. Action item for Priya - initiate production network whitelist approval process by April 3 and share the request reference number with me so I can track it. This is a dependency for Week 7 deployment. If there are any delays in that approval, flag it to me immediately because it directly impacts our production go-live.
+
+Priya Nair: Understood. I'll keep you posted.
+
+Sarah Okonkwo: Great. Marcus, let's hear your rundown on the tracking setup.
+
+Marcus Webb: Sure. So I've set up a project tracker in our shared workspace. I've broken it down by deliverable, with each deliverable having tasks under it, and each task has an owner, a status, a deadline, and a blocker field. I'll update it after every weekly meeting. I've pre-populated it based on the SOW. Let me walk through the key tasks and confirm ownership with everyone.
+
+For Week 1 - we have five tasks. Task one: project kickoff meeting - that's today, marking as complete. Task two: set up development environment for Jordan - owner Jordan, deadline April 4, status in progress. Task three: deliver dev API credentials and endpoint docs - owner Priya, deadline April 4, status not started. Task four: deliver stat key reference document - owner Priya, deadline April 3, status not started. Task five: submit production network whitelist approval - owner Priya, deadline April 3, status not started. Task six: deliver outbound endpoint list to Priya - owner Jordan, deadline April 2, status not started.
+
+For Week 2 starting April 8 - the main deliverable is the CSV ingestion module. Tasks under that: design CSV module architecture - owner Jordan, deadline April 8. Implement CSV file listing from configured folder - owner Jordan, deadline April 10. Implement CSV file upload functionality - owner Jordan, deadline April 11. Implement CSV parsing and validation - owner Jordan, deadline April 12. Write unit tests for CSV module - owner Jordan, deadline April 14. Marcus to review test cases and validate against acceptance criteria - owner Marcus, deadline April 14.
+
+Does that timeline look realistic to you, Jordan?
+
+Jordan Mills: April 14 for the full CSV module including unit tests is tight but doable. The CSV work is fairly straightforward - list files, handle upload, parse with Pandas, validate schema. I'm more worried about what happens if Priya's API credentials are delayed because that would push back Week 3 work.
+
+Sarah Okonkwo: Understood. Priya, I want to confirm - April 4 for credentials is firm?
+
+Priya Nair: Yes, I can commit to that. I already have the dev credentials, I just need to package them securely and send them to Jordan. I'll have them over by end of day Friday.
+
+Sarah Okonkwo: Great. Jordan, any known blockers for Week 2?
+
+Jordan Mills: No blockers for Week 2. I just need sample CSV files to test the ingestion against realistic data. Priya, can you send a few CSV exports from Aria Operations? Even anonymized or synthetic data would work.
+
+Priya Nair: Yes, I can do that. I'll export a few sample metric datasets and strip out any sensitive identifiers. I'll include them with the credentials package by Friday.
+
+Jordan Mills: Perfect. That covers everything I need for Week 2.
+
+Marcus Webb: Good. I'll continue the task breakdown for Weeks 3 through 8 in the tracker. I'll share the full tracker document in our Slack channel by EOD today so everyone can see it and flag any issues with task assignments or deadlines.
+
+Sarah Okonkwo: Excellent. Let me do a quick risk review before we wrap up. I see three risks right now. Risk one: production network whitelist approval delay. This is a dependency for Week 7 deployment. Probability: medium. Impact: high. Mitigation: Priya initiates the request this week, we track it weekly, we have a contingency of deploying to a pre-prod environment first if the prod approval is delayed. Risk two: heatmap graph generation complexity. Probability: medium. Impact: low to medium since it's one of five graph types. Mitigation: Jordan flags by end of Week 3 if design is at risk. Risk three: API response payload size for large clusters causing performance issues during multi-cluster aggregation. Probability: medium. Impact: medium. Mitigation: Jordan implements time range filtering and pagination in the API integration module. Are there any other risks anyone wants to flag?
+
+Jordan Mills: One more - the stat key normalization layer. If the vocabulary Priya provides is incomplete or the LLM can't reliably interpret unfamiliar stat key strings, the AI agent's dataset selection quality will suffer. I'd call that a medium probability, medium impact risk.
+
+Sarah Okonkwo: Good catch. Marcus, add that as Risk four - stat key interpretation quality. Owner: Jordan. Mitigation: build a comprehensive normalization mapping with Priya's input, include a fallback where the raw stat key string is passed to the LLM with a system prompt explaining VMware naming conventions.
+
+Marcus Webb: Got it.
+
+Priya Nair: I'll make sure the reference document I send Jordan is as comprehensive as possible. I'll also flag any stat keys that are particularly ambiguous.
+
+Sarah Okonkwo: Alright. Next meeting is April 8, same time, 10 AM CST. We'll review Week 1 action item completion, Jordan will walk us through the CSV module design, and Priya will give us an update on the API credentials and whitelist request. See everyone then. Have a great week.
+
+Jordan Mills: Thanks everyone. Looking forward to getting started.
+
+Priya Nair: Thanks. Have a good week.
+
+Marcus Webb: See you all next week.
+
+[TRANSCRIPT ENDS]

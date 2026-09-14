@@ -1,0 +1,74 @@
+services:
+    postgres:
+        image: pgvector/pgvector:pg16
+        container_name: project_plan_agent_postgres
+        environment:
+            POSTGRES_DB: project_plan_agent
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        ports:
+            - "5433:5432"
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+            - ./infra/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+    mcp:
+        build: .
+        container_name: project_plan_agent_mcp
+        env_file: .env
+        environment:
+            DB_HOST: postgres
+            DB_PORT: 5432
+        ports:
+            - "8011:8001"
+        volumes:
+            - .:/app
+        depends_on:
+            postgres:
+                condition: service_healthy
+        command: python3 -m mcp_server.server
+        restart: unless-stopped
+
+    api:
+        build: .
+        container_name: project_plan_agent_api
+        env_file: .env
+        environment:
+            DB_HOST: postgres
+            DB_PORT: 5432
+            MCP_SERVER_URL: http://mcp:8001
+        ports:
+            - "8010:8000"
+        volumes:
+            - .:/app
+        depends_on:
+            postgres:
+                condition: service_healthy
+            mcp:
+                condition: service_started
+        command: uvicorn apps.api:app --host 0.0.0.0 --port 8000 --reload
+        restart: unless-stopped
+
+    frontend:
+        build:
+            context: ./frontend
+            # NEXT_PUBLIC_API_BASE is inlined into the browser bundle at build time -
+            # it must be the URL the user's browser can reach (the host-mapped port),
+            # not the internal docker network service name the browser can't resolve.
+            args:
+                NEXT_PUBLIC_API_BASE: http://localhost:8010
+        container_name: project_plan_agent_frontend
+        ports:
+            - "3010:3000"
+        depends_on:
+            - api
+        restart: unless-stopped
+
+volumes:
+    pgdata:

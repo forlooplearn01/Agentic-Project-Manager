@@ -1,0 +1,72 @@
+Speaker 2
+right yeah oh and brian's on here good i didn't i didn't know like it was weird i didn't see brian i didn't see you on the invite but 
+Speaker 1
+i just yeah i just joined 
+Speaker 2
+bug yeah this is brian this is just around aria automation right um We have Ram from Broadcom. That's assistant, right? And kind of, he's going to give us the lay of the land. I know, I don't know when you jumped in, but he's kind of going to give us a lay of the land where we're at, what he has up to this point. And then we kind of go from there and how we can build it out and look to automate our build process better. Okay. 
+Speaker 6
+Let me share my screen and. Okay, so I have Windows that's like, you know, see basically what will happen is when user comes in, they will request a VM by click up a button. Okay, and we will go deploy Windows of Linux. So in this particular case, I have this design and I'm just going to do a deploy here. And I'm going to give a name. so it's going to be in the lab right now we are that's where we have access i'm going to select linux this is an application name that i need this is one of the things i need so when you create a vm what kind of applications you have and i can create that drop down for you guys and then um you're going to obviously select test dev or prod We'll say Dev here and always MX going to be Linux. We have VM size like a T-shirt size small. I'm going to select this is the only network I have. So you need to select which network goes on the disk size. You know, I have few options here and all these are. 
+Speaker 2
+Yeah, just interjection here. So it's VMware size. It looks like you have pre definitions of small, medium or large. 
+Speaker 6
+yeah I'll show you I'll show you yeah all those things can be changed I'll show you in a minute so and you hit deploy so this goes and does the deployment and while it is doing it it takes like few minutes so let's go through this so the first thing is there are projects okay so for each unit you can have a project in this particular case we have a lab we have a production environment so we can have one for prod one for development so a project is i would like to think that as where you consolidate all your resources your compute your storage and how your deployment behaves okay based on that you can have multiple projects okay and you don't have to worry about this one but I'll explain you but we'll create it for you but I just want to explain what project means in at a very high level so I'll just go through this so like for example when you select a project so this is the vCenter that's connected to and then in the vCenter which cluster you can select and then So we have like for example Linux lab, production lab, let's take Linux and you can define which cloud zone that's going to be lab like I mentioned and I'll talk about the tags little bit in a minute and then how you name a machine. So we are naming based on resource names right now but this is the question I have, how do you guys want to, how do you, uh, name a virtual machine so that you can customize all these things here. Um, and then, um, we go to like custom namings. 
+Speaker 2
+Could we take one step back? And I apologize. I should have said, no, no, please interrupt me whenever you have questions. Honestly, can Lisa or Brian, can we get into this appliance ourselves to poke around as well? You 
+Speaker 6
+should be able to, but if you like, Ryan is the person who is maintaining the access. 
+Speaker 2
+All right. So let me do this. Let me, I'm going to ping Ryan on the side, but I'm going to request, if it's not already granted, I'm going to request Lisa and the three of us access to this as well, right? Because I think it will be beneficial because you're showing us, but I want to, you know, in case Lisa or Ryan want to get their hands on it and do it with you. Yeah. I want to make sure they have the access. 
+Speaker 6
+Also, let me tell you, all those user ID passwords are with Ryan. um and also it's not integrated within your ada or single sign on when it is integrated you will be able to log in with your own accounts also based on the roles he's going to give you perfect so let me do this i'm going to ping ryan right now OK, thank you. 
+Speaker 2
+Sorry, sorry to interrupt. No, no problem. 
+Speaker 6
+So the couple of thing is, like you asked me, this medium large scale, so for example, small in this particular case. This is the Cloud Zone, which is your lab. And this is your CPU. And this is your RAM. And this is number of processor per core. These are the values that we just made up. So for example, large has 6 and 16. and you guys can define what it means by large or medium for you guys okay and we just want to put some example values and when it comes to image mapping so we have this linux that's getting all deployed right now and this is the template what we got and that's what we put it here you know um and that's the template you can add multiple templates here and you know and then define the network profile so right now all the VMs are going to this particular network and you know and it is integrated with an inflow box so it gets the IP from the inflow box and it does all those things in automation and like I told you the cloud accounts that we integrated with you know lab and the but we're using lab here okay and then the design itself so this is the blueprint okay and this is where the entire thing is designed like for example it has input values that I showed you and all the values all these things can be added like you know how you guys want and it comes to the network I mean I won't go through the code but you will get a documentation that that explains how this is done and you know so right now it's still building but I'm going to show you the one already built for example this windows is already built so if you go here user should be able to you know remote console to it and they should be able these are the functionalities that we have given to them and they should be able to you know log in here they don't need to go to the vCenter and they should remote console it and they can do lot more things based on what they are entitled to. Give me one second, I just closed my own window by accident. all right so like I was explaining once this is built you'll get an IP address from inflow box and you should be able to remote console and you know we are naming the windows but you know it will be based on the custom naming so first of all let me ask you this so how do you name your Linux environment, like when you create a VM, what procedure do you guys follow for custom naming? How do you name it? Like for example, Windows I have, the one Ryan gave me was based on the site and based on production or development and then the application name. 
+Speaker 7
+So we do, like pl for production linux dl for development linux uh tl for tests oh like tl like 
+Speaker 6
+that i already have it's okay let me let me make a note of it hang on one second um so 
+Speaker 3
+i made a quick note of it uh but i just want to make sure Yeah. 
+Speaker 4
+So you have PL for production? Yep. Okay. 
+Speaker 6
+And what else? 
+Speaker 7
+DL for development. Okay. And then test is TL. For test. For you. Okay. And then it would be the application name. close to it 
+Speaker 6
+so how many applications you have so how do you want that to be do you want user to enter the application name how many digits do you want to put it in it or do you want that to be a drop-down box 
+Speaker 7
+Kevin Bryan I mean there's a lot drop-down box might be a lot 
+Speaker 1
+yeah I would say have them type in and I would probably I don't know. I maybe want to see if they can cap it at, what, six characters? But we may have to go longer. Some of them definitely go a lot longer. Yeah, make it eight. 
+Speaker 4
+OK. 
+Speaker 6
+So eight. And then you have sight in the beginning, right? You also have sight, right? Do you? 
+Speaker 1
+Not yet, but we're going to get to there. We're going to be doing sight. At some point. 
+Speaker 6
+So in this case, it's going to be PL or PL, and then it's going to be application name, and then we have to add a digit to it. 
+Speaker 1
+Well, no. So you have the application name, then it's APP if it's for application, or it'll be a DB for if it's database. Thank you. And then the digit. 
+Speaker 4
+Okay. database if it is a database 
+Speaker 8
+yeah 
+Speaker 6
+and then uh i will put two digit two digits should be fine right 
+Speaker 1
+yes yeah definitely 
+Speaker 6
+so eight characters so it's going to be it's going to be a long vm name 
+Speaker 1
+thumb for mar like we We have what once a PL or PL Q L I K D I Q E W P 1. Now it doesn't have the app in it. Right. 
+Speaker 6
+I'm thinking, yeah, because if you have eight characters app and then PLDL is two, that is 10. and then 10 plus 2 is 12, 12 plus 2 is 14. Things should be fine. 
+Speaker 8
+Yeah. If flow box has a limit, we should check that. How much the flow box limit is? I am not sure. I will have to check it out. 
+Speaker 6
+Okay. We will check that out. I just want to make sure it is within that. So, okay. 
+Speaker 1
+And then once the VM is created, okay, um what what else you guys do like you know because the reason is um well we have to personalize it yeah right so give it a name ip address um currently we have to make sure the ssh keys are regenerated set up its mailing so it knows about its own host name for mail. That's in the 

@@ -1,0 +1,1270 @@
+STATEMENT OF WORK
+Project Name:
+Customer Name:
+
+vRA on-prem to Aria Cloud Automation Migration
+Oshkosh Corporation
+
+CDW Affiliate:
+
+CDW Direct, LLC
+
+Date:
+
+December 09, 2022
+
+Drafted By
+
+Paul Davila
+
+Seller Representative:
+Dirk McQuestion
++1 (262) 521-5670
+Dirk.McQuestion@cdw.com
+Solution Architect:
+Brian Carlson
+
+This statement of work (“Statement of Work” or “SOW”) is made and entered into on the last date that this SOW is fully
+executed as set forth below (“SOW Effective Date”) by and between the undersigned, CDW Direct, LLC (“Provider,” and
+“Seller,”) and Oshkosh Corporation (“Customer,” and “Client,”).
+This SOW shall be governed by that certain Master Services and Products Agreement between CDW Direct, LLC and
+Oshkosh Corporation dated the 1st of January, 2020 (the “Agreement”). If there is a conflict between this SOW and the
+Agreement, then the Agreement will control, except as expressly amended in this SOW by specific reference to the
+Agreement.
+
+PROJECT DESCRIPTION
+PROJECT SCOPE
+VREALIZE AUTOMATION 8.X MIGRATION
+Provider will assist with the development of the Customer's capability to do the following:
+•
+•
+•
+•
+•
+
+Automate workload provisioning
+Enable continuous integration and deployment
+Ensure consistency and compliance for the cloud management platform
+Onboard and provision tenant services
+Provide a self-service portal for IT users
+
+Provider will provide the following Consulting Services:
+•
+•
+•
+•
+•
+
+Design and implement VMware Aria Automation functional constructs for a multi-Cloud environment
+Get started with VMware Aria Automation for automated workload provisioning
+Get started with VMware Aria Automation for self-service catalogue and deployment model
+Upgrade the current server build automation for Windows 2019 and 2022 Servers to vRA (Aria)
+o Including - Dev, Test and Production in vRA (Aria)
+Leverage advanced automation for VMware Aria Automation post-deployment configuration
+
+Proprietary and Confidential
+SOW 76328
+
+Page 1
+
+CORP-11268 | CDW Direct, LLC
+
+The following are the high-level activities included in this project:
+•
+•
+•
+•
+
+Execute: Assessment - Assess the current environment and evaluate readiness for vRealize Automation
+Execute: Design - Solution design through a series of workshops and consultation.
+Execute: Implement - Deployment and verification of the solution.
+Execute: Knowledge Transfer - Knowledge transfer of the design, deployment, and operations procedures.
+
+This project requires the following VMware On-Premises, VMware SaaS and third-party products, with vendor-supported
+versions as agreed to by VMware and Customer at project kickoff, but limited to those that are in general availability (GA)
+on the date of SOW signing:
+•
+•
+
+VMware vSphere 7.x or higher
+VMware Aria Automation 8.8 or higher On-Premises (Also known as vRealize Automation)
+
+Note: all references to vRealize Automation in this document refer to the Aria Automation product
+
+SELLER RESPONSIBILITIES
+•
+•
+•
+•
+•
+•
+•
+
+Milestone 1: Initiate and Plan
+Milestone 2: vRealize Automation Assessment
+Milestone 3: Design and Implement VMware vRA (Aria)
+Milestone 4: Develop vRA (Aria) Automation (Workflow and Blueprints) for DEV / TEST / PROD
+Milestone 5: Validate vRA (Aria) Automation
+Milestone 6: Knowledge Transfer
+Project Close-out
+
+MILESTONE 1: INITIATE AND PLAN
+The Provider project manager (PM) hosts one (1) project initiation call with key Customer and Provider stakeholders. Topics
+to be discussed include the following:
+•
+•
+•
+•
+
+Project business drivers, scope, and objectives.
+Project deadlines, estimated timelines, scheduling, and logistics.
+Identification of key Customer team members with whom the Provider will work to perform the tasks defined in this
+SOW.
+Participating team members are confirmed, and contact details are exchanged to schedule the project kick-off
+meeting.
+
+Provider leads one (1) project kickoff meeting with Customer project sponsors and stakeholders to review expectations about
+the purpose of the engagement, the delivery approach, and estimated timelines. The following are the objectives of the
+meeting:
+•
+•
+•
+•
+•
+•
+
+Introducing the Provider team, roles, and responsibilities.
+Describing the project goals, phases, and key dates.
+Agreeing on communication and reporting process and creating a communications plan.
+Validating the project expectations and clarifying roles and responsibilities.
+Confirming prerequisites are met as detailed in the solution checklist for specified solutions.
+Presenting the solution overview for specified solutions including expected project results and deliverables.
+
+MILESTONE 2: VMWARE VREALIZE AUTOMATION DESIGN ASSESSMENT
+The Design vRealize Automation for use in a private cloud service provides a solution design for automated provisioning of
+infrastructure based on a VMware architecture design for VMware vRealize ® Automation™(.(vRA)
+Proprietary and Confidential
+SOW 76328
+
+Page 2
+
+CORP-11268 | CDW Direct, LLC
+
+Specification
+
+Parameters
+
+Description
+
+vRealize Automation Design
+Workshop
+
+Up to one (1)
+
+Design workshop to gather the requirements of the
+customer for the design of the vRealize Automation
+environment.
+
+vRealize Automation sites
+
+Up to one (1)
+
+Unique sites for which vRealize Automation is
+designed.
+
+Workflow and Blueprint
+assessment
+
+Review the current Workflows and Blueprints
+Determine integrations and dependency and any vRA
+configured Endpoints and 3rd party plugins
+
+Integration Assessment
+
+Review all integrations such as but not limited to:
+Infoblox
+ServiceNow
+Azure Cloud Authentication
+Terraform (on-prem) integrations
+Git-Hub Enterprise (on-prem) integrations
+Active Directory
+
+Windows VM Build and
+Deployment Process
+
+Review in detail all the requirements and
+dependencies currently in place to deploy Windows
+2019 and 2022 Server VMs.
+
+Current vRealize Automation
+(Aria) footprint
+
+Review and assess the current licensing and
+configuration state and current use of vRA. Ensure
+proper configuration and RBAC assess as required by
+the customer
+
+MILESTONE 3: DESIGN AND DEPLOY VMWARE ARIA AUTOMATION
+DEV / TEST / PROD
+The Design and Implement vRealize Automation for Workload Provisioning in a Multi-Cloud Architecture service provides
+a solution design for vRealize Automation constructs.
+Specification
+
+Cloud Assembly Constructs
+Design Workshop
+
+Parameters
+
+Description and Backlog items
+
+Up to one (1)
+
+Design workshop to gather the requirements of the Customer
+for the design of the vRealize Automation constructs.
+Review current customer server request form and process
+Review current PowerShell scripting
+Review current JSON file and Orchestrator integration
+Auto Naming procedures Naming standards
+Current IP Address Allocation
+DNS record creation
+Review the current entire automation process
+Design new methods and process to be leveraged in vRA
+Assembly (Aria)
+
+Cloud Assembly Environment
+Configuration
+
+Configuration of the designed Cloud Assembly constructs.
+
+Cloud Accounts
+
+Cloud accounts will be configured which provide permissions
+that work with cloud proxies and/or endpoints in Cloud
+Assembly that is used to communicate with and provision
+workloads to the connected environments.
+
+Proprietary and Confidential
+SOW 76328
+
+Up to three (3)
+
+Page 3
+
+CORP-11268 | CDW Direct, LLC
+
+Cloud Zones
+
+Up to three (3)
+
+Cloud zones will be configured to provide access to resources
+within your cloud account. Cloud zones are associated to a
+project.
+
+Flavor Mappings
+
+Up to three (3)
+
+Flavor mappings will be configured to provide sizing for
+provisioning workloads.
+
+Image Mappings
+
+Up to three (3)
+
+Image mappings will be configured, which provides specific
+OS specifications that will define the target deployment
+operating systems for a specific cloud account/region.
+
+Network Profiles
+
+Up to three (3)
+
+Network profiles will be configured to manage the networking
+for provisioned workloads.
+
+Storage Profiles
+
+Up to three (3)
+
+Storage profiles will be configured to manage the storage for
+provisioned workloads.
+
+Tags
+
+Up to three (3)
+
+Tags will be configured to drive the placement of deployments
+through matching of capabilities and constraints.
+
+Projects
+
+Up to three (3)
+
+Projects will be configured which controls who has access to
+vRealize Automation Cloud Assembly blueprints and where
+the blueprints are deployed.
+
+Blueprints
+
+Up to three (3)
+
+Blueprints will be configured for the provisioning of workloads
+and other components into the environment.
+
+Subscriptions and Actions
+
+Up to three (3)
+
+Creation of subscriptions for events, actions and workflows to
+respond to events that are defined by the Customer.
+
+Service Broker Policies
+
+Up to three (3)
+
+Service Broker policies will be configured to provide a set of
+rules or parameters that are applied to deployments
+
+DEPLOY VREALIZE AUTOMATION FOR A CLOUD AUTOMATION FOUNDATION
+The Deploy vRealize Automation for use in a private cloud service provides the deployment of a prescribed design to provide
+a highly available foundation for Infrastructure as a Service (IaaS) using vRealize Suite LifeCycle Manager.
+Specification
+vRealize Suite Installation
+
+Parameters
+
+Description
+
+Up to one (1)
+
+Deployment and configuration of vRealize Suite
+using the vRealize Easy Installer for the purpose of
+deploying vRealize LifeCycle Manager, VMware
+Identity Manager and vRealize Automation.
+
+Load Balancer
+
+Guidance on configuration of DNS CNAME records
+and Load Balancers for the virtual IP addresses of the
+following: VMware Identity Manager Clusters,
+vRealize Automation Appliances, and vRealize
+Orchestrator Clusters.
+
+vRealize Automation with
+Distributed High Availability
+installation using vRealize Easy
+Installer Manager
+
+Up to one (1)
+
+Deployment of a distributed installation of vRealize
+Automation using the vRealize Easy Installer, within
+a single data center to facilitate provisioning
+workloads.
+
+vRealize Automation Appliances
+
+Up to three (3)
+
+Using vRealize Suite LifeCycle Manager the
+vRealize Automation appliances will be installed and
+configured with embedded database replication.
+
+Proprietary and Confidential
+SOW 76328
+
+Page 4
+
+CORP-11268 | CDW Direct, LLC
+
+Up to two (2)
+
+Project configurations that provide access to deploy
+workloads to the clouds that the project is entitled to.
+
+Custom Forms
+
+Up to three (3)
+
+Customization of the imported Blueprint request
+form which will allow for the Customer to provide
+Custom Fields for users that are requesting to deploy
+the imported blueprints.
+
+Policies
+
+Up to two (2)
+
+Creation of policies which will allow the Customer to
+define the leasing duration and enforcement type on
+provisioned workloads.
+
+Projects
+
+MILESTONE 4: DEVELOP VRA (ARIA) AUTOMATION (WORKFBLUEPRINTS)
+DEV / TEST / PROD
+Develop vRealize Automation Cloud workflows and blueprints for DEV / TEST / PROD for a total of up to three
+configuration migrations for Dev, Test and Prod in total.
+Specification
+
+Parameters
+
+Description and Backlog items
+
+Development
+
+Single vCenter
+OU XXX deployment
+/WS2019
+/WS2022
+Development Integrations:
+InfoBlox
+ServiceNow
+Azure Government Cloud Integration (SSO and
+Deployment)
+Terraform
+vRealize Automation Terraform Provider
+Configuration / Remapping of existing Terraform
+Modules & Artifacts to vRA / Aria
+•
+Cloud Accounts
+•
+Cloud Zone
+•
+Projects
+•
+Image Mapping
+•
+Network Profiles
+Git-Hub Enterprise
+Active Directory
+
+Test
+
+Single vCenter
+OU XXX deployment
+/WS2019
+/WS2022
+TEST Integrations:
+InfoBlox
+ServiceNow
+Azure Government Cloud Integration (SSO and
+Deployment)
+Terraform
+vRealize Automation Terraform Provider
+Configuration / Remapping of existing Terraform
+Modules & Artifacts to vRA / Aria
+
+Proprietary and Confidential
+SOW 76328
+
+Page 5
+
+CORP-11268 | CDW Direct, LLC
+
+•
+Cloud Accounts
+•
+Cloud Zone
+•
+Projects
+•
+Image Mapping
+•
+Network Profiles
+Git-Hub Enterprise
+Active Directory
+
+Production
+
+OU for DEV / TEST / PROD
+/WS2019
+/WS2022
+Prod Integrations:
+InfoBlox
+ServiceNow
+Azure Government Cloud Integration (SSO and
+Deployment)
+Terraform
+vRealize Automation Terraform Provider
+Configuration / Remapping of existing Terraform
+Modules & Artifacts to vRA / Aria
+•
+Cloud Accounts
+•
+Cloud Zone
+•
+Projects
+•
+Image Mapping
+•
+Network Profiles
+Git-Hub Enterprise
+Active Directory
+
+Validation of Cloud Assembly
+Configuration
+
+Validation of the vRealize Automation environment.
+This activity will use the following actions for
+validation: Create, Deploy and Destroy Single
+Machine Blueprint.
+
+Up to three (3)
+
+Finalize Documentation
+
+Document the configuration of vRealize Automation.
+
+vRealize Automation
+Operational Activities
+
+Additional activities performed in conjunction with
+this service include the following:
+
+Service Catalog Management
+Workshop
+
+Workshop to provide guidance and enablement on
+how to manage the service catalog in the vRealize
+Automation environment.
+
+Up to one (1)
+
+Workshop to provide guidance and enablement on
+how to use Custom Forms, Actions and
+Subscriptions.
+
+Custom Forms, Actions, and
+Subscriptions Workshop
+
+Workshop to provide guidance and enablement on
+how to troubleshoot the vRealize Automation
+environment using events and logs.
+Troubleshooting Events and Log
+Management Workshop
+
+Proprietary and Confidential
+SOW 76328
+
+Up to one (1)
+
+Page 6
+
+CORP-11268 | CDW Direct, LLC
+
+MILESTONE 5: VALIDATE VRA (ARIA) AUTOMATION (WORKFLOWS AND
+DEV / TEST / PROD
+Validate and Test vRealize Automation Cloud workflows and blueprints for DEV / TEST / PROD for a total of up to three
+configuration validations for Dev, Test and Prod in total.
+Specification
+
+Parameters
+
+Description and Backlog items
+
+Development
+
+Single vCenter
+OU XXX deployment
+/WS2019
+/WS2022
+Development Integrations:
+InfoBlox
+ServiceNow
+Azure Government Cloud Integration (SSO and
+Deployment)
+Terraform
+vRealize Automation Terraform Provider
+Configuration / Remapping of existing Terraform
+Modules & Artifacts to vRA / Aria
+•
+Cloud Accounts
+•
+Cloud Zone
+•
+Projects
+•
+Image Mapping
+•
+Network Profiles
+Git-Hub Enterprise
+Active Directory
+
+Test
+
+Single vCenter
+OU XXX deployment
+/WS2019
+/WS2022
+Prod Integrations:
+InfoBlox
+ServiceNow
+Azure Government Cloud Integration (SSO and
+Deployment)
+Terraform
+vRealize Automation Terraform Provider
+Configuration / Remapping of existing Terraform
+Modules & Artifacts to vRA / Aria
+•
+Cloud Accounts
+•
+Cloud Zone
+•
+Projects
+•
+Image Mapping
+•
+Network Profiles
+Git-Hub Enterprise
+Active Directory
+
+Production
+
+Single vCenter
+
+Proprietary and Confidential
+SOW 76328
+
+Page 7
+
+CORP-11268 | CDW Direct, LLC
+
+OU for DEV / TEST / PROD
+/WS2019
+/WS2022
+Prod Integrations:
+InfoBlox
+ServiceNow
+Azure Government Cloud Integration (SSO and
+Deployment)
+Terraform
+vRealize Automation Terraform Provider
+Configuration / Remapping of existing Terraform
+Modules & Artifacts to vRA / Aria
+•
+Cloud Accounts
+•
+Cloud Zone
+•
+Projects
+•
+Image Mapping
+•
+Network Profiles
+Git-Hub Enterprise
+Active Directory
+
+MILESTONE 6: KNOWLEDGE TRANSFER
+The Seller provides the Customer the capability to design and deploy multitier applications on a multi-machine Cloud
+Template using VMware vRealize® Automation™ Software components and VMware vRealize® Orchestrator™ workflows in
+an automated way.
+Specification
+
+Parameters
+
+Description and Backlog items
+
+vRA (Aria) Platform overview
+
+Up to one (1)
+
+Workshop to provide knowledge of the vRA (Aria)
+Platform. Including based concepts and design
+considerations.
+
+Multi-Machine Cloud Template
+Review Workshop
+
+Up to one (1)
+
+Workshop to provide knowledge of what a Multimachine Cloud Template is. Describes custom
+properties, generic use cases, functionality, and
+capabilities.
+
+vRA Integration Workshop
+
+Up to one (1)
+
+Workshop to provide knowledge of how to add
+version integration to vRA (Aria) and leverage their
+capabilities
+InfoBlox
+ServiceNow
+Git-Hub
+Active Directory
+
+Proprietary and Confidential
+SOW 76328
+
+Page 8
+
+CORP-11268 | CDW Direct, LLC
+
+vRA (Aria) Workflow
+Workshop
+
+Up to one (1)
+
+Workshop to provide knowledge of how to leverage
+various workflow used to build, place, configure and
+destroy VMs in the Cloud
+
+AGENDA
+•
+
+•
+
+•
+
+•
+
+•
+
+•
+
+Milestone 1: Pre-Engagement conference call
+o Introduce key participants
+o Review agenda
+o Review logistics
+o Identification of key Customer team members with whom the Provider will work to perform the tasks
+defined in this SOW.
+o Identification of key Customer team members with whom the Provider will work to perform the tasks
+defined in this SOW.
+Milestone 2: vRealize Automation Assessment
+o Describing the project goals, phases, and key dates.
+o Agreeing on communication and reporting process and creating a communications plan.
+o Validating the project expectations and clarifying roles and responsibilities.
+o Confirming prerequisites are met as detailed in the solution checklist for specified solutions.
+o Presenting the solution overview for specified solutions including expected project results and deliverables
+Milestone 3: Design and Deploy vRealize Automation (vRA/Aria)
+o Review current on prem vRA Automation platform
+o Validate all endpoint and 3rd party tools, plugin, or scripts
+o Review the current vRA (Aria) Platform Licensing, Deployment, and scope
+o Design all new vRA (Aria) Workflows, Blueprints, and workflows
+o Design all third-party plugs and endpoints such as Service now
+o Ensure the vRA (Aria) is design with best practices and security in mind
+o Ensure any necessary integrations are include configured and tested
+Milestone 4: Develop vRealize Automation (Aria) Workflows and Blueprints (cloud templates)
+o Build out initial workflows
+o Build out initial blueprints, custom forms
+o Ensure any necessary integrations are completed, configured, and tested
+o Script modification or creations need to complete workflows and process
+o Run post deployment customization, Naming, OU placement as needed
+o Run test for deployment of Windows machines into test environment
+o Iterate as needed until process are completed
+Milestone 5: Validate vRealize Automation(vRA/Aria) Workflows and Blueprints (cloud templates)
+o Validate all Workflows and Blueprints
+o Run test for deployments and validate in test environment
+Milestone 6: Knowledge Transfer
+o knowledge transfer sessions covering the design, implementation, and operational considerations relating to
+the scope of this project
+o Conduct up to sixteen (16) hours of knowledge transfer sessions
+
+Proprietary and Confidential
+SOW 76328
+
+Page 9
+
+CORP-11268 | CDW Direct, LLC
+
+Note: For the avoidance of doubt, the Knowledge transfers herein do not comprise VMware product training or certification courses as offered by
+the VMware Education unit -(http://mylearn.vmware.com/mgrreg/index.cfm).
+
+CUSTOMER RESPONSIBILITIES
+1.
+2.
+3.
+4.
+
+5.
+
+6.
+
+7.
+
+8.
+
+Provide secure, remote access to Customer systems.
+Customer must maintain current support agreements with the product vendors for systems covered under this SOW
+Make appropriate system maintenance window(s) available for Provider as needed.
+Customer will support and provide representation at project review meetings at a mutually agreed upon time and
+location to discuss the project status, issues, new requirements and overall project satisfaction. These meetings may
+also cover performance status updates, schedule updates, pending changes, open issues, and action items.
+The Project Manager be involved in notifying all stakeholder of any changes the project as outlined in the SOW and
+represent all stakeholders in all matters related to this Service Proposal. the Project Manager will provide a single
+consolidated response to any review, approval, change, or decision request.
+Customer is responsible for the design and implementation of all infrastructure necessary to support the deployment
+of VMware vRealize including vSphere, physical infrastructure, migration of workloads to the new environments,
+requisite physical network architecture and implementation changes
+Customer will actively participate in this engagement, and individuals with relevant domain, business, and/or
+technical expertise will be available as required. These participants are the acknowledged spokespersons for the
+areas they represent, and the Provider team requires regular and timely access to them. If participants are unable to
+attend a scheduled meeting, then the Customer Project Manager becomes the final authority on all items of
+discussion.
+Customer will provide necessary resources to development all workflows, scripts and automated processes as
+outlined in this statement of work.
+
+ASSUMPTIONS
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+
+9.
+
+Seller is not responsible for modifications beyond the initial configuration engagement.
+Customer has a current VMware license.
+Customer has VMware Customer connect to access licensing for vRealize (Aria) Automation
+Customer has reviewed each vendor’s policy for operating system and application virtualization and is responsible
+for license compliance.
+Customer is available for working sessions to execute the vRA Migration
+Customer Environment is stable and will not be modified during the course of the project in a manner that would
+delay the project schedule.
+Project management and site readiness tasks will be performed
+Team member will be allowed access to leverage tools support remote assessment, design and deployment as needed
+Jump box, VPN or Virtual Desktop will be required for configuration (Zoom, WebEx, MS Teams is suitable only
+for training, workshops and discovery)
+The remediation will be implemented with an additional statement of work or change order and is not included in
+this project scope
+
+OUT OF SCOPE
+Tasks outside the statement of work include, but are not limited to:
+1.
+2.
+3.
+
+Installation and configuration of custom or third-party applications and operating systems on deployed virtual
+machines.
+Operating system administration including the operating system itself or any operating system features or
+components.
+Management of change to virtual machines, operating systems, custom or third-party applications, databases, and
+administration of general network changes within Customer control.
+
+Proprietary and Confidential
+SOW 76328
+
+Page 10
+
+CORP-11268 | CDW Direct, LLC
+
+4.
+
+Remediation work associated with any problems resulting from the content, completeness, accuracy, and
+consistency of any data, materials, or information supplied by Customer.
+5. Installation or configuration of VMware products not included in the scope of this document.
+6. Installation and configuration of third-party software or other technical services that are not applicable to VMware
+components.
+7. Configuration of VMware products used for the service other than those implemented for the mutually agreed to use
+cases.
+8. Customer solution training other than the defined knowledge transfer session.
+9. Resolving Physical Network Connectivity issues
+10. Remediation work and delays associated with any deficiencies or inaccuracies resulting from the content,
+completeness, accuracy, and consistency of any data, materials, or information supplied by the customer.
+Services not specified in this SOW are considered out of scope and will be addressed with a separate SOW or Change Order.
+
+ITEM(S) PROVIDED TO CUSTOMER
+Table 1 - Item(s) Provided to Customer
+
+Item
+
+Description
+
+Format
+
+Solution design document
+
+Documentation of Integration and Extensibility for the
+environment in addition to solution specifications
+
+PDF
+
+Development Workbook
+
+Validation Workbook for deployments
+
+xlsx
+
+CUSTOMER RESOURCE REQUIREMENTS
+Table 2 - Customer resource commitments assumed
+Role
+
+Description
+
+Participation
+
+Executive Sponsor
+
+Executive Sponsors of the initiative
+
+2%
+
+IT Management
+
+IT Management responsible for engagement ownership
+
+5%
+
+Application owners
+
+IT/Business owners of required applications associated with the
+applications may be needed to verify functionality
+
+5%
+
+Technical Expertise
+
+Cloud Architecture, Infrastructure, Application, Compute, Database,
+Telecommunications expertise associated with the project
+
+50%
+
+Project Management
+
+Project Management responsible for the engagement
+
+50%
+
+GENERAL RESPONSIBILITIES AND ASSUMPTIONS
+•
+•
+
+Customer is responsible for providing all access that is reasonably necessary to assist and accommodate Seller’s
+performance of the Services.
+Customer will provide in advance and in writing, and Seller will follow, all applicable Customer’s facility’s safety
+and security rules and procedures.
+
+Proprietary and Confidential
+SOW 76328
+
+Page 11
+
+CORP-11268 | CDW Direct, LLC
+
+•
+•
+
+Customer is responsible for security at all Customer-Designated Locations; Seller is not responsible for lost or stolen
+equipment, other than solely as a result of Seller’s gross negligence and willful misconduct.
+This SOW can be terminated by either party without cause upon at least fourteen (14) days’ advance written notice.
+
+CONTACT PERSONS
+Each Party will appoint a person to act as that Party’s point of contact (“Contact Person”) as the time for performance nears
+and will communicate that person’s name and information to the other Party’s Contact Person.
+Customer Contact Person is authorized to approve materials and Services provided by Seller, and Seller may rely on the
+decisions and approvals made by the Customer Contact Person (except that Seller understands that Customer may require a
+different person to sign any Change Orders amending this SOW). The Customer Contact Person will manage all
+communications with Seller, and when Services are performed at a Customer-Designated Location, the Customer Contact
+Person will be present or available. The Parties’ Contact Persons shall be authorized to approve changes in personnel and
+associated rates for Services under this SOW.
+
+CHANGE MANAGEMENT
+This SOW may be modified or amended only in a writing signed by both Customer and Seller, generally in the form provided
+by Seller (“Change Order”). Services not specified in this SOW are considered out of scope and will be addressed with a
+separate SOW or Change Order.
+In the event of a conflict between the terms and conditions set forth in a fully executed Change Order and those set forth in
+this SOW or a prior fully executed Change Order, the terms and conditions of the most recent fully executed Change Order
+shall prevail.
+
+PROJECT SCHEDULING
+Customer and Seller, who will jointly manage this project, will together develop timelines for an anticipated schedule
+(“Anticipated Schedule”) based on Seller’s project management methodology. Any dates, deadlines, timelines or schedules
+contained in the Anticipated Schedule, in this SOW or otherwise, are estimates only, and the Parties will not rely on them for
+purposes other than initial planning.
+The following scheduling scenarios that trigger delays and durations to extend beyond what's been planned may require a
+Change Order:
+•
+•
+
+•
+
+Site preparation, such as power, cabling, physical access, system access, hardware/software issues, etc. must be
+completed in a timely manner.
+Project tasks delegated to Customer PMs/Engineers/Techs/Management/Resources must be completed in a timely
+manner. For example, in the event a project 's prioritization is demoted, and Customer resources are reallocated
+causing the project's schedule to extend on account of experiencing interruptions to its momentum
+requiring complete stop(s) and start(s).
+External projects/dependencies that may have significant impact on the timeline, schedule and deliverables. It is
+Seller's assumption that every reasonable attempt will be made to mitigate such situations.
+
+Proprietary and Confidential
+SOW 76328
+
+Page 12
+
+CORP-11268 | CDW Direct, LLC
+
+TOTAL FEES
+The total fees due and payable under this SOW (“ Total Fees”) include both fees for Seller’s performance of work (“ Services
+Fees”) and any other related costs and fees specified in the Expenses section (“ Expenses”).
+Services Acceleration will provide funding in the amount of $25,000.00 (“ Funding”).
+The Funding will be applied to the Total Fees. Once the Funding has been exhausted, Seller’s invoice(s) will reflect the
+balance of any fees due. Customer will pay invoices containing amounts authorized by this SOW in accordance with the
+terms of the Agreement. Unless otherwise specified, taxes will be invoiced but are not included in any numbers or
+calculations provided herein. The pricing included in this SOW expires and will be of no force or effect unless it is signed by
+Customer and Seller within thirty (30) days from the Date list on the SOW, except as otherwise agreed by Seller. Any
+objections to an invoice must be communicated to the Seller Contact Person within fifteen (15) days after receipt of the
+invoice.
+
+SERVICES FEES
+Services Fees hereunder are FIXED FEES, meaning that the amount invoiced for the Services will be $115,200.00.
+The invoiced amount of Services Fees will equal the amount of fees applicable to each completed project milestone (see
+Table below).
+Table - Services Fees
+
+Milestone
+
+Percentage
+
+Fee
+
+Signature
+
+5%
+
+$5,760.00
+
+vRealize Automation Assessment
+
+15%
+
+$17,280.00
+
+Design and Implement VMware vRA Cloud (Aria)
+
+20%
+
+$23,040.00
+
+Develop vRA Cloud (Aria) Automation
+
+45%
+
+$51,840.00
+
+Validate vRA Cloud (Aria) Automation
+
+10%
+
+$11,520.00
+
+Knowledge Transfer
+
+5%
+
+$5,760.00
+
+100%
+
+$115,200.00
+
+Subtotal
+Less Services Acceleration funding
+
+($25,000.00)
+
+Totals
+
+$90,200.00
+
+Expenses
+All services under this SOW will be performed remotely; therefore, neither travel time nor direct expenses will be billed for
+this project.
+
+TRAVEL NOTICE
+Upon execution of this SOW, travel will be scheduled to occur no less than two (2) weeks after the date of Customer’s
+request for travel. Should Customer request that travel be expedited, Customer will be billed for any additional travel and
+expense costs that apply.
+
+CUSTOMER-DESIGNATED LOCATIONS
+Seller will provide Services benefiting the locations specified on the attached Exhibit (“Customer-Designated Locations”).
+
+Proprietary and Confidential
+SOW 76328
+
+Page 13
+
+CORP-11268 | CDW Direct, LLC
+
+Proprietary and Confidential
+SOW 76328
+
+Page 14
+
+CORP-11268 | CDW Direct, LLC
+
+SIGNATURES
+In acknowledgement that the parties below have read and understood this Statement of Work and agree to be bound by it,
+each party has caused this Statement of Work to be signed and transferred by its respective authorized representative.
+This SOW and any Change Order may be signed in separate counterparts, each of which shall be deemed an original and all
+of which together will be deemed to be one original. Electronic signatures on this SOW or on any Change Order (or copies of
+signatures sent via electronic means) are the equivalent of handwritten signatures.
+CDW Direct, LLC
+
+Oshkosh Corporation
+
+By:
+
+{{Sig_es_:signer3:signature}}
+
+By:
+
+{{Sig_es_:signer1:signature}}
+
+Name:
+
+Matt Varin
+
+Name:
+
+{{Sig_es_:signer1:full_name}}
+Grant
+Karas
+
+Title:
+
+Field Sales Manager
+
+Title:
+
+{{Ttl1_es_:signer1:title}}
+Category
+Strategy Manager
+
+Date:
+
+{{Dte_es_:signer3:date}}
+12/27/2022
+
+Date:
+
+{{Dte_es_:signer1:date}}
+December
+22, 2022
+
+Mailing Address:
+
+Mailing Address:
+
+200 N. Milwaukee Ave.
+
+PO BOX 2566, ATTN:SONDRA PHI
+
+Vernon Hills, IL 60061
+
+OSHKOSH, WI 54903-2566
+
+Proprietary and Confidential
+
+Page 15
+
+SOW 76328
+
+CORP-11268 | CDW Direct, LLC
+
+EXHIBIT A
+CUSTOMER-DESIGNATED LOCATIONS
+Seller will provide Services benefiting the following locations (“Customer-Designated Locations”).
+Location(s)
+
+Address
+
+HQ
+
+1917 Four Wheel Dr, Oshkosh, WI 54902
+
+Proprietary and Confidential
+SOW 76328
+
+Page 16
+
+CORP-11268 | CDW Direct, LLC
+
+EXHIBIT B
+SERVICE CHECKLIST
+Customer is responsible for executing all items discussed in the Service Checklist prior to arrival of VMware consultants on
+site.
+
+RECOMMENDED PROJECT TEAM
+The participation of the following Customer stakeholders is required for the Service to be performed:
+•
+•
+•
+•
+•
+•
+•
+•
+•
+
+Cloud Architect
+Cloud Service Architect
+Infrastructure Architect
+VMware operations team leads
+Cloud Engineering Manager
+Cloud Operations Manager
+Entire VMware operations team
+Server provisioning team leads
+Cloud Service Manager
+
+•
+•
+•
+•
+•
+•
+•
+•
+•
+
+Application operations leads
+Enterprise Architect
+Active Directory architects
+Network Architecture team leads
+Director IT
+IT Analyst
+IT Director
+Director IT Operations
+Service Administrator
+
+PREREQUISITES
+The following prerequisites are required to enable VMware to perform this Service:
+Adopt vRealize Automation by using Multi-Machine Blueprints
+• vRealize Automation version. Defined minimum: 8.4
+Adopt vRealize Automation by Developing a Service Catalog
+• vRealize Automation version. Defined minimum: SaaS
+• Public cloud subscription required.
+Adopt vRealize Automation by Automating Manual Workflows
+• vRealize Automation version. Defined minimum: 8.2
+• vRealize Orchestrator version. Defined minimum: 8.2
+Consume Continuous Integration and Continuous Deployment for vRealize Automation Content
+• vRealize Automation version. Defined minimum: 8.x
+• vRealize Orchestrator version. Defined minimum: 8.x
+Consume vRealize Automation Cloud for Workload Provisioning in a Multi-Cloud Architecture
+• Public cloud subscription required.
+Integrate CI-CD Pipeline With vRealize Network Insight for Desired State Management
+•
+
+vRealize Network Insight or Network Insight deployed or planned for deployment and configuration. Defined
+minimum: vRealize Network Insight must be in a deployed and usable state.
+Adopt vRealize Automation by using Custom Forms
+• vRealize Automation version. Defined minimum: SaaS
+• Public cloud subscription required.
+Consume Automation for Automated Post-Deployment Configuration of vRealize Automation
+•
+
+Security policies, including traffic flow control, access control, application and data classification policy
+documents to be provided to VMware during requirement assessment sessions.
+
+Proprietary and Confidential
+SOW 76328
+
+Page 17
+
+CORP-11268 | CDW Direct, LLC
+
+

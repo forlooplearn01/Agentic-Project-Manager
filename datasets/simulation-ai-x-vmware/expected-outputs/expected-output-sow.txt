@@ -1,0 +1,153 @@
+INTENT:
+task_planning
+
+TASK COUNT:
+11
+
+TASKS:
+
+1. Build Data Source Integration Module
+   Owner: Jordan Mills
+   Deadline: April 14, 2026
+   Priority: high
+   Subtasks:
+   - Design data source selection interface (CSV vs. API)
+   - Implement CSV file listing from configured folder
+   - Implement CSV file upload and validation
+   - Implement CSV parsing into DataFrame with schema checks
+   - Implement VMware Aria Operations API authentication (username/password → VMwareOpsToken)
+   - Implement Stat Key API query for cluster metrics
+   - Implement token expiry and re-authentication handling
+   - Implement error handling for auth failures, connectivity errors, malformed CSV, empty datasets
+   - Write unit tests for all components
+
+2. Build AI Agent and Graph Generation Module
+   Owner: Jordan Mills
+   Deadline: April 28, 2026
+   Priority: high
+   Subtasks:
+   - Design and integrate AI agent for natural language graph requests
+   - Implement dataset selection logic (column and row relevance)
+   - Implement graph generation for five types: line, bar, scatter, heatmap, pie
+   - Implement multi-graph generation in a single session
+   - Implement graph storage as timestamped PNG files in output directory
+   - Support multi-cluster data combination in a single graph
+   - Write unit tests for all components
+
+3. Build VMware Aria Operations API Integration
+   Owner: Priya Nair
+   Deadline: April 21, 2026
+   Priority: high
+   Subtasks:
+   - Provide API credentials and endpoint documentation to Jordan
+   - Validate API authentication flow in dev environment
+   - Provide stat key reference document with descriptions and units
+   - Validate Stat Key API response structure and data quality
+
+4. Build Multi-cluster Data Aggregation Support
+   Owner: Jordan Mills, Priya Nair
+   Deadline: April 28, 2026
+   Priority: high
+   Subtasks:
+   - Implement cluster discovery via resources endpoint
+   - Implement sequential multi-cluster Stat Key queries
+   - Implement timestamp alignment across cluster datasets
+   - Implement unit consistency checks across cluster datasets
+   - Implement missing stat key handling with user notification
+   - Implement DataFrame merge for cross-cluster analysis
+   - Write unit tests for merge and aggregation logic
+
+5. Build Report Generation Module
+   Owner: Jordan Mills
+   Deadline: May 5, 2026
+   Priority: high
+   Subtasks:
+   - Implement report title input prompt
+   - Implement AI-generated executive summary narrative grounded in computed statistics
+   - Implement PDF compilation with cover page, table of contents, graph sections, and methodology section
+   - Implement data summary tables per graph (peak, average, min, std dev)
+   - Implement timestamped PDF filename and output directory storage
+   - Implement report index JSON file updated after each report generation
+   - Write unit tests for all components
+
+6. Deliver Integration Testing Report
+   Owner: Marcus Webb
+   Deadline: May 12, 2026
+   Priority: medium
+   Subtasks:
+   - Define integration test scenarios covering all modules end-to-end
+   - Execute all test scenarios against the full integrated pipeline
+   - Document pass/fail outcomes and defect details
+   - Confirm all defects are resolved before report submission
+   - Deliver Integration Testing Report (Deliverable 4.6)
+
+7. Deliver User Acceptance Testing (UAT) Report
+   Owner: Marcus Webb, Priya Nair
+   Deadline: May 12, 2026
+   Priority: medium
+   Subtasks:
+   - Identify and brief UAT participants from NovaTech
+   - Prepare UAT test scenarios and feedback form
+   - Conduct UAT with NovaTech infrastructure team
+   - Collect and consolidate UAT feedback
+   - Document UAT outcomes and any defects found
+   - Deliver UAT Report (Deliverable 4.7)
+
+8. Execute Production Deployment and Smoke Test
+   Owner: Jordan Mills, Priya Nair
+   Deadline: May 19, 2026
+   Priority: high
+   Subtasks:
+   - Provision production environment access for Jordan
+   - Configure environment variables, API credentials, and output directory on production server
+   - Verify proxy configuration for outbound OpenAI API calls
+   - Deploy application and install all dependencies
+   - Execute smoke test for CSV data source workflow
+   - Execute smoke test for live API data source workflow
+   - Execute smoke test for end-to-end report generation
+   - Deliver Production Deployment and Smoke Test Results (Deliverable 4.8)
+
+9. Deliver Deployment Runbook
+   Owner: Jordan Mills
+   Deadline: May 19, 2026
+   Priority: medium
+   Subtasks:
+   - Document prerequisites (Python version, dependencies, environment variables)
+   - Document deployment steps including directory permissions and proxy configuration
+   - Document API credential configuration steps
+   - Document health check and smoke test verification steps
+   - Document rollback procedure
+   - Obtain review and approval from Priya Nair
+   - Deliver Deployment Runbook (Deliverable 4.9)
+
+10. Deliver User Guide and Technical Reference Document
+    Owner: Marcus Webb
+    Deadline: May 26, 2026
+    Priority: medium
+    Subtasks:
+    - Write data source selection workflow section with screenshots
+    - Write graph generation workflow section
+    - Write report generation workflow section
+    - Write troubleshooting section covering common error scenarios
+    - Write technical reference covering API integration design and AI agent architecture
+    - Write output directory structure documentation
+    - Deliver User Guide and Technical Reference Document (Deliverable 4.10)
+
+11. Conduct Knowledge Transfer Session
+    Owner: Sarah Okonkwo
+    Deadline: May 26, 2026
+    Priority: low
+    Subtasks:
+    - Schedule session with NovaTech stakeholders (Priya Nair, Rajan Verma, Lisa Chen, Ben Okeke)
+    - Prepare architecture overview and system diagram
+    - Prepare live demonstration of end-to-end pipeline on production data
+    - Deliver 90-minute knowledge transfer session
+    - Complete Knowledge Transfer Session (Deliverable 4.11)
+
+
+EVENTS:
+Total: 11
+Type: new_task (all)
+
+STATUS:
+completed

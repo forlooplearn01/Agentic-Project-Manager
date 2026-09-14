@@ -1,0 +1,235 @@
+Statement of Work
+
+WebSphere Application Server Installation
+
+Statement of Work
+WebSphere Application Server Installation
+Prepared for U. S. Tire & Exhaust
+Version 3.0
+October 5, 2007
+
+Description of Services
+U. S. Tire & Exhaust (USTE) has requested assistance in the installation and configuration of
+WebSphere Application Server 6.1 onto two Red Hat Linux Enterprise 5.0 servers. These
+applications will be used by USTE to interface with a solution provided by Neumonics.
+Berbee will install and configure RHLE and WebSphere Application Server 6.1 on these servers.
+Berbee will ensure working instances of WebSphere Application server via the use of IBM’s
+Sample Applications.
+After these application servers have been installed, Berbee will work with the USTE and
+Neumonics team to tune the environment for best performance.
+The high level tasks to be performed by Berbee include:
+1. Install Redhat Linux 5.0 on each server.
+2. Install WAS 6.1 on each Redhat Linux server.
+3. Apply fixpack(s) to WAS 6.1 on each Redhat Linux server.
+4. Install Apache or IBM HTTP Server on each Redhat Linux server.
+5. Apply fixpack(s) to IBM HTTP Server, if installed, on each Redhat Linux server.
+6. Configure plug-in in HTTP servers to forward requests to WAS servers.
+7. Assist with tuning of Websphere Application Server software.
+
+Assumptions
+This Statement of Work and the project parameters it contains are based on the following
+assumptions. If an assumption is incomplete, incorrect, or becomes incorrect, Berbee may
+
+1
+
+September 28, 2007
+
+Statement of Work
+
+Prepared for U. S. Tire & Exhaust
+
+change the project parameters including scope, cost, or schedule, of the work defined herein.
+The change management procedure described in this document will be used to manage
+modifications.
+ Client will provide adequate, co-located workspace for the engagement participants (both
+Berbee and Client resources) with the appropriate system level access. Berbee
+recommends keeping participants separate from daily operations and support teams.
+ Client will build all hardware, rack, network and install the requisite operating system and
+other base software (non-WAS-specific software, such as anti-virus, monitoring tools, or
+other parts of client’s standard server build).
+ Client will implement OS-level load balancing between the servers. Berbee will not
+implement load balancing through Websphere Application Server.
+ Client will install and configure 3rd party applications on the Websphere Application
+Servers.
+ Client IT resources committed to the engagement will be committed to the degree
+necessary to complete the work.
+ Full solution design and requirements for interfacing with the Neumonics systems,
+including overall security for the architecture and system response time, is the
+responsibility of USTE.
+ Client is responsible for all software licensing.
+ (Berbee internal use: this SOW applies to the recent system upgrade BVM, as additional
+CPW was needed for this transaction to complete).
+Changes to these assumptions may impact the overall timeline, deliverables, or costs.
+
+Professional Services Time and Investment
+In developing this Statement of Work, Berbee has estimated the number of hours as 31 which
+would result in our fee being approximately $4,650. This estimate does not include the travel
+expenses described below. This estimate does not represent a fixed fee, nor is it intended to limit
+the number of hours U. S. Tire & Exhaust would like us to perform. Hours we work will be
+billed at the following rates:
+TABLE 1. PROJECT RATES
+ROLE
+
+HOURLY
+RATE
+
+Senior IBM SW Engineer
+
+$150
+
+The engagement will be billed as follows:
+
+2
+
+September 28, 2007
+
+Statement of Work
+
+Prepared for U. S. Tire & Exhaust
+
+•
+
+Services performed onsite at the Client’s office or location will be billed hourly with a
+four hour minimum per day. Onsite services requiring more than two hours travel time
+will be billed hourly with an eight hour minimum. Travel time between Berbee’s office
+and Client’s office shall be at 50% of the rates stated above.
+
+•
+
+Offsite services performed from Berbee’s office or remotely (not at Client’s location)
+will be billed hourly with a one hour minimum.
+
+•
+
+All services are billed in hour increments
+
+•
+
+Services delivered in conjunction with this Statement of Work are to be performed
+weekdays between the hours 8:00 a.m. and 6:00 p.m.
+
+Upon notice to U. S. Tire & Exhaust, Berbee may adjust its hourly rates, provided, however that
+such rates shall remain fixed for at least six months from the date of this Statement of Work or
+any subsequent adjustment date.
+Only the services outlined in this Statement of Work are considered deliverables as a part of this
+project. Berbee would be pleased to address any additional services not included in this
+Statement of Work under a separate cover, including a separate estimate.
+
+Travel and Expenses
+Travel time between Berbee’s office and U. S. Tire & Exhaust’s office (outside of Appleton
+Metro) will be billed at fifty percent (50%) of the rates listed in “Table 1. Project Rates.” Berbee
+will make efforts to schedule appropriate staff from local offices when possible. When U. S. Tire
+& Exhaust’s requirements concerning the schedule or specialized project skills do not allow for
+local staff to be assigned to U. S. Tire & Exhaust’s project, Berbee may assign work to staff from
+other Berbee offices. These travel expenses will be directly billed to U. S. Tire & Exhaust.
+U. S. Tire & Exhaust shall also reimburse Berbee for all reasonable, direct costs incurred by
+Berbee in providing services. Upon U. S. Tire & Exhaust’s request, Berbee will provide U. S.
+Tire & Exhaust with itemization and documentation, for expenses over $25, concerning such
+direct costs.
+Examples of expenses that may be incurred during a Berbee engagement include but may not be
+limited to:
+ Airfare
+ Lodging
+ Mileage
+ Meals
+ Tolls
+
+3
+
+September 28, 2007
+
+Statement of Work
+
+Prepared for U. S. Tire & Exhaust
+
+ Parking
+
+Work Locations
+As part of U. S. Tire & Exhaust’s project, Berbee will be completing work for the following
+locations:
+ Combined Locks, WI
+
+Payment Terms
+Berbee will issue its invoices for consulting fees on a periodic basis but not more frequently than
+monthly. U. S. Tire & Exhaust shall pay such invoices within 30 days of receipt. Any objections
+by U. S. Tire & Exhaust to an invoice must be made to Berbee within 15 days after the date of
+the invoice.
+
+4
+
+September 28, 2007
+
+Statement of Work
+
+Prepared for U. S. Tire & Exhaust
+
+Signatures
+The terms and conditions of sales and services for which Berbee, an affiliate of CDW, is or
+might become engaged are limited to those contained in the “Terms & Conditions” link at
+www.CDW.com; however, such web terms provide that if there is a separate, signed agreement,
+that separate agreement will govern instead. This document (which includes its appendices,
+exhibits and other attachments), as it exists now and as it may be amended in the future, is
+governed by any such separate agreement (if and for so long as such separate agreement is valid
+and binding) or those web terms, and references therein to a Statement of Work or a Work
+Order apply to this document. This document is the proprietary and confidential information of
+Berbee and is effective as of ___________, 20___ (or, if left blank, on the date that this
+document is signed by the last of the parties below to do so).
+In acknowledgement that the parties below have read and understood each and every provision
+of this document and agree to be bound hereby, each party has caused this document to be
+signed and delivered by its respective authorized representative.
+BERBEE INFORMATION NETWORKS
+CORPORATION
+
+U. S. Tire & Exhaust (print full legal name)
+
+By:
+
+By:
+
+_______________________________
+
+_______________________________
+
+Name: _______________________________
+
+Name: _______________________________
+
+Title:
+
+_______________________________
+
+Title:
+
+_______________________________
+
+Date:
+
+_______________________________
+
+Date:
+
+_______________________________
+
+Mailing Address: 5520 Research Park Drive
+
+Mailing Address:________________________
+
+Madison, WI 53711
+
+_____________________________________
+_____________________________________
+Customer Billing Contact:
+
+Internal Use
+
+Activity _________________
+
+ATTN: _______________________________
+Address:______________________________
+_____________________________________
+
+5
+
+September 28, 2007
+
+

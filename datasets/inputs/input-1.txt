@@ -1,0 +1,51 @@
+Team Weekly Sync - Product & Engineering
+
+Alright everyone, let’s get started. Today’s agenda includes reviewing the current sprint progress, discussing blockers, and aligning on upcoming deliverables for the client onboarding project.
+
+First, let’s go over the updates from last week. Overall, good progress across teams. The frontend team has completed most of the UI components for the dashboard, and backend APIs are partially ready. There are still some integration issues that we need to resolve.
+
+John mentioned that he is currently working on the API integration for the payments module. However, he said that the work is currently blocked because the credentials from the third-party vendor have not been received yet. We need to follow up on that.
+
+Priya, can you please reach out to the vendor and get the API credentials by tomorrow EOD? This is becoming a bottleneck for the integration work.
+
+Moving on, the client proposal for Phase 2 needs to be finalized soon. Last time we discussed that it was still in draft. We should aim to complete that this week.
+
+Rahul, please prepare the final version of the client proposal and share it with the team by Friday.
+
+Also, once the proposal is ready, we will need to send it to the client for approval. Let’s make sure we don’t delay that step.
+
+On the testing side, the QA team has started writing test cases for the dashboard features. However, actual testing cannot begin until deployment is completed.
+
+So testing is dependent on deployment. Deployment should ideally happen before we start QA execution.
+
+Anita mentioned that she can take care of coordinating the deployment.
+
+Anita, please schedule the deployment and ensure it is completed by Thursday.
+
+Once deployment is done, QA team can begin testing immediately.
+
+Also, just a reminder, we need to improve documentation for the onboarding process. This has been pending for a while, and it would help new team members ramp up faster.
+
+We’ll discuss ownership for that in the next meeting.
+
+Coming to the analytics module, we had earlier assigned this to Karan. Karan mentioned that he is still in progress and expects to complete it by next Monday.
+
+Let’s keep track of that and ensure it doesn’t slip further.
+
+There was also a discussion about improving performance of the dashboard. Some queries are taking longer than expected, and we might need to optimize them.
+
+We’ll take this as a follow-up item and discuss detailed solutions in the next tech meeting.
+
+Before we wrap up, any other blockers?
+
+Yes, one more thing - the staging environment is currently unstable, and it is affecting testing efforts.
+
+We need to fix the staging environment issues as soon as possible.
+
+Can someone take ownership of stabilizing the staging environment?
+
+Okay, Arjun, thanks for taking that up.
+
+Arjun, please resolve the staging environment issues by Wednesday so that QA can proceed smoothly.
+
+Alright, that’s all for today. Let’s stay on track with these action items and reconnect in the next sync.

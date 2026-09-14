@@ -1,0 +1,140 @@
+--- NEW TASKS (SHOULD BE EXTRACTED + DECOMPOSED) ---
+
+1.
+task: Replace QuantumEdge OpenAI API key with NovaTech's own OpenAI API key in production .env file and verify with a test run
+owner: Priya Nair
+deadline: May 20, 2026
+status: null
+blocker: null
+dependency: null
+
+2.
+task: Transfer QuantumEdge GitHub repository to NovaTech-Solutions GitHub organization
+owner: Jordan Mills
+deadline: May 20, 2026
+status: null
+blocker: null
+dependency: NovaTech GitHub org handle received from Priya
+
+3.
+task: Flag output directory and report index JSON for inclusion in nightly backup schedule to Ben Okeke
+owner: Priya Nair
+deadline: May 21, 2026
+status: null
+blocker: null
+dependency: null
+
+4.
+task: Submit Milestone 4 invoice to NovaTech accounts payable (finance@novatech.com)
+owner: Sarah Okonkwo
+deadline: May 20, 2026
+status: null
+blocker: null
+dependency: null
+
+5.
+task: Send formal project closure email to all stakeholders confirming all eleven deliverables complete
+owner: Sarah Okonkwo
+deadline: May 20, 2026
+status: null
+blocker: null
+dependency: null
+
+6.
+task: Complete and deliver technical reference document including AI agent architecture section
+owner: Marcus Webb
+deadline: May 20, 2026
+status: null
+blocker: null
+dependency: null
+
+
+--- UPDATE EVENTS (SHOULD NOT BE DECOMPOSED) ---
+
+1.
+event_type: status_change
+task: Push dataset cache key fix
+owner: Jordan Mills
+status: completed
+note: Fixed and deployed May 13
+
+2.
+event_type: status_change
+task: Update UAT report to full pass after regression
+owner: Marcus Webb
+status: completed
+note: Updated May 13 EOD; Deliverable 4.7 complete
+
+3.
+event_type: status_change
+task: Write up smoke test results document
+owner: Jordan Mills
+status: completed
+note: Submitted May 13; Deliverable 4.8 complete
+
+4.
+event_type: status_change
+task: Review and approve deployment runbook
+owner: Priya Nair
+status: completed
+note: Approved May 17; Deliverable 4.9 complete
+
+5.
+event_type: status_change
+task: Add file locking for report index JSON
+owner: Jordan Mills
+status: completed
+note: Implemented May 15; concurrent access test passes
+
+6.
+event_type: status_change
+task: Finalize user guide with CLI screenshots and deliver
+owner: Marcus Webb
+status: completed
+note: Delivered May 18; Deliverable 4.10 (user guide portion) complete
+
+7.
+event_type: status_change
+task: Conduct requirements audit
+owner: Marcus Webb
+status: completed
+note: All 27 requirements implemented and tested; all 11 SOW acceptance criteria met
+
+8.
+event_type: status_change
+task: Schedule knowledge transfer session and send invites
+owner: Sarah Okonkwo
+status: completed
+note: Session confirmed May 21 at 10 AM CST with Priya, Rajan, Lisa, Ben Okeke
+
+
+--- SHOULD NOT BE PICKED (IGNORE) ---
+
+- Deliverable status readout (formal checklist, not new tasks):
+  "Deliverable 4.1 through 4.11" status summary read by Sarah
+  (These are confirmations of completed work, not new assignments)
+
+- Lessons learned discussion (retrospective content, no action items):
+  Sarah's reflection on weekly cadence working well
+  Jordan's reflection on Thursday working session being valuable
+  Priya's reflection on stat key document timing
+  Marcus's reflection on multi-graph test coverage gap
+
+- Knowledge transfer session content details (informational):
+  Jordan's demo plan (two end-to-end runs)
+  Marcus's plan to highlight Common Use Cases section
+  Rajan's specific heatmap query (VM CPU utilization heatmap on cluster-gamma)
+
+- Minor SOW interpretation gap (acknowledged as acceptable, no task needed):
+  "Executive summary narrative length not explicitly constrained"
+  (Documented in audit as acceptable interpretation - no code change required)
+
+- Closing remarks and thank-yous:
+  "Eight weeks and I'm proud of what this team has built"
+  "This kind of collaboration is rare"
+  General goodbyes and appreciation
+
+- Payment terms context:
+  "Payment is due within fifteen business days"
+  "Any objections must be communicated within fifteen business days"
+  (These are contract terms, not tasks)

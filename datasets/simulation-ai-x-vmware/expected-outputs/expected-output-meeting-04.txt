@@ -1,0 +1,127 @@
+--- NEW TASKS (SHOULD BE EXTRACTED + DECOMPOSED) ---
+
+1.
+task: Complete heatmap graph type implementation and send screenshot to team
+owner: Jordan Mills
+deadline: April 24, 2026
+status: null
+blocker: null
+dependency: null
+
+2.
+task: Test multi-graph count enforcement and confirm five-graph cap works correctly
+owner: Jordan Mills
+deadline: April 28, 2026
+status: null
+blocker: null
+dependency: null
+
+3.
+task: Test LLM graph spec quality with and without sample rows and report findings
+owner: Jordan Mills
+deadline: April 25, 2026
+status: null
+blocker: null
+dependency: null
+
+4.
+task: Respond to IT security team acknowledging data privacy concern is being addressed
+owner: Priya Nair
+deadline: April 23, 2026
+status: null
+blocker: null
+dependency: null
+
+5.
+task: Add structural element assertions to integration test plan
+owner: Marcus Webb
+deadline: April 25, 2026
+status: null
+blocker: null
+dependency: null
+
+6.
+task: Share integration test plan draft for team review
+owner: Marcus Webb
+deadline: April 25, 2026
+status: null
+blocker: null
+dependency: null
+
+7.
+task: Review integration test plan
+owner: Jordan Mills, Priya Nair
+deadline: April 29, 2026
+status: null
+blocker: null
+dependency: Integration test plan draft shared by Marcus
+
+8.
+task: Complete AI agent implementation and all five graph types
+owner: Jordan Mills
+deadline: April 28, 2026
+status: null
+blocker: null
+dependency: null
+
+
+--- UPDATE EVENTS (SHOULD NOT BE DECOMPOSED) ---
+
+1.
+event_type: status_change
+task: Push three minor CSV module fixes
+owner: Jordan Mills
+status: completed
+
+2.
+event_type: status_change
+task: Run real-data validation of multi-cluster merge output
+owner: Priya Nair
+status: completed
+note: Validated on April 21 using actual data from dev-cluster-alpha and dev-cluster-beta
+
+3.
+event_type: status_change
+task: Complete AI agent implementation and all five graph types
+owner: Jordan Mills
+status: in_progress
+note: Four of five graph types complete; heatmap implementation in progress
+
+4.
+event_type: blocker
+task: Test LLM graph spec quality without sample rows
+status: blocked
+reason: IT security concern about sending dataset samples (including VM names) to OpenAI API - needs resolution before finalizing context approach
+
+5.
+event_type: status_change
+task: Update requirements log with all items from Week 3 discussion
+owner: Marcus Webb
+status: completed
+
+
+--- SHOULD NOT BE PICKED (IGNORE) ---
+
+- Details of the Thursday working session outcomes (informational context):
+  Three timestamp alignment issues Priya identified (these are resolved, context for completed task)
+  Specifics of resampling fix, unit consistency check, missing stat key handling
+  Priya's real-data validation results
+
+- AI agent implementation details (design decisions captured in code):
+  LangChain ReAct agent design and system prompt structure
+  generate_graph_spec and request_clarification tool descriptions
+  Two-round clarification cap (already added as requirement by Marcus)
+  Graph spec JSON schema fields
+
+- Data privacy discussion details:
+  Options 1/2/3 for handling OpenAI data privacy concern (informational)
+  The actual fix decision (captured as task #3 - test without sample rows)
+
+- Graph rendering technical details:
+  NovaTech color palette applied to charts
+  Heatmap y-axis label issue for >50 rows (part of heatmap task)
+  Cluster-vs-time heatmap orientation design decision
+
+- General status confirmations and back-and-forth:
+  "That's really satisfying" - emotional reaction, not a task
+  Priya sharing mock graph screenshots with colleagues

@@ -1,0 +1,173 @@
+AI-X-VMware Project
+Meeting 2: Week 2 Check-in - CSV Module Design Review & API Prep
+Date: April 8, 2026
+Time: 10:00 AM - 11:30 AM CST
+Location: Zoom (Meeting ID: 892-341-5567)
+Attendees:
+  - Sarah Okonkwo (Project Manager, QuantumEdge AI Consulting)
+  - Jordan Mills (AI Engineer, QuantumEdge AI Consulting)
+  - Marcus Webb (Business Analyst, QuantumEdge AI Consulting)
+  - Priya Nair (VMware Engineer, NovaTech Solutions)
+
+Recorder: Marcus Webb
+Next Meeting: April 15, 2026, 10:00 AM CST
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[TRANSCRIPT BEGINS]
+
+Sarah Okonkwo: Good morning everyone. Let's get started. Marcus, you're on notes again?
+
+Marcus Webb: Yes, already recording.
+
+Sarah Okonkwo: Perfect. So Week 1 is behind us. Before we get into the technical work, let's do a quick action item review. Jordan, did you get the outbound endpoint list to Priya by April 2?
+
+Jordan Mills: Yes, sent it Thursday evening. It was mainly the OpenAI API endpoint - api.openai.com - and I also included the Hugging Face model hub in case we end up pulling any additional models. I sent the full list with port numbers and protocols.
+
+Priya Nair: I received it. I submitted the whitelist approval request on April 3 as planned. I got a reference number - it's NTW-2026-0891. The IT security team confirmed they received it and said standard processing is ten business days, so we should have approval by April 17 at the latest. I've flagged it as high priority given the deployment timeline.
+
+Sarah Okonkwo: Excellent. Marcus, update the tracker - whitelist approval submitted, reference NTW-2026-0891, expected approval April 17. That's comfortably before our May 10 production access deadline. Good work, Priya. Stat key reference document - did that get to Jordan?
+
+Priya Nair: Yes, I sent it on April 3. Jordan, did you get that?
+
+Jordan Mills: Got it. It was really thorough - you listed forty-two stat keys with units and descriptions. That's going to be a huge help when I build the normalization layer. I've already started mapping them to more user-friendly labels.
+
+Priya Nair: I also included a section on stat keys that are specific to NovaTech's environment - custom ones that our team has configured that won't appear in standard VMware documentation.
+
+Jordan Mills: Yeah, I saw those. About eight or nine custom ones. I'll handle those separately and I'll probably need your help to write the descriptions for them since I can't find documentation on them externally.
+
+Priya Nair: Absolutely, just ping me when you get to that section.
+
+Sarah Okonkwo: Good. Dev credentials - delivered?
+
+Priya Nair: Yes, sent Friday afternoon. I used a secure credential sharing tool - Jordan, did you get the access link?
+
+Jordan Mills: Got it and already tested the credentials. Authentication works - I can get a VMwareOpsToken successfully. I also confirmed the Stat Key endpoint returns data. The payload structure is exactly what you described, Priya. The stat key strings are pipe-delimited, time series data in arrays.
+
+Sarah Okonkwo: Great. Sample CSV files?
+
+Jordan Mills: Also received. I've been using them to design the CSV schema validation logic. Three files - one for CPU metrics, one for memory, one for storage. They have slightly different column structures which is actually a good test case for the validation layer.
+
+Sarah Okonkwo: Development environment setup?
+
+Jordan Mills: Up and running. I'm using Python 3.11, have LangChain, OpenAI SDK, Matplotlib, Seaborn, Pandas, and ReportLab for PDF generation installed in a virtual environment. Repository is set up in our QuantumEdge GitHub org. I'll share the repo link with everyone after this meeting.
+
+Sarah Okonkwo: Perfect. All Week 1 action items complete. Great start everyone. Jordan, let's hear about the CSV module design. Where are you?
+
+Jordan Mills: So I've been working on this all of last week and I have the core architecture designed and about sixty percent of the code written. Let me walk through what I've built and where I'm going. The CSV module has three main components. First is the file manager - this handles listing available CSV files from the configured data directory, and also handles file upload. I've implemented the listing as a simple directory scan that returns file name, size, and last modified date. Upload is a file copy operation with validation that the file has a CSV extension and isn't empty. Pretty straightforward.
+
+Marcus Webb: Is there any file size limit on uploads?
+
+Jordan Mills: I've set a default limit of 500 megabytes. That felt like a reasonable upper bound for a CSV dataset in this context, but it's configurable via environment variable. Priya, does NovaTech typically have exports larger than that?
+
+Priya Nair: Our largest Aria Operations CSV exports I've seen are around 200 to 300 megabytes. 500 should be fine as a limit.
+
+Jordan Mills: Good. Second component is the schema validator. This is where it gets interesting. When a user selects a CSV file, the module reads the headers and the first few rows, tries to infer the column types, and checks for a few required structural properties. For Aria Operations exports specifically, I'm checking for the presence of either a timestamp column or a time series index, and at least one numeric metric column. If those aren't present the file is flagged as potentially incompatible and the user gets a warning. For fully custom CSVs, the validation is more lenient - it just checks that the file is parseable and has at least two columns.
+
+Marcus Webb: What happens to files that fail validation? Are they rejected or just flagged?
+
+Jordan Mills: Just flagged with a warning. The user can still proceed with the file but they're told the AI agent may not be able to generate meaningful graphs from it. I didn't want to hard-block on validation because a user might have a perfectly valid custom dataset that doesn't match our expected structure.
+
+Sarah Okonkwo: That sounds like a reasonable UX decision. Marcus, note that as a design decision - soft validation warnings rather than hard rejection for incompatible CSV structures.
+
+Marcus Webb: Noted.
+
+Jordan Mills: Third component is the data loader. Once the file is selected and validated, this component reads it into a Pandas DataFrame, handles basic data cleaning - stripping whitespace from column names, converting numeric columns that were read as strings, handling null values. The DataFrame is then passed to the AI agent as the active dataset. The AI agent receives a summary of the DataFrame including column names, data types, row count, and a sample of the first ten rows. That summary is what the LLM uses to understand what data is available before it picks which columns to use for graphing.
+
+Sarah Okonkwo: That ten-row sample approach - is that enough for the LLM to understand the dataset?
+
+Jordan Mills: I think so for most cases. The LLM doesn't need to see all the data - it just needs to understand the schema and the range of values. Ten rows is enough for that. For very large files with millions of rows, loading the full dataset into an LLM prompt would be impractical anyway. The agent selects columns based on the summary, and then the full data for those columns is used for actual graph rendering.
+
+Priya Nair: What about datasets where the first ten rows might not be representative? Like if there's a time series and the interesting spikes are in the middle of the file?
+
+Jordan Mills: Good point. I'm actually going to add a statistical summary alongside the row sample - column means, min, max, standard deviation for numeric columns. That way the LLM has a sense of the data distribution even without seeing every row. That's on my list for this week.
+
+Marcus Webb: Should I add that as a requirement? Statistical summary in dataset description passed to AI agent?
+
+Jordan Mills: Yes please. Add it as a required feature of the data loader component.
+
+Sarah Okonkwo: Good discussion. Jordan, what's your timeline for finishing the CSV module?
+
+Jordan Mills: I'm on track for April 14. The file manager is basically done. Schema validator and data loader I'll finish this week - I'm aiming to have everything coded and linted by April 12 and unit tests written and passing by April 14. Marcus, can you review the test cases by end of April 14?
+
+Marcus Webb: Yes, I'll block the afternoon of April 14 for that review. Send me the test case document when you're done with it.
+
+Jordan Mills: Will do.
+
+Sarah Okonkwo: Priya, I want to check in on your side. You've been described as joint owner on the multi-cluster aggregation feature along with Jordan. Week 3 is when Jordan picks up the API integration. What do you need to prepare before then?
+
+Priya Nair: So I've been doing some prep work this week. I've documented the resources endpoint that Jordan will use to discover available clusters. I've also set up two test clusters in our dev environment - I'm calling them dev-cluster-alpha and dev-cluster-beta - that Jordan can use to test the multi-cluster query and aggregation. They have meaningful metric data so the results should be realistic.
+
+Jordan Mills: That's perfect. Two clusters is exactly what I need to test the merge logic. Are they running real workloads or synthetic?
+
+Priya Nair: Mix of both. Dev-cluster-alpha has a few VMs running actual dev workloads from our internal teams. Dev-cluster-beta I've set up with synthetic workloads that spike at predictable intervals - useful for testing that the graphs actually show interesting patterns.
+
+Jordan Mills: Oh, that's smart. Having predictable spikes means I can visually verify the graphs are rendering the data correctly. I'll use beta for graph sanity checking.
+
+Priya Nair: Exactly. I also want to flag one thing about the API that I discovered while reviewing the documentation more carefully. The Stat Key endpoint has a rate limit - you can make up to 100 requests per minute per token. For single-cluster queries this is fine, but if a user selects ten clusters, we'd be making potentially ten or more requests in quick succession and could hit the rate limit.
+
+Jordan Mills: Hmm, I hadn't thought about rate limiting. Good flag. My plan will be to implement a small delay between cluster requests - maybe 700 to 800 milliseconds - and add retry logic with exponential backoff if we get a 429 response. For ten clusters that would add maybe 7 to 8 seconds of latency total, which is probably acceptable.
+
+Priya Nair: I'd also suggest we add a maximum cluster selection limit in the UI - maybe cap it at fifteen clusters - just so users don't accidentally queue up a massive batch job.
+
+Jordan Mills: Agreed. I'll cap it at fifteen and surface a warning if they select more than five, explaining that it will take longer.
+
+Sarah Okonkwo: Marcus, add API rate limiting handling and multi-cluster selection cap as requirements.
+
+Marcus Webb: Already on it.
+
+Sarah Okonkwo: Let's talk about Week 3 plan. Jordan, walk us through what you expect to accomplish.
+
+Jordan Mills: Week 3 is the VMware API integration and the start of the multi-cluster aggregation design. I'll start Monday with the authentication flow - implement the token acquisition using the username and password, validate that it works, and build token refresh logic for when the token expires. Aria Operations tokens expire after a certain period, right, Priya?
+
+Priya Nair: Yes. The token expiry is thirty minutes by default in our environment. After thirty minutes you need to re-authenticate.
+
+Jordan Mills: Okay. So I'll implement a token manager class that handles expiry transparently - it stores the token and the expiry timestamp, checks before each API call, and re-authenticates automatically if needed. That way the caller doesn't have to worry about token management.
+
+Priya Nair: That's a solid approach. One more thing - authentication in dev uses the same endpoint as prod but with different credentials. The base URL is what differs. Make sure the module is parameterized so switching between dev and prod is just a config change.
+
+Jordan Mills: Already planned. Everything's environment-variable driven. BASE_URL, USERNAME, PASSWORD - all config. No credentials hardcoded anywhere.
+
+Priya Nair: Perfect.
+
+Jordan Mills: After authentication, I'll implement the resources discovery endpoint to list clusters, then the Stat Key query endpoint, then the data aggregation logic. I'm estimating three days for the core API integration and one to two days for the multi-cluster aggregation and merge logic. By April 21 I want to have a working end-to-end flow: authenticate, list clusters, user picks two, system queries both, merges the DataFrames, and passes the merged result to the AI agent layer.
+
+Sarah Okonkwo: That sounds aggressive but realistic given the credential access you already have. What are the potential blockers?
+
+Jordan Mills: The main one is if the API response structure deviates from what Priya described. Like, if the real endpoint has additional nesting or fields that aren't in the documentation I was given.
+
+Priya Nair: I'll be available during Week 3 for any API questions. I'd suggest we set up a quick Slack channel just for API-related questions so I can respond quickly when Jordan hits something unexpected.
+
+Sarah Okonkwo: Good idea. Marcus, set up a Slack channel called ai-x-vmware-api - add Jordan and Priya. That's a quick action item for you, Marcus - done by EOD today.
+
+Marcus Webb: On it. I'll create it in the next hour.
+
+Sarah Okonkwo: Let me check - Marcus, how are we looking on requirements documentation?
+
+Marcus Webb: So I have a requirements log that I've been maintaining. Currently sitting at twenty-three documented requirements across the four modules. I've added all the new ones from today's discussion - stat key normalization, statistical summary in dataset description, soft validation warnings, API rate limiting, multi-cluster cap. I'll circulate an updated version after this meeting for everyone to review and confirm. If anyone has concerns about any requirement, please flag it in the document with a comment by April 10.
+
+Sarah Okonkwo: Good. I want to also use the last few minutes to talk about risk monitoring. Priya, the whitelist approval - you said expected by April 17. Is there any risk of it being delayed further?
+
+Priya Nair: There's always a risk. The IT security team is generally responsive but they sometimes ask follow-up questions that add time. I'm monitoring it and I'll follow up with them on April 14 if I haven't heard anything by then.
+
+Sarah Okonkwo: Good. Let's establish a protocol - if the approval isn't confirmed by April 21, I want to escalate. Can you give me the name of your IT security contact so I have it if we need to escalate?
+
+Priya Nair: Yes, the main contact is Derek Huang at NovaTech IT security. I'll send you his contact details after this meeting.
+
+Sarah Okonkwo: Thank you. Any other risks to discuss today?
+
+Jordan Mills: One thing I want to flag - the PDF report generation library. I'm planning to use ReportLab, which I've worked with before. But I want to spend some time this week prototyping the PDF layout with sample graphs to make sure it handles embedded images well and the layout doesn't look terrible. If ReportLab turns out to be insufficient, I might switch to WeasyPrint. Not a risk exactly, more of a watch item.
+
+Sarah Okonkwo: Noted. Put it in the risk log as low severity. Jordan, by when would you know which library you're going with?
+
+Jordan Mills: I'll prototype both this week alongside the CSV work and decide by April 12. The PDF module isn't starting until Week 5 so I have time to decide.
+
+Sarah Okonkwo: Good. Alright, let's wrap up. Summary of today's discussion: CSV module is on track for April 14 completion. Jordan needs to add statistical summary to data loader this week. Two test clusters are set up in dev environment. API rate limiting and multi-cluster cap are added as requirements. Slack channel for API questions will be created today.
+
+Sarah Okonkwo: Great. See everyone April 15. Good luck with the build this week, Jordan.
+
+Jordan Mills: Thanks. Should be a good week.
+
+Priya Nair: Have a good one everyone.
+
+[TRANSCRIPT ENDS]
