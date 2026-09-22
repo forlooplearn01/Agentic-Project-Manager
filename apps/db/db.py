@@ -68,13 +68,40 @@ def insert_task(task, project_id: str = "default"):
     return task_id
 
 
-def get_cached_pipeline_result(content_hash: str):
-    # Return the cached formatted pipeline result for this document hash, or None if not cached.
+def ensure_source_documents_project_column():
+    # Additive migration for a source_documents table created before the cache was
+    # scoped per project - same idempotent pattern as ensure_jobs_table(). Without
+    # this, the cache key is content_hash alone, so identical text submitted for two
+    # different projects incorrectly shares one cached result. Existing rows get
+    # project_id = NULL (their content_hash was already globally unique before this
+    # migration, so no conflict) - they simply age out of the cache rather than being
+    # guessed at, which is safe since a cache miss just means a fresh run.
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("ALTER TABLE source_documents ADD COLUMN IF NOT EXISTS project_id VARCHAR")
+    cur.execute("ALTER TABLE source_documents DROP CONSTRAINT IF EXISTS source_documents_content_hash_key")
+    # Postgres has no ADD CONSTRAINT ... IF NOT EXISTS, so check pg_constraint directly
+    # to keep this idempotent across repeated calls (e.g. every --reload restart).
+    cur.execute("SELECT 1 FROM pg_constraint WHERE conname = 'source_documents_content_hash_project_id_key'")
+    if not cur.fetchone():
+        cur.execute("""
+            ALTER TABLE source_documents ADD CONSTRAINT source_documents_content_hash_project_id_key
+            UNIQUE (content_hash, project_id)
+        """)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def get_cached_pipeline_result(content_hash: str, project_id: str):
+    # Return the cached formatted pipeline result for this document hash WITHIN this
+    # project, or None if not cached - scoped so identical text in a different project
+    # never returns another project's result.
     conn = get_connection()
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute(
-            "SELECT pipeline_result FROM source_documents WHERE content_hash = %s",
-            (content_hash,)
+            "SELECT pipeline_result FROM source_documents WHERE content_hash = %s AND project_id = %s",
+            (content_hash, project_id)
         )
         row = cur.fetchone()
     conn.close()
@@ -83,7 +110,7 @@ def get_cached_pipeline_result(content_hash: str):
     return None
 
 
-def cache_pipeline_result(content: str, result: dict):
+def cache_pipeline_result(content: str, result: dict, project_id: str):
     import hashlib
     import json as _json
     # Upsert: create the source_documents row if it doesn't exist yet (e.g. junk input where
@@ -92,36 +119,37 @@ def cache_pipeline_result(content: str, result: dict):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO source_documents (content, content_hash, pipeline_result)
-        VALUES (%s, %s, %s)
-        ON CONFLICT (content_hash) DO UPDATE SET pipeline_result = EXCLUDED.pipeline_result
-    """, (content, content_hash, _json.dumps(result)))
+        INSERT INTO source_documents (content, content_hash, project_id, pipeline_result)
+        VALUES (%s, %s, %s, %s)
+        ON CONFLICT (content_hash, project_id) DO UPDATE SET pipeline_result = EXCLUDED.pipeline_result
+    """, (content, content_hash, project_id, _json.dumps(result)))
     conn.commit()
     cur.close()
     conn.close()
 
 
-def upsert_source_document(content: str, document_type: str = None) -> str:
+def upsert_source_document(content: str, document_type: str = None, project_id: str = None) -> str:
     import hashlib
-    # SHA256 of the full content - used as a unique key so the same document
-    # submitted twice maps to the same row rather than creating a duplicate.
+    # SHA256 of the full content - combined with project_id as the unique key so the
+    # same document submitted twice IN THE SAME PROJECT maps to one row, but identical
+    # text submitted to a different project gets its own row instead of colliding.
     content_hash = hashlib.sha256(content.encode()).hexdigest()
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO source_documents (content, content_hash, document_type)
-        VALUES (%s, %s, %s)
-        ON CONFLICT (content_hash) DO NOTHING
+        INSERT INTO source_documents (content, content_hash, project_id, document_type)
+        VALUES (%s, %s, %s, %s)
+        ON CONFLICT (content_hash, project_id) DO NOTHING
         RETURNING doc_id
-    """, (content, content_hash, document_type))
+    """, (content, content_hash, project_id, document_type))
     row = cur.fetchone()
     if row:
         doc_id = row[0]
     else:
-        # Document already existed - fetch the existing doc_id
+        # Document already existed in this project - fetch the existing doc_id
         cur.execute(
-            "SELECT doc_id FROM source_documents WHERE content_hash = %s",
-            (content_hash,)
+            "SELECT doc_id FROM source_documents WHERE content_hash = %s AND project_id = %s",
+            (content_hash, project_id)
         )
         doc_id = cur.fetchone()[0]
     conn.commit()
@@ -540,6 +568,21 @@ def upsert_project_person(project_id: str, name: str, email: str, role: str = No
     conn.commit()
     cur.close()
     conn.close()
+
+
+def delete_project_person(project_id: str, name: str) -> bool:
+    # Case-insensitive to match resolve_person_email's own lookup semantics.
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "DELETE FROM project_people WHERE project_id = %s AND lower(name) = lower(%s)",
+        (project_id, name),
+    )
+    deleted = cur.rowcount > 0
+    conn.commit()
+    cur.close()
+    conn.close()
+    return deleted
 
 
 def resolve_person_email(project_id: str, name: str):

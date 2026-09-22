@@ -23,6 +23,7 @@ from apps.db.db import (
     delete_project,
     ensure_jobs_table,
     ensure_meetings_table,
+    ensure_source_documents_project_column,
     ensure_tasks_jira_column,
     fail_job,
     fetch_chat_history,
@@ -35,7 +36,9 @@ from apps.db.db import (
     get_project_jira_key,
     insert_chat_message,
     list_meetings,
+    delete_project_person,
     list_project_people,
+    upsert_project_person,
     reject_meeting_record,
     remove_task_dependency,
     set_project_jira_key,
@@ -76,6 +79,7 @@ def _startup():
     ensure_jobs_table()
     ensure_meetings_table()
     ensure_tasks_jira_column()
+    ensure_source_documents_project_column()
     deleted = cleanup_old_jobs(max_age_hours=24)
     if deleted:
         logger.info(f"Startup cleanup: removed {deleted} stale job row(s)")
@@ -134,7 +138,7 @@ def _run_graph_job(job_id: str, input_text: str, project_id: str) -> None:
         final_output["document_type"] = result_state.get("document_type")
         complete_job(job_id, final_output)
         if final_output.get("tasks_count", 0) > 0:
-            cache_pipeline_result(input_text, final_output)
+            cache_pipeline_result(input_text, final_output, project_id)
     except Exception as e:
         logger.error(f"Job {job_id} failed: {e}")
         fail_job(job_id, str(e))
@@ -161,6 +165,12 @@ class DependencyRequest(BaseModel):
 
 class ProjectIntegrationsRequest(BaseModel):
     jira_project_key: Optional[str] = None
+
+
+class ProjectPersonRequest(BaseModel):
+    name: str
+    email: str
+    role: Optional[str] = None
 
 
 class ChatRequest(BaseModel):
@@ -218,7 +228,7 @@ async def run(request: RunRequest):
     content_hash = hashlib.sha256(request.input_text.encode()).hexdigest()
 
     if not request.force_run:
-        cached = get_cached_pipeline_result(content_hash)
+        cached = get_cached_pipeline_result(content_hash, request.project_id)
         if cached:
             create_job(job_id, request.project_id)
             complete_job(job_id, {"_cached_result": cached})
@@ -321,6 +331,27 @@ def remove_project(project_id: str):
 def get_project_people(project_id: str):
     """Known people for this project (name/email/role) - powers the attendee picker
     on the manual Schedule Meeting form."""
+    return {"people": list_project_people(project_id)}
+
+
+@app.post("/projects/{project_id}/people")
+def add_project_person(project_id: str, body: ProjectPersonRequest):
+    """Add or edit a person this project can resolve attendees against - the only
+    path to populating project_people used to be a manual DB insert; this is what
+    Meeting Coordinator's resolve_attendees and the manual Schedule Meeting form's
+    attendee picker both read from."""
+    if not body.name.strip() or not body.email.strip():
+        raise HTTPException(status_code=400, detail="Both name and email are required")
+    upsert_project_person(project_id, body.name.strip(), body.email.strip(), body.role.strip() if body.role else None)
+    return {"people": list_project_people(project_id)}
+
+
+@app.delete("/projects/{project_id}/people/{name}")
+def remove_project_person(project_id: str, name: str):
+    """Remove a person from this project's known attendees."""
+    deleted = delete_project_person(project_id, name)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"No person named '{name}' found in project '{project_id}'")
     return {"people": list_project_people(project_id)}
 
 

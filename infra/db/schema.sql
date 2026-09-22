@@ -18,16 +18,20 @@ CREATE TABLE tasks (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Source documents table: stores each unique input document exactly once.
--- task_events references this via source_doc_id instead of storing the full text per row.
--- content_hash (SHA256) enables fast exact-dedup without full-text comparison.
+-- Source documents table: stores each unique (content_hash, project_id) input exactly
+-- once. task_events references this via source_doc_id instead of storing the full text
+-- per row. content_hash (SHA256) enables fast exact-dedup without full-text comparison,
+-- and is scoped by project_id so identical text submitted to two different projects
+-- gets its own row/cache entry instead of colliding.
 CREATE TABLE IF NOT EXISTS source_documents (
     doc_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     content TEXT NOT NULL,
-    content_hash CHAR(64) NOT NULL UNIQUE,
+    content_hash CHAR(64) NOT NULL,
+    project_id VARCHAR,
     document_type TEXT,             -- 'sow' | 'mom', set by the Supervisor
     pipeline_result JSONB,          -- cached formatted API result; NULL until first successful run
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (content_hash, project_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_source_documents_hash ON source_documents(content_hash);
@@ -191,6 +195,9 @@ CREATE INDEX idx_tasks_embedding_hnsw ON tasks
 -- );
 -- CREATE INDEX idx_chat_messages_session ON chat_messages(session_id, created_at);
 -- ALTER TABLE tasks ADD COLUMN IF NOT EXISTS jira_issue_key TEXT;
+-- ALTER TABLE source_documents ADD COLUMN IF NOT EXISTS project_id VARCHAR;
+-- ALTER TABLE source_documents DROP CONSTRAINT IF EXISTS source_documents_content_hash_key;
+-- ALTER TABLE source_documents ADD CONSTRAINT source_documents_content_hash_project_id_key UNIQUE (content_hash, project_id);
 -- CREATE TABLE IF NOT EXISTS meetings (
 --     meeting_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 --     project_id VARCHAR NOT NULL,

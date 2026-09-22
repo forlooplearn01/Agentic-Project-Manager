@@ -112,6 +112,22 @@ export function fetchProjectPeople(projectId: string): Promise<{ people: Project
   return request(`/projects/${encodeURIComponent(projectId)}/people`);
 }
 
+export function addProjectPerson(
+  projectId: string,
+  body: { name: string; email: string; role?: string }
+): Promise<{ people: ProjectPerson[] }> {
+  return request(`/projects/${encodeURIComponent(projectId)}/people`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function removeProjectPerson(projectId: string, name: string): Promise<{ people: ProjectPerson[] }> {
+  return request(`/projects/${encodeURIComponent(projectId)}/people/${encodeURIComponent(name)}`, {
+    method: "DELETE",
+  });
+}
+
 export function scheduleMeeting(
   projectId: string,
   body: { title: string; attendee_emails: string[]; start_iso: string; end_iso: string; description?: string }

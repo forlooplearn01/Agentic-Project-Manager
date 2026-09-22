@@ -12,6 +12,7 @@ import TaskBoard from "@/components/TaskBoard";
 import TaskTracker from "@/components/TaskTracker";
 import ActivityFeed from "@/components/ActivityFeed";
 import MeetingsPanel from "@/components/MeetingsPanel";
+import PeoplePanel from "@/components/PeoplePanel";
 import ProjectSettings from "@/components/ProjectSettings";
 import ScheduleMeetingModal from "@/components/ScheduleMeetingModal";
 import DeleteProjectModal from "@/components/DeleteProjectModal";
@@ -228,6 +229,11 @@ function TaskManager() {
                 refreshKey={meetingsRefreshKey}
                 onReview={(meeting) => setReviewingMeeting(meeting)}
               />
+            </section>
+
+            <section>
+              <h2 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-text-faint">People</h2>
+              <PeoplePanel projectId={currentProject.project_id} />
             </section>
           </div>
 

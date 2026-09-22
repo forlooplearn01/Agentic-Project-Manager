@@ -176,7 +176,7 @@ def store_events(state: AgentState):
     if not matched_events:
         return
 
-    doc_id = upsert_source_document(raw_input, state.get("document_type"))
+    doc_id = upsert_source_document(raw_input, state.get("document_type"), state.get("project_id"))
 
     for event in matched_events:
         event["source_doc_id"] = doc_id
