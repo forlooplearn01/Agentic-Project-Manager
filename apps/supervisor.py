@@ -2,7 +2,7 @@ import json
 import re
 
 from apps.db.db import count_tasks_for_project
-from apps.llm import client
+from apps.llm import complete
 from apps.logger import get_logger
 from apps.state import AgentState
 
@@ -31,8 +31,7 @@ Return only JSON: {{"document_type": "sow" | "mom"}}
 {raw_input[:3000]}
 """
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        response = complete(
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
             response_format={"type": "json_object"},

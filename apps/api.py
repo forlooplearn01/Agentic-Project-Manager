@@ -21,8 +21,10 @@ from apps.db.db import (
     complete_job,
     create_job,
     delete_project,
+    ensure_document_chunks_table,
     ensure_jobs_table,
     ensure_meetings_table,
+    ensure_project_people_email_nullable,
     ensure_source_documents_project_column,
     ensure_tasks_jira_column,
     fail_job,
@@ -80,6 +82,8 @@ def _startup():
     ensure_meetings_table()
     ensure_tasks_jira_column()
     ensure_source_documents_project_column()
+    ensure_project_people_email_nullable()
+    ensure_document_chunks_table()
     deleted = cleanup_old_jobs(max_age_hours=24)
     if deleted:
         logger.info(f"Startup cleanup: removed {deleted} stale job row(s)")

@@ -1,7 +1,8 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from pgvector.psycopg2 import register_vector
-from apps.utils.embeddings import get_embedding
+from apps.utils.embeddings import get_embedding, get_embeddings_batch
+from apps.utils.chunking import chunk_document
 import os
 
 
@@ -143,6 +144,7 @@ def upsert_source_document(content: str, document_type: str = None, project_id: 
         RETURNING doc_id
     """, (content, content_hash, project_id, document_type))
     row = cur.fetchone()
+    is_new_document = row is not None
     if row:
         doc_id = row[0]
     else:
@@ -155,7 +157,92 @@ def upsert_source_document(content: str, document_type: str = None, project_id: 
     conn.commit()
     cur.close()
     conn.close()
+
+    # Chunk + embed only on a genuinely new document - never redundantly on a resubmission
+    # of identical text, which would otherwise duplicate every chunk on each rerun.
+    if is_new_document:
+        _create_document_chunks(str(doc_id), project_id, content)
+
     return str(doc_id)
+
+
+# ---------------------------------------------------------------------------
+# Document chunks (document_chunks table) - semantic search over the raw SOW/MoM
+# text for the Chat agent's search_documents tool. Separate from tasks.task_embedding,
+# which is scoped to task-dedup matching during extraction, not document Q&A.
+# ---------------------------------------------------------------------------
+
+def ensure_document_chunks_table():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS document_chunks (
+            chunk_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            doc_id UUID NOT NULL REFERENCES source_documents(doc_id) ON DELETE CASCADE,
+            project_id VARCHAR NOT NULL,
+            chunk_index INTEGER NOT NULL,
+            chunk_text TEXT NOT NULL,
+            chunk_embedding vector(384),
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            UNIQUE (doc_id, chunk_index)
+        )
+    """)
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_document_chunks_project_id ON document_chunks(project_id)")
+    # Same HNSW-over-IVFFlat reasoning as idx_tasks_embedding_hnsw: this table starts
+    # empty and grows incrementally as documents are submitted, which is exactly the
+    # case IVFFlat handles badly (needs existing data to train on, needs periodic
+    # rebuilding as data grows) and HNSW handles cleanly (correct from row zero).
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_document_chunks_embedding_hnsw ON document_chunks
+        USING hnsw (chunk_embedding vector_cosine_ops)
+    """)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def _create_document_chunks(doc_id: str, project_id: str, content: str):
+    chunks = chunk_document(content)
+    if not chunks:
+        return
+
+    embeddings = get_embeddings_batch(chunks)
+
+    conn = get_connection()
+    cur = conn.cursor()
+    for i, (chunk_text, embedding) in enumerate(zip(chunks, embeddings)):
+        cur.execute("""
+            INSERT INTO document_chunks (doc_id, project_id, chunk_index, chunk_text, chunk_embedding)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (doc_id, chunk_index) DO NOTHING
+        """, (doc_id, project_id, i, chunk_text, embedding))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def search_document_chunks(project_id: str, query: str, limit: int = 5):
+    embedding = get_embedding(query)
+    if not embedding:
+        return []
+
+    conn = get_connection()
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("""
+            SELECT
+                dc.chunk_text,
+                sd.document_type,
+                sd.created_at AS document_submitted_at,
+                1 - (dc.chunk_embedding <=> %s::vector) AS similarity_score
+            FROM document_chunks dc
+            JOIN source_documents sd ON sd.doc_id = dc.doc_id
+            WHERE dc.project_id = %s AND dc.chunk_embedding IS NOT NULL
+            ORDER BY dc.chunk_embedding <=> %s::vector
+            LIMIT %s
+        """, (embedding, project_id, embedding, limit))
+        rows = cur.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
 
 
 def insert_event(event):
@@ -557,6 +644,20 @@ def fetch_dependencies_for_project(project_id: str):
 # Project people (project_people table)
 # ---------------------------------------------------------------------------
 
+def ensure_project_people_email_nullable():
+    # Additive migration - email used to be NOT NULL, back when the only way into this
+    # table was a manual add with a known address. ensure_person_placeholder() below
+    # now also inserts name-only rows for task owners as they're extracted, with no
+    # email until someone resolves one - that placeholder state requires email to
+    # allow NULL. Idempotent: DROP NOT NULL is safe to run even if already dropped.
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("ALTER TABLE project_people ALTER COLUMN email DROP NOT NULL")
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
 def upsert_project_person(project_id: str, name: str, email: str, role: str = None):
     conn = get_connection()
     cur = conn.cursor()
@@ -568,6 +669,37 @@ def upsert_project_person(project_id: str, name: str, email: str, role: str = No
     conn.commit()
     cur.close()
     conn.close()
+
+
+def ensure_person_placeholder(project_id: str, name: str) -> None:
+    # Called whenever a task's owner is set during extraction (SOW or MoM) - task
+    # owners are almost always real people on the project, so the people roster
+    # should build itself up rather than staying manual-only. Purely additive: a
+    # case-insensitive existence check first (matches resolve_person_email's own
+    # lookup) so this never overwrites an existing row's email/role, and does
+    # nothing if the person is already known either way. Never raises - a failure
+    # here must not break task extraction, which is the actual point of this call.
+    name = (name or "").strip()
+    if not name:
+        return
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT 1 FROM project_people WHERE project_id = %s AND lower(name) = lower(%s)",
+            (project_id, name),
+        )
+        if not cur.fetchone():
+            cur.execute(
+                "INSERT INTO project_people (project_id, name, email) VALUES (%s, %s, NULL)",
+                (project_id, name),
+            )
+            conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        import logging
+        logging.getLogger("db").warning(f"ensure_person_placeholder failed for '{name}' in '{project_id}': {e}")
 
 
 def delete_project_person(project_id: str, name: str) -> bool:
@@ -587,11 +719,15 @@ def delete_project_person(project_id: str, name: str) -> bool:
 
 def resolve_person_email(project_id: str, name: str):
     # Case-insensitive lookup - names extracted by the LLM won't always match seeded casing exactly.
+    # email IS NOT NULL matters now that ensure_person_placeholder() can insert a
+    # name-only row: a placeholder with no email must still count as UNRESOLVED here,
+    # or resolve_attendees would treat it as resolved and try to invite a null
+    # address to a real Google Calendar event.
     conn = get_connection()
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("""
             SELECT name, email, role FROM project_people
-            WHERE project_id = %s AND lower(name) = lower(%s)
+            WHERE project_id = %s AND lower(name) = lower(%s) AND email IS NOT NULL
         """, (project_id, name))
         row = cur.fetchone()
     conn.close()
@@ -820,18 +956,22 @@ def fetch_projects():
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("""
             SELECT
-                project_id,
+                t.project_id,
                 COUNT(*) AS total_tasks,
-                COUNT(*) FILTER (WHERE status = 'blocked' OR blocker IS NOT NULL) AS blocked_tasks,
-                COUNT(*) FILTER (WHERE status = 'completed') AS completed_tasks,
-                COUNT(*) FILTER (WHERE status = 'in_progress') AS in_progress_tasks,
-                COUNT(*) FILTER (WHERE status NOT IN ('completed')) AS open_tasks,
-                COUNT(*) FILTER (WHERE priority = 'high') AS high_priority_tasks,
-                COUNT(DISTINCT owner) FILTER (WHERE owner IS NOT NULL) AS unique_owners,
-                MAX(updated_at) AS last_updated
-            FROM tasks
-            WHERE is_active = TRUE AND project_id IS NOT NULL
-            GROUP BY project_id
+                COUNT(*) FILTER (WHERE t.status = 'blocked' OR t.blocker IS NOT NULL) AS blocked_tasks,
+                COUNT(*) FILTER (WHERE t.status = 'completed') AS completed_tasks,
+                COUNT(*) FILTER (WHERE t.status = 'in_progress') AS in_progress_tasks,
+                COUNT(*) FILTER (WHERE t.status NOT IN ('completed')) AS open_tasks,
+                COUNT(*) FILTER (WHERE t.priority = 'high') AS high_priority_tasks,
+                COUNT(DISTINCT t.owner) FILTER (WHERE t.owner IS NOT NULL) AS unique_owners,
+                COUNT(*) FILTER (WHERE t.jira_issue_key IS NOT NULL) AS jira_synced_tasks,
+                COUNT(*) FILTER (WHERE t.jira_issue_key IS NULL) AS jira_unsynced_tasks,
+                MAX(t.updated_at) AS last_updated,
+                pi.jira_project_key
+            FROM tasks t
+            LEFT JOIN project_integrations pi ON pi.project_id = t.project_id
+            WHERE t.is_active = TRUE AND t.project_id IS NOT NULL
+            GROUP BY t.project_id, pi.jira_project_key
             ORDER BY last_updated DESC
         """)
         rows = cur.fetchall()

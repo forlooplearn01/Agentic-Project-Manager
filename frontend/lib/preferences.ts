@@ -6,6 +6,7 @@ const KEYS = {
   defaultProject: "pref-default-project",
   defaultView: "pref-default-view",
   theme: "pref-theme",
+  activityFeedCollapsed: "pref-activity-feed-collapsed",
 } as const;
 
 export type Theme = "dark" | "light";
@@ -68,6 +69,22 @@ export function getDefaultView(): "board" | "list" {
 export function setDefaultView(view: "board" | "list") {
   try {
     localStorage.setItem(KEYS.defaultView, view);
+  } catch {
+    // Storage unavailable - preference just won't persist this session.
+  }
+}
+
+export function getActivityFeedCollapsed(): boolean {
+  try {
+    return localStorage.getItem(KEYS.activityFeedCollapsed) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setActivityFeedCollapsed(collapsed: boolean) {
+  try {
+    localStorage.setItem(KEYS.activityFeedCollapsed, collapsed ? "1" : "0");
   } catch {
     // Storage unavailable - preference just won't persist this session.
   }

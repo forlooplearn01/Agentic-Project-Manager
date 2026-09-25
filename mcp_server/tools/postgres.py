@@ -94,7 +94,14 @@ def search_tasks(query: Optional[str] = None, owner: Optional[str] = None, statu
     if owner:
         conditions.append("owner ILIKE %s")
         params.append(f"%{owner}%")
-    if status:
+    if status == "blocked":
+        # Matches the app's real definition of "blocked" everywhere else (the
+        # dashboard's stat card, get_project_overview's blocked_tasks count) - a
+        # task with blocker text set but a status that hasn't literally been flipped
+        # to 'blocked' yet is still blocked. A plain status = 'blocked' equality here
+        # would silently miss those and contradict what the UI shows for the same project.
+        conditions.append("(status = 'blocked' OR blocker IS NOT NULL)")
+    elif status:
         conditions.append("status = %s")
         params.append(status)
     if project_id:
@@ -103,7 +110,7 @@ def search_tasks(query: Optional[str] = None, owner: Optional[str] = None, statu
 
     where = " AND ".join(conditions)
     sql = f"""
-        SELECT task_id, task_text, owner, status, deadline, priority, created_at, updated_at
+        SELECT task_id, task_text, owner, status, deadline, priority, jira_issue_key, created_at, updated_at
         FROM tasks
         WHERE {where}
         ORDER BY updated_at DESC
@@ -128,7 +135,7 @@ def get_task_by_id(task_id: str) -> str:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT task_id, task_text, normalized_task_text, owner, status,
-                       deadline, blocker, priority, is_active, created_at, updated_at
+                       deadline, blocker, priority, jira_issue_key, is_active, created_at, updated_at
                 FROM tasks
                 WHERE task_id = %s
             """, (task_id,))

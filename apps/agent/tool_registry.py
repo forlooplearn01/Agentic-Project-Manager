@@ -16,6 +16,9 @@ from apps.db.db import (
     fetch_owner_workload,
     fetch_dependencies_for_project,
     fetch_recent_agent_activity,
+    list_project_people,
+    list_meetings,
+    search_document_chunks,
 )
 
 
@@ -249,9 +252,14 @@ CHAT_TOOL_SCHEMAS = [
         "function": {
             "name": "get_project_overview",
             "description": "Rollup stats (total/open/blocked/completed/high-priority task counts, "
-                            "unique owners, last updated) for one project, or every project in a "
-                            "single call if project_id is omitted - prefer omitting it over calling "
-                            "this once per project for cross-project questions.",
+                            "jira_synced_tasks, jira_unsynced_tasks, unique owners, last updated, "
+                            "jira_project_key) for one project, or every project in a single call if "
+                            "project_id is omitted - prefer omitting it over calling this once per "
+                            "project for cross-project questions. jira_project_key is null if Jira "
+                            "sync was never configured for that project. For ANY counting question "
+                            "(how many are X, how many aren't Y) use these counts, not search_tasks - "
+                            "search_tasks caps at 20 results with no signal that more exist, so "
+                            "counting its results undercounts silently on any project past 20 tasks.",
             "parameters": {
                 "type": "object",
                 "properties": {"project_id": {"type": "string"}},
@@ -264,7 +272,10 @@ CHAT_TOOL_SCHEMAS = [
             "name": "search_tasks",
             "description": "Search tasks by text, owner, status, and/or project. All filters "
                             "optional - status 'blocked' finds blocked tasks, omit query/owner/status "
-                            "to list a project's recent tasks.",
+                            "to list a project's recent tasks. Each result includes jira_issue_key "
+                            "(null if that task hasn't synced to Jira). Capped at 20 results with no "
+                            "indication more exist - never count these results to answer a 'how many' "
+                            "question, use get_project_overview or get_owner_workload for counts.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -280,7 +291,8 @@ CHAT_TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "get_task_by_id",
-            "description": "Fetch full detail on one task found via search_tasks, including its blocker text.",
+            "description": "Fetch full detail on one task found via search_tasks, including its "
+                            "blocker text and jira_issue_key (null if not synced to Jira).",
             "parameters": {
                 "type": "object",
                 "properties": {"task_id": {"type": "string"}},
@@ -328,6 +340,59 @@ CHAT_TOOL_SCHEMAS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_project_people",
+            "description": "Every known person for a project - name, email, role. A null email means "
+                            "the person was auto-added as a task owner but hasn't been resolved to a "
+                            "real address yet (say so plainly rather than guessing one). Use this for "
+                            "any question about who's on a project, their role, contact info, or team "
+                            "roster - never infer a role or email from a name alone.",
+            "parameters": {
+                "type": "object",
+                "properties": {"project_id": {"type": "string"}},
+                "required": ["project_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_project_meetings",
+            "description": "Meetings for a project - title, attendees, time, and status "
+                            "(pending_approval, scheduled, or rejected). Optionally filter by status.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "project_id": {"type": "string"},
+                    "status": {"type": "string", "enum": ["pending_approval", "scheduled", "rejected"]},
+                },
+                "required": ["project_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_documents",
+            "description": "Semantic search over the actual SOW/MoM text submitted for a project - "
+                            "scope narrative, commercial terms, meeting discussion, or any other "
+                            "context that never became a structured task/field. Use this ONLY for "
+                            "content the other tools can't answer (they cover structured facts - "
+                            "status, owner, deadline, role, etc. - more reliably than this can). "
+                            "Returns the closest-matching excerpts, not a guaranteed exact match - "
+                            "this is retrieval, not a lookup, and can miss the right passage.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "project_id": {"type": "string"},
+                    "query": {"type": "string", "description": "What to search for, in natural language"},
+                },
+                "required": ["project_id", "query"],
+            },
+        },
+    },
 ]
 
 CHAT_TOOL_IMPLS = {
@@ -338,4 +403,7 @@ CHAT_TOOL_IMPLS = {
     "get_owner_workload": fetch_owner_workload,
     "get_project_dependencies": fetch_dependencies_for_project,
     "get_recent_activity": _get_recent_activity,
+    "get_project_people": list_project_people,
+    "get_project_meetings": list_meetings,
+    "search_documents": search_document_chunks,
 }

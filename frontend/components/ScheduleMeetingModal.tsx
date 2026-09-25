@@ -124,7 +124,7 @@ export default function ScheduleMeetingModal({
     setSelectedEmails((prev) => {
       const next = new Set(prev);
       for (const person of people) {
-        if (owners.has(person.name)) next.add(person.email);
+        if (owners.has(person.name) && person.email) next.add(person.email);
       }
       return next;
     });
@@ -335,14 +335,18 @@ export default function ScheduleMeetingModal({
               {people === null && <p className="text-[12.5px] text-text-faint">Loading…</p>}
               {people && people.length > 0 && (
                 <div className="mb-2 flex flex-wrap gap-1.5">
-                  {people.map((p) => (
+                  {/* Only people with a resolved email are invitable - a placeholder
+                      added from an extracted task owner but not yet resolved (see
+                      PeoplePanel) can't be selected here, same reason resolve_attendees
+                      treats it as unresolved rather than inviting a null address. */}
+                  {people.filter((p) => p.email).map((p) => (
                     <button
-                      key={p.email}
+                      key={p.name}
                       type="button"
-                      onClick={() => toggleAttendee(p.email)}
-                      title={p.email}
+                      onClick={() => toggleAttendee(p.email as string)}
+                      title={p.email as string}
                       className={`rounded-full border px-2.5 py-1 text-[12px] font-medium transition ${
-                        selectedEmails.has(p.email)
+                        selectedEmails.has(p.email as string)
                           ? "border-accent-to bg-gradient-to-br from-accent-from to-accent-to text-white"
                           : "hover-tint border-line bg-surface-solid text-text-muted"
                       }`}

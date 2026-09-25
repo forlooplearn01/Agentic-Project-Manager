@@ -68,7 +68,18 @@ function describe(event: ActivityEvent): string {
   }
 }
 
-export default function ActivityFeed({ projectId }: { projectId?: string | null }) {
+export default function ActivityFeed({
+  projectId,
+  collapsed,
+  onToggleCollapsed,
+}: {
+  projectId?: string | null;
+  // Controlled by the parent page - it owns the preference because it also has to
+  // resize the surrounding grid column when this collapses (reclaiming the 320px
+  // for the main content), which this component can't do on its own.
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+}) {
   const [events, setEvents] = useState<ActivityEvent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,51 +93,92 @@ export default function ActivityFeed({ projectId }: { projectId?: string | null 
     };
   }, [projectId]);
 
-  return (
-    <div className="glass-panel rounded-2xl p-5">
-      <div className="mb-4 flex items-center gap-2">
-        <span className="relative flex h-2 w-2">
+  if (collapsed) {
+    return (
+      <div className="glass-panel flex w-14 flex-col items-center gap-3 rounded-2xl py-4">
+        <button
+          type="button"
+          onClick={onToggleCollapsed}
+          title="Expand agent activity"
+          className="hover-tint rounded-lg p-1.5 text-text-faint transition hover:text-text-primary"
+        >
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor">
+            <path d="M11 3L5 8l6 5V3z" />
+          </svg>
+        </button>
+        <span className="relative flex h-2 w-2 shrink-0">
           <span className="pulse-dot absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
         </span>
-        <h2 className="text-sm font-semibold tracking-tight text-text-primary">Agent activity</h2>
+        <span
+          className="text-[11px] font-semibold tracking-wide text-text-muted"
+          style={{ writingMode: "vertical-rl" }}
+        >
+          Agent activity
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="glass-panel flex flex-col rounded-2xl p-5 lg:max-h-[calc(100vh-4rem)]">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="pulse-dot absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+          </span>
+          <h2 className="text-sm font-semibold tracking-tight text-text-primary">Agent activity</h2>
+        </div>
+        <button
+          type="button"
+          onClick={onToggleCollapsed}
+          title="Collapse"
+          className="hover-tint rounded-lg p-1 text-text-faint transition hover:text-text-primary"
+        >
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor">
+            <path d="M5 3l6 5-6 5V3z" />
+          </svg>
+        </button>
       </div>
 
-      {error && <p className="text-[13px] text-danger">{error}</p>}
-      {!events && !error && <p className="text-[13px] text-text-faint">Loading…</p>}
-      {events && events.length === 0 && (
-        <p className="text-[13px] text-text-faint">No agent activity yet - run a document to see agents act here.</p>
-      )}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {error && <p className="text-[13px] text-danger">{error}</p>}
+        {!events && !error && <p className="text-[13px] text-text-faint">Loading…</p>}
+        {events && events.length === 0 && (
+          <p className="text-[13px] text-text-faint">No agent activity yet - run a document to see agents act here.</p>
+        )}
 
-      {events && events.length > 0 && (
-        <ol className="activity-rail flex flex-col gap-4 pl-1">
-          {events.map((e, i) => {
-            const meta = AGENT_META[e.agent];
-            return (
-              <li key={`${e.job_id}-${i}`} className="animate-activity-in relative flex gap-3 pl-8" style={{ animationDelay: `${i * 30}ms` }}>
-                <span
-                  className="absolute left-2.5 top-1 h-2.5 w-2.5 rounded-full ring-4 ring-background"
-                  style={{ background: meta.color }}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[13px] leading-snug text-text-primary">{describe(e)}</p>
-                  <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-text-faint">
-                    <span style={{ color: meta.color }}>{meta.label}</span>
-                    {!projectId && e.project_id && (
-                      <>
-                        <span>·</span>
-                        <span>{e.project_id}</span>
-                      </>
-                    )}
-                    <span>·</span>
-                    <span>{relativeTime(e.created_at)}</span>
+        {events && events.length > 0 && (
+          <ol className="activity-rail flex flex-col gap-4 pl-1">
+            {events.map((e, i) => {
+              const meta = AGENT_META[e.agent];
+              return (
+                <li key={`${e.job_id}-${i}`} className="animate-activity-in relative flex gap-3 pl-8" style={{ animationDelay: `${i * 30}ms` }}>
+                  <span
+                    className="absolute left-2.5 top-1 h-2.5 w-2.5 rounded-full ring-4 ring-background"
+                    style={{ background: meta.color }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] leading-snug text-text-primary">{describe(e)}</p>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-text-faint">
+                      <span style={{ color: meta.color }}>{meta.label}</span>
+                      {!projectId && e.project_id && (
+                        <>
+                          <span>·</span>
+                          <span>{e.project_id}</span>
+                        </>
+                      )}
+                      <span>·</span>
+                      <span>{relativeTime(e.created_at)}</span>
+                    </div>
                   </div>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-      )}
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </div>
     </div>
   );
 }

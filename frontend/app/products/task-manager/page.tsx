@@ -4,7 +4,14 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fetchProjectMeetings, fetchProjectTasks, fetchProjects, projectExportUrl } from "@/lib/api";
-import { getDefaultProject, getDefaultView, setDefaultProject, setDefaultView } from "@/lib/preferences";
+import {
+  getActivityFeedCollapsed,
+  getDefaultProject,
+  getDefaultView,
+  setActivityFeedCollapsed,
+  setDefaultProject,
+  setDefaultView,
+} from "@/lib/preferences";
 import type { Meeting, ProjectRollup, Task } from "@/lib/types";
 import StatCard from "@/components/StatCard";
 import ProjectSelector from "@/components/ProjectSelector";
@@ -41,6 +48,15 @@ function TaskManager() {
   const [reviewingMeeting, setReviewingMeeting] = useState<Meeting | null>(null);
   const [meetingsRefreshKey, setMeetingsRefreshKey] = useState(0);
   const [checkedPendingMeeting, setCheckedPendingMeeting] = useState<string | null>(null);
+  const [activityCollapsed, setActivityCollapsedState] = useState(() => getActivityFeedCollapsed());
+
+  function toggleActivityCollapsed() {
+    setActivityCollapsedState((prev) => {
+      const next = !prev;
+      setActivityFeedCollapsed(next);
+      return next;
+    });
+  }
 
   function setView(next: "board" | "list") {
     setViewState(next);
@@ -149,7 +165,7 @@ function TaskManager() {
       )}
 
       {currentProject && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+        <div className={`grid grid-cols-1 gap-6 ${activityCollapsed ? "lg:grid-cols-[1fr_auto]" : "lg:grid-cols-[1fr_320px]"}`}>
           <div className="flex min-w-0 flex-col gap-6">
             <section>
               <h2 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-text-faint">
@@ -238,7 +254,7 @@ function TaskManager() {
           </div>
 
           <div className="lg:sticky lg:top-8 lg:self-start">
-            <ActivityFeed projectId={selectedProject} />
+            <ActivityFeed projectId={selectedProject} collapsed={activityCollapsed} onToggleCollapsed={toggleActivityCollapsed} />
           </div>
         </div>
       )}

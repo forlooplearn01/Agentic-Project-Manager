@@ -34,6 +34,30 @@ CREATE TABLE IF NOT EXISTS source_documents (
     UNIQUE (content_hash, project_id)
 );
 
+-- Document chunks - small overlapping windows of a source document's text, embedded for
+-- semantic search (Chat's search_documents tool). Separate from tasks.task_embedding, which
+-- is scoped to task-dedup matching during extraction, not document Q&A. Chunked at a much
+-- finer granularity than extraction's own internal chunking (which is sized for LLM prompt
+-- budgeting, not retrieval precision) - see apps/utils/chunking.py.
+CREATE TABLE IF NOT EXISTS document_chunks (
+    chunk_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    doc_id UUID NOT NULL REFERENCES source_documents(doc_id) ON DELETE CASCADE,
+    project_id VARCHAR NOT NULL,
+    chunk_index INTEGER NOT NULL,
+    chunk_text TEXT NOT NULL,
+    chunk_embedding vector(384),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (doc_id, chunk_index)
+);
+
+CREATE INDEX IF NOT EXISTS idx_document_chunks_project_id ON document_chunks(project_id);
+
+-- hnsw over ivfflat for the same reason as idx_tasks_embedding_hnsw below: this table
+-- starts empty and grows incrementally as documents are submitted - ivfflat needs existing
+-- data to train its clusters on and periodic rebuilding as data grows, hnsw doesn't.
+CREATE INDEX IF NOT EXISTS idx_document_chunks_embedding_hnsw ON document_chunks
+    USING hnsw (chunk_embedding vector_cosine_ops);
+
 CREATE INDEX IF NOT EXISTS idx_source_documents_hash ON source_documents(content_hash);
 
 --Extracted Events table: Stores every extracted event from input
@@ -104,11 +128,14 @@ CREATE INDEX IF NOT EXISTS idx_task_dependencies_depends_on ON task_dependencies
 -- Populated by parsing stakeholder names/emails out of the SOW where present, otherwise seeded
 -- manually. A name that can't be resolved to an email is not guessed - the calling agent surfaces
 -- it as a flagged item instead, the same pattern unresolved_events already uses for match failures.
+-- email is nullable: ensure_person_placeholder() inserts a name-only row as soon as a
+-- task owner is extracted (SOW or MoM), before anyone has supplied their real address.
+-- resolve_person_email() treats a NULL email as unresolved, same as a missing row.
 CREATE TABLE IF NOT EXISTS project_people (
     person_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id VARCHAR NOT NULL,
     name TEXT NOT NULL,
-    email TEXT NOT NULL,
+    email TEXT,
     role TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (project_id, name)
@@ -198,6 +225,7 @@ CREATE INDEX idx_tasks_embedding_hnsw ON tasks
 -- ALTER TABLE source_documents ADD COLUMN IF NOT EXISTS project_id VARCHAR;
 -- ALTER TABLE source_documents DROP CONSTRAINT IF EXISTS source_documents_content_hash_key;
 -- ALTER TABLE source_documents ADD CONSTRAINT source_documents_content_hash_project_id_key UNIQUE (content_hash, project_id);
+-- ALTER TABLE project_people ALTER COLUMN email DROP NOT NULL;
 -- CREATE TABLE IF NOT EXISTS meetings (
 --     meeting_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 --     project_id VARCHAR NOT NULL,

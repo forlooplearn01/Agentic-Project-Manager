@@ -1,6 +1,6 @@
 import json
 
-from apps.llm import client
+from apps.llm import complete
 from apps.logger import get_logger
 
 logger = get_logger("REACT_LOOP")
@@ -49,7 +49,7 @@ def run_react_loop(
     tool_schemas: list,
     tool_impls: dict,
     max_tool_calls: int = 5,
-    model: str = "gpt-4o-mini",
+    model: str = None,
 ):
     """Shared ReAct loop for the Planning / Sync-Reporting / Meeting Coordinator agents.
 
@@ -69,11 +69,11 @@ def run_react_loop(
     tool_calls_made = 0
 
     while True:
-        response = client.chat.completions.create(
-            model=model,
+        response = complete(
             messages=messages,
             tools=tool_schemas if tool_calls_made < max_tool_calls else None,
             temperature=0,
+            model=model,
         )
         choice = response.choices[0].message
 
@@ -103,11 +103,11 @@ def run_react_loop(
             "content": "Tool budget reached or no further tool calls needed. "
                         "Return your final answer now as a single JSON object, no other text.",
         })
-        final = client.chat.completions.create(
-            model=model,
+        final = complete(
             messages=messages,
             temperature=0,
             response_format={"type": "json_object"},
+            model=model,
         )
         try:
             return json.loads(final.choices[0].message.content), trace
@@ -124,7 +124,7 @@ def run_chat_loop(
     tool_schemas: list,
     tool_impls: dict,
     max_tool_calls: int = 5,
-    model: str = "gpt-4o-mini",
+    model: str = None,
 ):
     """Chat variant of the ReAct loop: accepts prior conversation turns (history, a list of
     {role, content} dicts) and returns a free-text reply instead of forcing JSON - a chat
@@ -138,11 +138,11 @@ def run_chat_loop(
     tool_calls_made = 0
 
     while True:
-        response = client.chat.completions.create(
-            model=model,
+        response = complete(
             messages=messages,
             tools=tool_schemas if tool_calls_made < max_tool_calls else None,
             temperature=0,
+            model=model,
         )
         choice = response.choices[0].message
 
@@ -161,5 +161,5 @@ def run_chat_loop(
             "content": "Tool budget reached or no further tool calls needed. Answer now in "
                         "plain text using what you've already found.",
         })
-        final = client.chat.completions.create(model=model, messages=messages, temperature=0)
+        final = complete(messages=messages, temperature=0, model=model)
         return final.choices[0].message.content or "I wasn't able to find an answer to that.", trace

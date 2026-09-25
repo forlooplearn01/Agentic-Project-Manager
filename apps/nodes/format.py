@@ -9,6 +9,7 @@ from apps.db.db import (
     log_unresolved_event,
     upsert_source_document,
     add_task_dependency,
+    ensure_person_placeholder,
 )
 import re
 
@@ -93,6 +94,16 @@ def _refresh_task(task_id, task_data: dict):
         update_task_field(task_id, "priority", task_data["priority"])
 
 
+def _ensure_owner_people(project_id: str, owner_field):
+    # owner can be a comma-separated multi-owner string (ScheduleMeetingModal already
+    # splits on "," when deriving attendees from task owners) - split the same way so
+    # each individual name gets its own placeholder row, not one row named "A, B".
+    if not owner_field:
+        return
+    for name in str(owner_field).split(","):
+        ensure_person_placeholder(project_id, name.strip())
+
+
 def store_tasks(state: AgentState):
     logger.info(f"store_tasks called. events_to_create count = {len(state.get('events_to_create', []))}")
     events_to_create = state.get("events_to_create", [])
@@ -119,6 +130,12 @@ def store_tasks(state: AgentState):
                 "blocker": event.get("blocker"),
                 "priority": enriched.get("priority", "medium"),
             }
+
+            # Owner extracted for this task is almost always a real person on the
+            # project - build the people roster up as tasks are extracted rather than
+            # requiring manual seeding. Runs for every branch below (dedup or genuine
+            # insert), since either way an owner name was just extracted.
+            _ensure_owner_people(project_id, task_data["owner"])
 
             # Deduplication guard - exact normalized text match (scoped to project)
             existing_task_id = fetch_task_by_normalized_text(norm_text, project_id)
@@ -186,6 +203,7 @@ def store_events(state: AgentState):
 def apply_task_updates(state: AgentState):
     # Apply updates to existing matched tasks based on event type
     matched_events = state.get("matched_events", [])
+    project_id = state.get("project_id", "default")
 
     # Build lookup from Planning agent's output by normalized task text
     priority_lookup = {
@@ -213,6 +231,7 @@ def apply_task_updates(state: AgentState):
         # Update owner for owner_change events
         elif event_type == "owner_change" and event.get("owner"):
             update_task_field(task_id, "owner", event.get("owner"))
+            _ensure_owner_people(project_id, event.get("owner"))
 
         # Update blocker and mark task status as blocked for blocker events
         elif event_type == "blocker":
@@ -224,6 +243,8 @@ def apply_task_updates(state: AgentState):
             for field in ("owner", "deadline", "status", "blocker"):
                 if event.get(field):
                     update_task_field(task_id, field, event.get(field))
+                    if field == "owner":
+                        _ensure_owner_people(project_id, event.get("owner"))
 
         # Always re-write priority for matched tasks (enriched field)
         norm_text = normalize_text(event.get("task_text", ""))

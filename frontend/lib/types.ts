@@ -20,7 +20,9 @@ export interface TaskRef {
 
 export interface ProjectPerson {
   name: string;
-  email: string;
+  // null when auto-added as a task owner but not yet resolved to a real address -
+  // see ensure_person_placeholder in apps/db/db.py.
+  email: string | null;
   role: string | null;
 }
 

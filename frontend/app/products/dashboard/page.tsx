@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchPendingMeetings, fetchProjects } from "@/lib/api";
+import { getActivityFeedCollapsed, setActivityFeedCollapsed } from "@/lib/preferences";
 import type { ProjectRollup } from "@/lib/types";
 import StatCard from "@/components/StatCard";
 import ActivityFeed from "@/components/ActivityFeed";
@@ -13,6 +14,15 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<ProjectRollup[] | null>(null);
   const [pendingMeetingsCount, setPendingMeetingsCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activityCollapsed, setActivityCollapsedState] = useState(() => getActivityFeedCollapsed());
+
+  function toggleActivityCollapsed() {
+    setActivityCollapsedState((prev) => {
+      const next = !prev;
+      setActivityFeedCollapsed(next);
+      return next;
+    });
+  }
 
   useEffect(() => {
     fetchProjects()
@@ -43,7 +53,7 @@ export default function DashboardPage() {
 
       {error && <p className="mb-4 text-[13px] text-danger">{error}</p>}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <div className={`grid grid-cols-1 gap-6 ${activityCollapsed ? "lg:grid-cols-[1fr_auto]" : "lg:grid-cols-[1fr_320px]"}`}>
         <div className="flex min-w-0 flex-col gap-6">
           <section>
             <h2 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-text-faint">All projects: overview</h2>
@@ -103,7 +113,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="lg:sticky lg:top-8 lg:self-start">
-          <ActivityFeed projectId={null} />
+          <ActivityFeed projectId={null} collapsed={activityCollapsed} onToggleCollapsed={toggleActivityCollapsed} />
         </div>
       </div>
     </main>
