@@ -641,6 +641,171 @@ def fetch_dependencies_for_project(project_id: str):
 
 
 # ---------------------------------------------------------------------------
+# Possible duplicates - the match gate's "unsure" / high-similarity rejections leave a
+# visible duplicate by design (a wrong merge silently loses a task, a duplicate doesn't);
+# these let a person resolve each one: merge it into the existing task, or say it is a
+# genuinely different task. Every resolution is also kept in duplicate_decisions - clean,
+# human-confirmed same/different pairs, the labeled data a future fine-tune would need.
+# ---------------------------------------------------------------------------
+
+def ensure_duplicate_handling_schema():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS possible_duplicate_of UUID")
+    cur.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS possible_duplicate_reason TEXT")
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS duplicate_decisions (
+            decision_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            project_id TEXT,
+            task_id UUID NOT NULL,
+            other_task_id UUID NOT NULL,
+            task_text TEXT,
+            other_task_text TEXT,
+            decision TEXT NOT NULL CHECK (decision IN ('merged', 'not_duplicate')),
+            reason TEXT,
+            decided_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+    """)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def set_possible_duplicate(task_id: str, other_task_id: str, reason: str = None):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE tasks SET possible_duplicate_of = %s, possible_duplicate_reason = %s WHERE task_id = %s",
+        (other_task_id, reason, task_id),
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def dismiss_possible_duplicate(task_id: str) -> dict:
+    """The person says this task is genuinely different from the one it was flagged against."""
+    conn = get_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT t.task_id, t.project_id, t.task_text, t.possible_duplicate_of, t.possible_duplicate_reason,
+                       o.task_text AS other_text
+                FROM tasks t LEFT JOIN tasks o ON o.task_id = t.possible_duplicate_of
+                WHERE t.task_id = %s AND t.is_active = TRUE FOR UPDATE OF t
+            """, (task_id,))
+            row = cur.fetchone()
+            if not row:
+                raise LookupError(f"No active task with id {task_id}")
+            if not row["possible_duplicate_of"]:
+                raise ValueError("Task is not flagged as a possible duplicate")
+            cur.execute(
+                "UPDATE tasks SET possible_duplicate_of = NULL, possible_duplicate_reason = NULL WHERE task_id = %s",
+                (task_id,),
+            )
+            cur.execute("""
+                INSERT INTO duplicate_decisions
+                    (project_id, task_id, other_task_id, task_text, other_task_text, decision, reason)
+                VALUES (%s, %s, %s, %s, %s, 'not_duplicate', %s)
+            """, (row["project_id"], task_id, row["possible_duplicate_of"], row["task_text"],
+                  row["other_text"], row["possible_duplicate_reason"]))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+    return {"task_id": task_id, "status": "kept_separate"}
+
+
+def merge_tasks(source_task_id: str, target_task_id: str) -> dict:
+    """Merge source into target (one transaction): target keeps its own fields and only gets
+    blanks (owner, deadline, blocker, Jira key) filled from source; source's event history and
+    dependency edges move to target; source is deactivated (soft delete - nothing is lost).
+    Raises LookupError (missing/inactive task) or ValueError (invalid merge). If both tasks
+    already have a Jira issue the source's key is returned for the caller to deal with - no Jira
+    call is made here."""
+    if source_task_id == target_task_id:
+        raise ValueError("A task cannot be merged into itself")
+    conn = get_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT task_id, project_id, task_text, owner, deadline, blocker, jira_issue_key,
+                       possible_duplicate_reason
+                FROM tasks WHERE task_id IN (%s, %s) AND is_active = TRUE FOR UPDATE
+            """, (source_task_id, target_task_id))
+            rows = {str(r["task_id"]): r for r in cur.fetchall()}
+            src, tgt = rows.get(str(source_task_id)), rows.get(str(target_task_id))
+            if not src or not tgt:
+                raise LookupError("Both tasks must exist and be active")
+            if src["project_id"] != tgt["project_id"]:
+                raise ValueError("Tasks belong to different projects")
+
+            fills = {f: src[f] for f in ("owner", "deadline", "blocker") if tgt[f] is None and src[f] is not None}
+            jira_to_close = None
+            if src["jira_issue_key"]:
+                if tgt["jira_issue_key"] is None:
+                    fills["jira_issue_key"] = src["jira_issue_key"]
+                else:
+                    jira_to_close = src["jira_issue_key"]
+            for field, value in fills.items():  # field names come from the fixed tuple above, not input
+                cur.execute(f"UPDATE tasks SET {field} = %s WHERE task_id = %s", (value, target_task_id))
+
+            cur.execute("UPDATE task_events SET task_id = %s WHERE task_id = %s", (target_task_id, source_task_id))
+
+            # Re-point dependency edges. Edges between the two tasks would become self-loops: drop them.
+            cur.execute("""
+                DELETE FROM task_dependencies
+                WHERE (task_id = %s AND depends_on_task_id = %s) OR (task_id = %s AND depends_on_task_id = %s)
+            """, (source_task_id, target_task_id, target_task_id, source_task_id))
+            cur.execute("""
+                INSERT INTO task_dependencies (task_id, depends_on_task_id)
+                SELECT %s, depends_on_task_id FROM task_dependencies WHERE task_id = %s
+                ON CONFLICT DO NOTHING
+            """, (target_task_id, source_task_id))
+            cur.execute("""
+                INSERT INTO task_dependencies (task_id, depends_on_task_id)
+                SELECT task_id, %s FROM task_dependencies WHERE depends_on_task_id = %s
+                ON CONFLICT DO NOTHING
+            """, (target_task_id, source_task_id))
+            cur.execute(
+                "DELETE FROM task_dependencies WHERE task_id = %s OR depends_on_task_id = %s",
+                (source_task_id, source_task_id),
+            )
+
+            cur.execute(
+                "UPDATE tasks SET possible_duplicate_of = NULL, possible_duplicate_reason = NULL "
+                "WHERE possible_duplicate_of = %s OR task_id = %s",
+                (source_task_id, target_task_id),
+            )
+            cur.execute("""
+                UPDATE tasks SET is_active = FALSE, possible_duplicate_of = NULL,
+                                 possible_duplicate_reason = NULL, updated_at = now()
+                WHERE task_id = %s
+            """, (source_task_id,))
+            cur.execute("UPDATE tasks SET updated_at = now() WHERE task_id = %s", (target_task_id,))
+            cur.execute("""
+                INSERT INTO duplicate_decisions
+                    (project_id, task_id, other_task_id, task_text, other_task_text, decision, reason)
+                VALUES (%s, %s, %s, %s, %s, 'merged', %s)
+            """, (src["project_id"], source_task_id, target_task_id, src["task_text"], tgt["task_text"],
+                  src["possible_duplicate_reason"]))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+    return {
+        "merged_task_id": source_task_id,
+        "into_task_id": target_task_id,
+        "filled_fields": {k: str(v) if v is not None else None for k, v in fills.items()},
+        "source_jira_issue_key_not_transferred": jira_to_close,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Project people (project_people table)
 # ---------------------------------------------------------------------------
 
@@ -985,7 +1150,8 @@ def fetch_project_tasks_with_dependencies(project_id: str):
     conn = get_connection()
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("""
-            SELECT task_id, task_text, owner, status, deadline, blocker, priority, updated_at
+            SELECT task_id, task_text, owner, status, deadline, blocker, priority, updated_at,
+                   possible_duplicate_of
             FROM tasks
             WHERE project_id = %s AND is_active = TRUE
             ORDER BY
@@ -1003,6 +1169,11 @@ def fetch_project_tasks_with_dependencies(project_id: str):
 
     task_text_by_id = {t["task_id"]: t["task_text"] for t in tasks}
     for t in tasks:
+        other = t.pop("possible_duplicate_of", None)
+        # Only meaningful while the task it was flagged against is still active.
+        t["possible_duplicate_of"] = (
+            {"task_id": other, "task_text": task_text_by_id[other]} if other in task_text_by_id else None
+        )
         t["depends_on"] = [
             {"task_id": tid, "task_text": task_text_by_id.get(tid)}
             for tid in depends_on_map.get(t["task_id"], [])
@@ -1092,6 +1263,7 @@ def delete_project(project_id: str) -> int:
             deleted_tasks = cur.rowcount
             cur.execute("DELETE FROM project_integrations WHERE project_id = %s", (project_id,))
             cur.execute("DELETE FROM agent_jobs WHERE project_id = %s", (project_id,))
+            cur.execute("DELETE FROM duplicate_decisions WHERE project_id = %s", (project_id,))
         conn.commit()
     except Exception:
         conn.rollback()

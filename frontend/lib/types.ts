@@ -37,6 +37,9 @@ export interface Task {
   updated_at: string;
   depends_on: TaskRef[];
   blocks: TaskRef[];
+  // Set when the matcher couldn't tell whether this is a new task or a repeat of an existing
+  // one, so it created a new task and flagged the existing one for a person to resolve.
+  possible_duplicate_of?: TaskRef | null;
 }
 
 export interface TraceEntry {

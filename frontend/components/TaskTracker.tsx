@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { addDependency, patchTask, removeDependency } from "@/lib/api";
+import { addDependency, markNotDuplicate, mergeTask, patchTask, removeDependency } from "@/lib/api";
 import type { Status, Task, TaskRef } from "@/lib/types";
 import PriorityBadge from "./PriorityBadge";
 import StatusBadge from "./StatusBadge";
@@ -183,6 +183,65 @@ function DependencyCell({
   );
 }
 
+function DuplicateNotice({
+  task,
+  onResolved,
+}: {
+  task: Task;
+  onResolved: (task_id: string, merged: boolean, filled: Record<string, string | null>) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const other = task.possible_duplicate_of;
+  if (!other) return null;
+
+  async function resolve(merge: boolean) {
+    if (!other) return;
+    setBusy(true);
+    setError(null);
+    try {
+      if (merge) {
+        const result = await mergeTask(task.task_id, other.task_id);
+        onResolved(task.task_id, true, result.filled_fields);
+      } else {
+        await markNotDuplicate(task.task_id);
+        onResolved(task.task_id, false, {});
+      }
+    } catch {
+      setError("Could not save - try again");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-1.5 rounded-md border border-warning-line bg-warning-bg px-2 py-1 text-[11.5px]">
+      <span className="text-warning">Possible duplicate of</span>
+      <span className="max-w-[200px] truncate text-text-primary" title={other.task_text ?? undefined}>
+        {other.task_text ?? "another task"}
+      </span>
+      <button
+        type="button"
+        onClick={() => resolve(true)}
+        disabled={busy}
+        className="rounded border border-line bg-surface-solid px-1.5 py-0.5 text-text-primary hover:border-accent-to disabled:opacity-50"
+        title="Merge this task into the existing one"
+      >
+        Merge
+      </button>
+      <button
+        type="button"
+        onClick={() => resolve(false)}
+        disabled={busy}
+        className="rounded border border-line bg-surface-solid px-1.5 py-0.5 text-text-muted hover:border-accent-to disabled:opacity-50"
+        title="They are different tasks - keep both"
+      >
+        Keep both
+      </button>
+      {error && <span className="text-danger">{error}</span>}
+    </div>
+  );
+}
+
 export default function TaskTracker({
   tasks,
   onTasksChange,
@@ -200,6 +259,22 @@ export default function TaskTracker({
 
   function handleSaved(taskId: string, field: string, value: string) {
     setTasks((prev) => (prev ?? []).map((t) => (t.task_id === taskId ? { ...t, [field]: value } : t)));
+  }
+
+  function handleDuplicateResolved(taskId: string, merged: boolean, filled: Record<string, string | null>) {
+    setTasks((prev) => {
+      const all = prev ?? [];
+      const flagged = all.find((t) => t.task_id === taskId);
+      if (!merged) return all.map((t) => (t.task_id === taskId ? { ...t, possible_duplicate_of: null } : t));
+      const intoId = flagged?.possible_duplicate_of?.task_id;
+      return all
+        .filter((t) => t.task_id !== taskId)
+        .map((t) => {
+          if (t.task_id === intoId) return { ...t, ...filled };
+          // Anything else that was flagged against the merged-away task is no longer meaningful.
+          return t.possible_duplicate_of?.task_id === taskId ? { ...t, possible_duplicate_of: null } : t;
+        });
+    });
   }
 
   function handleDependencyChange(taskId: string, depends_on: TaskRef[]) {
@@ -259,7 +334,10 @@ export default function TaskTracker({
           <tbody>
             {filtered.map((t) => (
               <tr key={t.task_id} className="border-b border-line last:border-0 hover-tint">
-                <td className="max-w-[260px] truncate px-3.5 py-2 text-text-primary">{t.task_text}</td>
+                <td className="max-w-[320px] px-3.5 py-2 text-text-primary">
+                  <div className="truncate" title={t.task_text}>{t.task_text}</div>
+                  <DuplicateNotice task={t} onResolved={handleDuplicateResolved} />
+                </td>
                 <td className="px-3.5 py-2">
                   <InlineEditCell task={t} field="owner" onSaved={handleSaved} />
                 </td>

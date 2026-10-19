@@ -21,7 +21,9 @@ from apps.db.db import (
     complete_job,
     create_job,
     delete_project,
+    dismiss_possible_duplicate,
     ensure_document_chunks_table,
+    ensure_duplicate_handling_schema,
     ensure_jobs_table,
     ensure_meetings_table,
     ensure_project_people_email_nullable,
@@ -30,6 +32,7 @@ from apps.db.db import (
     fail_job,
     fetch_chat_history,
     fetch_project_tasks_with_dependencies,
+    merge_tasks,
     fetch_projects,
     fetch_recent_agent_activity,
     get_cached_pipeline_result,
@@ -84,6 +87,7 @@ def _startup():
     ensure_source_documents_project_column()
     ensure_project_people_email_nullable()
     ensure_document_chunks_table()
+    ensure_duplicate_handling_schema()
     deleted = cleanup_old_jobs(max_age_hours=24)
     if deleted:
         logger.info(f"Startup cleanup: removed {deleted} stale job row(s)")
@@ -538,6 +542,35 @@ def patch_task(task_id: str, body: TaskPatchRequest):
         raise HTTPException(status_code=400, detail=data["error"])
 
     return data
+
+
+class MergeTaskRequest(BaseModel):
+    into_task_id: str
+
+
+@app.post("/tasks/{task_id}/merge")
+def merge_task(task_id: str, body: MergeTaskRequest):
+    """Merge a flagged possible-duplicate into the existing task it was flagged against.
+    Soft-deletes task_id (history and dependencies move to into_task_id); the decision is
+    recorded in duplicate_decisions."""
+    try:
+        return merge_tasks(task_id, body.into_task_id)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/tasks/{task_id}/not-duplicate")
+def keep_task_separate(task_id: str):
+    """Mark a flagged possible-duplicate as genuinely different; clears the flag and records
+    the decision in duplicate_decisions."""
+    try:
+        return dismiss_possible_duplicate(task_id)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/tasks/{task_id}/dependencies")

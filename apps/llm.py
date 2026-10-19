@@ -35,9 +35,11 @@ def complete(messages: list, tools: list = None, response_format: dict = None, t
     kwargs = {
         "model": model or _MODEL,
         "messages": messages,
-        "temperature": temperature,
         "api_key": _API_KEY,
     }
+    # None omits the parameter: reasoning models (gpt-5, o-series) reject temperature=0.
+    if temperature is not None:
+        kwargs["temperature"] = temperature
     if _API_BASE:
         kwargs["api_base"] = _API_BASE
     if _EXTRA_HEADERS:

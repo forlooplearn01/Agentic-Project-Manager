@@ -1,0 +1,113 @@
+{
+  "_readme": "Ground-truth TARGET task for golden UPDATE EVENTS that have no verbatim twin in the seeded state (the other update events are labeled automatically: the target is the seeded task with identical normalized text). Key = '<meeting number>|<update event text>'. 'targets' = task texts (from the golden expected outputs) that count as the correct task to match; [] means no suitable task exists yet at that point, so the item cannot be scored. 'also_accept' = extra tasks that are an equally valid target because the golden data itself holds near-duplicates for the same deliverable. Hand-labeled by Claude from each item's top-6 cosine neighbours (judgment, not ground truth from the dataset authors) - review and correct freely; an update event with neither a verbatim twin nor an entry here makes the eval stop rather than guess.",
+  "labels": {
+    "2|Initiate production network whitelist approval request": {
+      "targets": [
+        "Initiate production network whitelist approval request and share reference number with Sarah"
+      ]
+    },
+    "3|Run real-data validation of multi-cluster merge output": {
+      "targets": [],
+      "note": "the task it refers to is only created in meeting 4"
+    },
+    "4|Push three minor CSV module fixes": {
+      "targets": [
+        "Push three minor CSV module fixes (null-column stats test, configurable sample size, test label rename)"
+      ]
+    },
+    "4|Run real-data validation of multi-cluster merge output": {
+      "targets": [
+        "Run real-data validation of multi-cluster merge output using dev clusters and send findings to Jordan"
+      ]
+    },
+    "4|Complete AI agent implementation and all five graph types": {
+      "targets": [
+        "Build AI Agent and Graph Generation Module"
+      ],
+      "note": "also appears as a new task in meeting 4, so it is excluded as contradictory anyway"
+    },
+    "4|Test LLM graph spec quality without sample rows": {
+      "targets": [],
+      "note": "the task it refers to is only created in meeting 5"
+    },
+    "5|Test multi-graph count enforcement and confirm five-graph cap works": {
+      "targets": [
+        "Test multi-graph count enforcement and confirm five-graph cap works correctly"
+      ]
+    },
+    "5|Test LLM graph spec quality with and without sample rows": {
+      "targets": [
+        "Test LLM graph spec quality with and without sample rows and report findings"
+      ]
+    },
+    "5|Respond to IT security team acknowledging data privacy concern": {
+      "targets": [
+        "Respond to IT security team acknowledging data privacy concern is being addressed"
+      ]
+    },
+    "5|Confirm whitelist approval status": {
+      "targets": [
+        "Follow up on whitelist approval if no confirmation by April 14",
+        "Follow up on whitelist approval status and copy Sarah on email"
+      ],
+      "note": "ambiguous between two follow-up tasks; also appears as a new task in meeting 5, so it is excluded as contradictory anyway"
+    },
+    "7|Fix all four integration test defects": {
+      "targets": [
+        "Fix all four integration test defects (scatter plot y-axis padding, pie chart label overflow with Other-slice merge, missing stat key user-facing warning, PDF table of contents two-pass rendering)"
+      ],
+      "note": "the closest embedding neighbour, 'Regress all four integration test defect fixes', is a different action"
+    },
+    "7|Deliver Integration Testing Report (Deliverable 4.6)": {
+      "targets": [
+        "Deliver Integration Testing Report (Deliverable 4.6)"
+      ],
+      "also_accept": [
+        "Deliver Integration Testing Report"
+      ]
+    },
+    "7|Deliver UAT Report (Deliverable 4.7)": {
+      "targets": [
+        "Deliver UAT Report (Deliverable 4.7)"
+      ],
+      "also_accept": [
+        "Deliver User Acceptance Testing (UAT) Report"
+      ]
+    },
+    "7|Production deployment and configuration": {
+      "targets": [
+        "Execute Production Deployment and Smoke Test"
+      ]
+    },
+    "8|Push dataset cache key fix": {
+      "targets": [
+        "Push dataset cache key fix (include stat_key in cache key alongside cluster_name and time_range)"
+      ]
+    },
+    "8|Write up smoke test results document": {
+      "targets": [
+        "Write up smoke test results document and send to Sarah and Marcus"
+      ]
+    },
+    "8|Add file locking for report index JSON": {
+      "targets": [
+        "Add file locking for report index JSON using filelock library"
+      ]
+    },
+    "8|Conduct requirements audit": {
+      "targets": [
+        "Conduct requirements audit - cross-reference all SOW requirements against implemented functionality and flag any gaps"
+      ]
+    },
+    "8|Schedule knowledge transfer session and send invites": {
+      "targets": [
+        "Schedule knowledge transfer session and send invites to NovaTech team"
+      ]
+    }
+  },
+  "ambiguous_new_tasks": {
+    "_readme": "Golden NEW TASKS that the golden data itself makes ambiguous: the same deliverable already exists in the golden state under a near-identical name, so matching it is arguably correct and the 'should not match' label is not reliable. Excluded from the scored numbers (listed in the output). Key = '<meeting number>|<new task text>'. Only objectively duplicated deliverables are listed - NOT items that merely look similar to something the matcher got wrong. Hand-picked by Claude; review freely.",
+    "6|Deliver Integration Testing Report (Deliverable 4.6)": "the SOW already lists 'Deliver Integration Testing Report' (the same deliverable, 4.6)",
+    "6|Deliver UAT Report (Deliverable 4.7)": "the SOW already lists 'Deliver User Acceptance Testing (UAT) Report' (the same deliverable, 4.7)"
+  }
+}

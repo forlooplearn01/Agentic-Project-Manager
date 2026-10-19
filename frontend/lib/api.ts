@@ -58,6 +58,20 @@ export function addDependency(taskId: string, dependsOnTaskId: string): Promise<
   });
 }
 
+export function mergeTask(
+  taskId: string,
+  intoTaskId: string
+): Promise<{ filled_fields: Record<string, string | null>; source_jira_issue_key_not_transferred: string | null }> {
+  return request(`/tasks/${taskId}/merge`, {
+    method: "POST",
+    body: JSON.stringify({ into_task_id: intoTaskId }),
+  });
+}
+
+export function markNotDuplicate(taskId: string): Promise<{ status: string }> {
+  return request(`/tasks/${taskId}/not-duplicate`, { method: "POST" });
+}
+
 export function removeDependency(taskId: string, dependsOnTaskId: string): Promise<{ status: string }> {
   return request(`/tasks/${taskId}/dependencies/${dependsOnTaskId}`, {
     method: "DELETE",

@@ -34,6 +34,7 @@ narwhals==2.18.0
 numpy==2.4.3
 openai==2.29.0
 litellm
+pytest
 orjson==3.11.7
 ormsgpack==1.12.2
 packaging==26.0

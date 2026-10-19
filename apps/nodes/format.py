@@ -7,6 +7,7 @@ from apps.db.db import (
     fetch_task_by_normalized_text,
     fetch_semantic_task_match,
     log_unresolved_event,
+    set_possible_duplicate,
     upsert_source_document,
     add_task_dependency,
     ensure_person_placeholder,
@@ -155,7 +156,10 @@ def store_tasks(state: AgentState):
             # missed (a race condition), not to re-litigate match.py's own low-confidence call -
             # match.py already treats 0.55-0.65 as "too weak to trust, call it new", and this guard
             # must not silently override that decision by re-matching the same case as a duplicate.
-            semantic_match = fetch_semantic_task_match(task_data["task_text"], project_id)
+            semantic_match = (
+                None if event.get("llm_adjudicated")
+                else fetch_semantic_task_match(task_data["task_text"], project_id)
+            )
             if semantic_match and semantic_match.get("similarity_score", 0) >= 0.85:
                 existing_task_id = semantic_match["task_id"]
                 score = semantic_match["similarity_score"]
@@ -176,11 +180,15 @@ def store_tasks(state: AgentState):
                 logger.error(f"Task insert failed for '{task_data['task_text']}': {e}")
                 continue
 
+            if event.get("possible_duplicate_of"):
+                set_possible_duplicate(task_id, event["possible_duplicate_of"], event.get("possible_duplicate_reason"))
+
             event["matched_task_id"] = task_id
             event["is_matched"] = True
             event["matched_task_text"] = event.get("task_text")
-            event["match_method"] = "created"  # explicitly mark as newly created task
-            event["match_confidence"] = "high"  # new tasks are always high confidence
+            if event.get("match_method") != "llm_unsure":  # keep the review flag for task_events
+                event["match_method"] = "created"  # explicitly mark as newly created task
+                event["match_confidence"] = "high"  # new tasks are always high confidence
 
 
 def store_events(state: AgentState):
