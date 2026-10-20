@@ -26,11 +26,14 @@ export default function MeetingsPanel({
   projectId,
   refreshKey,
   onReview,
+  onOpenPeople,
 }: {
   projectId: string;
   // bump this from the parent whenever a meeting decision happens elsewhere, to refetch
   refreshKey?: number;
   onReview: (meeting: Meeting) => void;
+  // Jumps to the People tab, where unresolved attendees get their email added.
+  onOpenPeople?: () => void;
 }) {
   const [meetings, setMeetings] = useState<Meeting[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,8 +54,26 @@ export default function MeetingsPanel({
     return <p className="text-[13px] text-text-faint">No meetings yet - the Meeting Coordinator proposes one here when meeting minutes call for a follow-up.</p>;
   }
 
+  const pending = meetings.filter((m) => m.status === "pending_approval");
+  const unresolvedNames = Array.from(new Set(pending.flatMap((m) => m.unresolved_attendees)));
+
   return (
     <div className="flex flex-col gap-2">
+      {pending.length > 0 && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-warning-line bg-warning-bg px-3.5 py-2.5 text-[12.5px]">
+          <IconAlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
+          <div className="min-w-0 text-text-primary">
+            <p className="font-medium">
+              {pending.length === 1 ? "1 meeting needs your approval" : `${pending.length} meetings need your approval`}
+            </p>
+            <p className="mt-0.5 text-text-muted">
+              Nothing is scheduled until you approve it. Use Review on the meeting below whenever you are ready, or leave it pending.
+              {unresolvedNames.length > 0 &&
+                ` ${unresolvedNames.length === 1 ? "1 attendee has" : `${unresolvedNames.length} attendees have`} no email on file yet.`}
+            </p>
+          </div>
+        </div>
+      )}
       {meetings.map((m) => {
         const meta = STATUS_META[m.status];
         return (
@@ -70,6 +91,20 @@ export default function MeetingsPanel({
                 {meta.label}
               </span>
             </div>
+
+            {m.status === "pending_approval" && m.unresolved_attendees.length > 0 && (
+              <p className="mt-2 text-[12px] text-warning">
+                Couldn&apos;t match to an email: {m.unresolved_attendees.join(", ")}
+                {onOpenPeople && (
+                  <>
+                    {" "}-{" "}
+                    <button type="button" onClick={onOpenPeople} className="font-medium underline">
+                      add them in People
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
 
             <div className="mt-2 flex items-center justify-between gap-2">
               {m.status === "scheduled" && m.meeting_link ? (

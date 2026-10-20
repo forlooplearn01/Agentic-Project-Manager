@@ -5,7 +5,14 @@ import type { ProjectPerson } from "@/lib/types";
 import { addProjectPerson, fetchProjectPeople, removeProjectPerson } from "@/lib/api";
 import { IconAlertTriangle, IconPlus, IconX } from "./icons";
 
-export default function PeoplePanel({ projectId }: { projectId: string }) {
+export default function PeoplePanel({
+  projectId,
+  onPeopleChange,
+}: {
+  projectId: string;
+  // Called whenever the list is loaded or changed, so the parent's tab badge stays current.
+  onPeopleChange?: (people: ProjectPerson[]) => void;
+}) {
   const [people, setPeople] = useState<ProjectPerson[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -18,6 +25,11 @@ export default function PeoplePanel({ projectId }: { projectId: string }) {
   const [resolvingName, setResolvingName] = useState<string | null>(null);
   const [resolveEmail, setResolveEmail] = useState("");
   const [resolving, setResolving] = useState(false);
+
+  useEffect(() => {
+    if (people) onPeopleChange?.(people);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [people]);
 
   function load() {
     fetchProjectPeople(projectId)
