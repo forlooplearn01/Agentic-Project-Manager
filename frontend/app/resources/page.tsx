@@ -54,6 +54,7 @@ const STEPS: Step[] = [
       "Work done counts partial credit on tasks still open, and is capped at 90% until a task is completed.",
       "Work due by now is spread evenly across the planned weeks from kickoff.",
       "The forecast is hours logged plus hours still needed on open tasks. Tasks with no estimate are listed so they are not forgotten.",
+      "The Capacity tab shows who is free and who is over capacity, week by week. Capacity and skills are edited under Workspace > People.",
     ],
     href: "/products/hours",
     link: "Open Hours",

@@ -156,11 +156,45 @@ def test_availability_lists_unknowns_instead_of_guessing():
               "plan_finish_week": 5, "hours_still_needed": None, "deadline": None}]
     r = compute_availability(_people(), tasks, [], settings, date(2026, 10, 26), date(2026, 10, 30), date(2026, 10, 26))
     bo = next(p for p in r["people"] if p["name"] == "Bo")
-    assert bo["planned_load_in_window"] == 0 and bo["unknown_items"] == [{"task": "No estimate", "reason": "no estimate"}]
+    assert bo["planned_load_in_window"] == 0 and bo["unknown_items"] == [{"task_id": "t", "task": "No estimate", "reason": "no estimate"}]
     cy = next(p for p in r["people"] if p["name"] == "Cy")
     assert cy["available_hours"] is None
     assert r["people"][-1]["name"] == "Cy"  # unknown capacity sorts last
     assert len(r["notes"]) == 2
+
+
+def test_availability_by_week_planned_actual_and_over():
+    settings = {"kickoff_date": KICKOFF}
+    # estimate 43 h, 27 h logged (below), so 16 h left, due Friday of week 6 (2026-11-06): 8 working days from Wed 28 Oct = 2 h a day
+    tasks = [{"task_id": "t", "task_text": "Build X", "owner": "Bo", "status": "in_progress", "estimate_hours": 43,
+              "plan_finish_week": 6, "hours_still_needed": None, "deadline": None}]
+    as_of = date(2026, 10, 28)  # Wednesday of week 5
+    # Bo (capacity 20) logged 18 h in the week of 19 Oct (week 4, already over) and 9 h so far this week
+    entries = [{"person": "Bo", "week_start": date(2026, 10, 19), "task_id": "t", "hours": 18.0},
+               {"person": "bo", "week_start": date(2026, 10, 26), "task_id": "t", "hours": 9.0}]
+    r = compute_availability(_people(), tasks, entries, settings, date(2026, 10, 19), date(2026, 11, 6), as_of)
+    assert r["weeks"] == ["2026-10-19", "2026-10-26", "2026-11-02"]
+    bo = next(p for p in r["people"] if p["name"] == "Bo")
+    past, current, nxt = bo["weeks"]
+    assert past["kind"] == "actual" and past["load"] == 18 and past["capacity"] == 20 and not past["over"]
+    # the current week shows the planned 6 h (Wed-Fri); the 9 h logged so far is given separately and not added to it
+    assert current["kind"] == "planned" and current["load"] == 6 and current["logged"] == 9 and not current["over"]
+    assert nxt["kind"] == "planned" and nxt["load"] == 10 and nxt["capacity"] == 20 and not nxt["over"]
+    assert bo["over_weeks"] == 0
+
+
+def test_availability_flags_an_over_allocated_week_and_summarises():
+    settings = {"kickoff_date": KICKOFF}
+    tasks = [{"task_id": "t", "task_text": "Big", "owner": "Bo", "status": "in_progress", "estimate_hours": 60,
+              "plan_finish_week": 5, "hours_still_needed": None, "deadline": None},
+             {"task_id": "u", "task_text": "No date", "owner": "Ana", "status": "in_progress", "estimate_hours": 10,
+              "plan_finish_week": None, "hours_still_needed": None, "deadline": None}]
+    r = compute_availability(_people(), tasks, [], settings, date(2026, 10, 26), date(2026, 10, 30), date(2026, 10, 26))
+    bo = next(p for p in r["people"] if p["name"] == "Bo")
+    assert bo["weeks"][0]["load"] == 60 and bo["weeks"][0]["over"] and bo["over_weeks"] == 1 and bo["available_hours"] == -40
+    s = r["summary"]
+    assert s["over_allocated"] == 1 and s["no_capacity"] == 1 and s["unknown_tasks"] == 1 and s["people"] == 3
+    assert s["capacity_in_window"] == 40 + 20 and s["planned_load_in_window"] == 60 and s["available_hours"] == 0
 
 
 @pytest.mark.parametrize("query,expected", [

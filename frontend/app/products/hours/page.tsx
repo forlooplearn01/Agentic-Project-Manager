@@ -161,7 +161,7 @@ function Hours() {
           )}
           {report && activeTab === "capacity" && (
             <div role="tabpanel" id="tabpanel-capacity" aria-labelledby="tab-capacity">
-              <CapacityPanel projectId={currentProject.project_id} people={people} onPeopleChanged={(p) => { setPeople(p); reload(); }} />
+              <CapacityPanel projectId={currentProject.project_id} />
             </div>
           )}
         </div>

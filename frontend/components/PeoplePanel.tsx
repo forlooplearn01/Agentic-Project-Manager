@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { ProjectPerson } from "@/lib/types";
 import { addProjectPerson, fetchProjectPeople, removeProjectPerson, setPersonCapacity } from "@/lib/api";
 import { NumberCell, SkillsCell } from "./hours/shared";
@@ -224,6 +225,13 @@ export default function PeoplePanel({
             </div>
           ))}
         </div>
+      )}
+
+      {people && people.length > 0 && (
+        <p className="text-[12px] text-text-faint">
+          Capacity and skills are set here. To see who is free and how loaded each person is week by week, open{" "}
+          <Link href={`/products/hours?project=${encodeURIComponent(projectId)}&tab=capacity`} className="underline hover:text-text-primary">Hours &gt; Capacity</Link>.
+        </p>
       )}
 
       {adding ? (

@@ -235,7 +235,12 @@ def compute_availability(people: list, tasks: list, entries: list, settings: dic
                          as_of: date, skill: str = None) -> dict:
     """Free hours per person between window_start and window_end: weekly capacity for the working days in the window minus the
     remaining hours of their open tasks, each spread evenly over the working days from today to that task's due date. Open tasks
-    with no known remaining hours or no due date are listed as unknown and never guessed."""
+    with no known remaining hours or no due date are listed as unknown and never guessed.
+
+    Also a week-by-week breakdown for the Capacity grid: each week of the window (by the project's week start) has the person's capacity for
+    its working days inside the window and a load. A week that is already over shows the hours LOGGED in it (actual); the current and later
+    weeks show the planned hours (planned work only starts today, so the current week's capacity is its remaining days; hours already logged
+    this week are given separately and are not added, to avoid mixing a whole week of logged hours with only its remaining capacity)."""
     kickoff = (settings or {}).get("kickoff_date")
     start_day = int((settings or {}).get("week_start_day") or 0)
     logged = {}
@@ -243,12 +248,21 @@ def compute_availability(people: list, tasks: list, entries: list, settings: dic
         if e.get("task_id") is not None:
             logged[e["task_id"]] = logged.get(e["task_id"], 0.0) + float(e["hours"])
     window_days = business_days(window_start, window_end)
+    grid = {}  # week start -> working days of that week inside the window
+    for d in window_days:
+        grid.setdefault(week_start(d, start_day), []).append(d)
+    logged_by = {}  # (lower-cased person, week start) -> hours logged
+    for e in entries:
+        ws = e["week_start"] if isinstance(e["week_start"], date) else date.fromisoformat(str(e["week_start"])[:10])
+        key = (e["person"].lower(), ws)
+        logged_by[key] = logged_by.get(key, 0.0) + float(e["hours"])
     out = []
     for p in people:
         if not _skill_match(p, skill):
             continue
         cap = _num(p.get("weekly_capacity_hours"))
         load, unknown = 0.0, []
+        planned_by_week = {}
         for t in tasks:
             if (t.get("owner") or "").lower() != p["name"].lower() or t.get("status") == "completed":
                 continue
@@ -256,7 +270,7 @@ def compute_availability(people: list, tasks: list, entries: list, settings: dic
                                  _num(t.get("hours_still_needed")))
             due = _due_date(t, kickoff, start_day)
             if rem is None or due is None:
-                unknown.append({"task": t["task_text"], "reason": "no estimate" if rem is None else "no due date"})
+                unknown.append({"task_id": t["task_id"], "task": t["task_text"], "reason": "no estimate" if rem is None else "no due date"})
                 continue
             span = business_days(as_of, max(due, as_of))
             if due < as_of:  # already late: assume the work lands in the next five working days
@@ -265,12 +279,23 @@ def compute_availability(people: list, tasks: list, entries: list, settings: dic
                 span = [as_of]
             overlap = [d for d in span if window_start <= d <= window_end]
             load += rem * len(overlap) / len(span)
+            for d in overlap:
+                ws = week_start(d, start_day)
+                planned_by_week[ws] = planned_by_week.get(ws, 0.0) + rem / len(span)
         capacity = None if cap is None else cap * len(window_days) / 5
+        weeks = []
+        for ws, days in sorted(grid.items()):
+            week_cap = None if cap is None else cap * len(days) / 5
+            past = ws + timedelta(days=6) < as_of
+            logged_w = logged_by.get((p["name"].lower(), ws), 0.0)
+            week_load = logged_w if past else planned_by_week.get(ws, 0.0)
+            weeks.append({"week": ws.isoformat(), "kind": "actual" if past else "planned", "capacity": _r(week_cap), "load": _r(week_load),
+                          "logged": _r(logged_w), "over": week_cap is not None and week_load > week_cap + 0.05})
         out.append({
             "name": p["name"], "role": p.get("role"), "skills": p.get("skills") or [],
             "weekly_capacity_hours": _r(cap), "capacity_in_window": _r(capacity), "planned_load_in_window": _r(load),
             "available_hours": None if capacity is None else _r(capacity - load),
-            "unknown_items": unknown,
+            "unknown_items": unknown, "weeks": weeks, "over_weeks": sum(1 for w in weeks if w["over"]),
         })
     out.sort(key=lambda r: (r["available_hours"] is None, -(r["available_hours"] or 0)))
     notes = []
@@ -278,5 +303,12 @@ def compute_availability(people: list, tasks: list, entries: list, settings: dic
         notes.append("Some people have no weekly capacity set, so their free hours are unknown.")
     if any(r["unknown_items"] for r in out):
         notes.append("Some open tasks have no estimate or no due date; they are listed per person and not counted in the load.")
+    known = [r for r in out if r["available_hours"] is not None]
+    summary = {"people": len(out), "capacity_in_window": _r(sum(r["capacity_in_window"] for r in known)),
+               "planned_load_in_window": _r(sum(r["planned_load_in_window"] for r in known)),
+               "available_hours": _r(sum(r["available_hours"] for r in known)),
+               "over_allocated": sum(1 for r in out if r["over_weeks"] or (r["available_hours"] is not None and r["available_hours"] < 0)),
+               "no_capacity": sum(1 for r in out if r["weekly_capacity_hours"] is None),
+               "unknown_tasks": sum(len(r["unknown_items"]) for r in out)}
     return {"window": {"from": window_start.isoformat(), "to": window_end.isoformat(), "working_days": len(window_days)},
-            "skill_filter": skill, "people": out, "notes": notes}
+            "skill_filter": skill, "people": out, "weeks": [w.isoformat() for w in sorted(grid)], "summary": summary, "notes": notes}

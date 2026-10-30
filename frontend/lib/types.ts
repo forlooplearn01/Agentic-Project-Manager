@@ -323,13 +323,38 @@ export interface AvailabilityPerson {
   capacity_in_window: number | null;
   planned_load_in_window: number;
   available_hours: number | null;
-  unknown_items: { task: string; reason: string }[];
+  unknown_items: { task_id: string; task: string; reason: string }[];
+  weeks: AvailabilityWeek[];
+  over_weeks: number;
+}
+
+// One week of the window for one person. A week already over shows the hours logged in it ("actual"); the current and later weeks show
+// the planned hours. `logged` is always the hours logged that week (for the current week it is not part of `load`).
+export interface AvailabilityWeek {
+  week: string;
+  kind: "actual" | "planned";
+  capacity: number | null;
+  load: number;
+  logged: number;
+  over: boolean;
+}
+
+export interface AvailabilitySummary {
+  people: number;
+  capacity_in_window: number;
+  planned_load_in_window: number;
+  available_hours: number;
+  over_allocated: number;
+  no_capacity: number;
+  unknown_tasks: number;
 }
 
 export interface AvailabilityReport {
   window: { from: string; to: string; working_days: number };
   skill_filter: string | null;
   people: AvailabilityPerson[];
+  weeks: string[];
+  summary: AvailabilitySummary;
   notes: string[];
 }
 
