@@ -4,7 +4,7 @@ const RESOURCES = [
   {
     icon: <IconFileText className="h-4 w-4" />,
     title: "Excel export",
-    body: "Works out of the box - no setup. Export any project's tasks to .xlsx from that project's page in Task Manager.",
+    body: "Works out of the box - no setup. Export any project's tasks to .xlsx from that project's page in Workspace.",
   },
   {
     icon: <IconPlug className="h-4 w-4" />,

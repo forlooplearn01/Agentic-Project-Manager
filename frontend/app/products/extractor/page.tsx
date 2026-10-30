@@ -32,7 +32,7 @@ export default function ExtractorPage() {
     <main className="mx-auto max-w-3xl px-6 py-8">
       <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-text-primary">Task Extractor</h1>
+          <h1 className="text-lg font-semibold tracking-tight text-text-primary">Extractor</h1>
           <p className="text-[12.5px] text-text-muted">Turn an SOW into a plan, then keep it current with meeting minutes.</p>
         </div>
         {projects && projects.length > 0 && (
@@ -50,7 +50,7 @@ export default function ExtractorPage() {
             href={`/products/task-manager?project=${encodeURIComponent(completedProject)}`}
             className="hover-tint inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface-solid px-3.5 py-2 text-[13px] font-medium text-text-muted transition hover:text-text-primary"
           >
-            View tasks in Task Manager →
+            Open in Workspace →
           </Link>
         </div>
       )}

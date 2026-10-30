@@ -11,12 +11,12 @@ export const metadata: Metadata = {
   description: "Autonomous agents plan and update your project - an SOW creates the plan, meeting minutes update it.",
 };
 
-// Sets data-theme on <html> before first paint (stored choice, else system
+// Sets data-theme (and data-density, for compact tables) on <html> before first paint (stored choice, else system
 // preference), so the page never flashes the wrong theme. Runs as a plain inline
 // script rather than next/script so it's synchronous and blocks paint until done.
 // suppressHydrationWarning on <html> is required because of this - the attribute
 // it sets is real, expected client/server output divergence, not a bug.
-const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('pref-theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`;
+const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('pref-theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);if(localStorage.getItem('pref-density')==='compact'){document.documentElement.setAttribute('data-density','compact');}}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

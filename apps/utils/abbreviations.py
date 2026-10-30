@@ -62,13 +62,20 @@ ABBREVIATION_MAP = {
 }
 
 
+# Entries that are also ordinary words or titles when written in lower case ("the test was done", "will be reviewed",
+# "Dr. Smith", "5 lb"). These only expand when written exactly as in the map (upper case); every other entry stays
+# case-insensitive because people do type "k8s", "poc", "mvp" in lower case.
+CASE_SENSITIVE_ABBREVIATIONS = {"WAS", "BE", "FE", "HA", "DR", "LB", "IDE", "SLA"}
+
+
 def expand_abbreviations(text: str) -> str:
     """
     Replace known abbreviations in text with their full forms.
-    Uses word-boundary matching and is case-insensitive.
+    Uses word-boundary matching. Case-insensitive, except for the entries in CASE_SENSITIVE_ABBREVIATIONS.
     Longer/more specific abbreviations are matched first.
     """
     for abbr, full in ABBREVIATION_MAP.items():
         pattern = r"\b" + re.escape(abbr) + r"\b"
-        text = re.sub(pattern, full, text, flags=re.IGNORECASE)
+        flags = 0 if abbr.upper() in CASE_SENSITIVE_ABBREVIATIONS else re.IGNORECASE
+        text = re.sub(pattern, full, text, flags=flags)
     return text

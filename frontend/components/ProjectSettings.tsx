@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchProjectIntegrations, setProjectJiraKey } from "@/lib/api";
+import InlineEditShell, { focusWithoutScrolling } from "./InlineEditShell";
 
 export default function ProjectSettings({ projectId }: { projectId: string }) {
   const [jiraKey, setJiraKey] = useState<string | null>(null);
@@ -27,31 +28,25 @@ export default function ProjectSettings({ projectId }: { projectId: string }) {
     }
   }
 
-  if (!editing) {
-    return (
-      <button
-        type="button"
-        onClick={() => {
-          setDraft(jiraKey ?? "");
-          setEditing(true);
-        }}
-        className="hover-tint inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface-solid px-3 py-1.5 text-[12.5px] text-text-muted transition hover:text-text-primary"
-        title="Which Jira project this project's tasks sync into"
-      >
-        <span className="text-text-faint">Jira project:</span>
-        {jiraKey ? (
-          <span className="font-mono text-text-primary">{jiraKey}</span>
-        ) : (
-          <span className="text-text-faint">not set</span>
-        )}
-      </button>
-    );
-  }
+  const display = (
+    <button
+      type="button"
+      onClick={() => {
+        setDraft(jiraKey ?? "");
+        setEditing(true);
+      }}
+      className="hover-tint inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface-solid px-3 py-1.5 text-[12.5px] text-text-muted transition hover:text-text-primary"
+      title="Which Jira project this project's tasks sync into"
+    >
+      <span className="text-text-faint">Jira project:</span>
+      {jiraKey ? <span className="font-mono text-text-primary">{jiraKey}</span> : <span className="text-text-faint">not set</span>}
+    </button>
+  );
 
-  return (
-    <div className="inline-flex items-center gap-1.5">
+  const editor = (
+    <div className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface-solid p-1.5 shadow-lg">
       <input
-        autoFocus
+        ref={focusWithoutScrolling}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && save()}
@@ -66,13 +61,12 @@ export default function ProjectSettings({ projectId }: { projectId: string }) {
       >
         Save
       </button>
-      <button
-        type="button"
-        onClick={() => setEditing(false)}
-        className="hover-tint rounded-lg px-2 py-1.5 text-[12.5px] text-text-faint"
-      >
+      <button type="button" onClick={() => setEditing(false)} className="hover-tint rounded-lg px-2 py-1.5 text-[12.5px] text-text-faint">
         Cancel
       </button>
     </div>
   );
+
+  // The chip stays where it is; the editor floats over it (see InlineEditShell), so the header never shifts.
+  return <InlineEditShell editing={editing} display={display} editor={editor} minWidth="16rem" align="right" />;
 }

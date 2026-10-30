@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { PREFS_CHANGED_EVENT, getDisplayName } from "@/lib/preferences";
 import {
   IconBookOpen,
   IconFileText,
   IconChecklist,
+  IconClock,
   IconGauge,
   IconInbox,
   IconLayers,
@@ -14,14 +16,17 @@ import {
   IconPlug,
   IconSearch,
   IconSettings,
+  IconTable,
 } from "./icons";
 
 type NavItem = { href: string; label: string; icon: React.ReactNode };
 
 const PRODUCT_ITEMS: NavItem[] = [
   { href: "/products/dashboard", label: "Dashboard", icon: <IconGauge className="h-4 w-4" /> },
-  { href: "/products/extractor", label: "Task Extractor", icon: <IconFileText className="h-4 w-4" /> },
-  { href: "/products/task-manager", label: "Task Manager", icon: <IconChecklist className="h-4 w-4" /> },
+  { href: "/products/extractor", label: "Extractor", icon: <IconFileText className="h-4 w-4" /> },
+  { href: "/products/task-manager", label: "Workspace", icon: <IconChecklist className="h-4 w-4" /> },
+  { href: "/products/registers", label: "Registers", icon: <IconTable className="h-4 w-4" /> },
+  { href: "/products/hours", label: "Hours", icon: <IconClock className="h-4 w-4" /> },
 ];
 
 const ACCOUNT_ITEMS: NavItem[] = [
@@ -55,6 +60,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [query, setQuery] = useState("");
+  // Read after mount (localStorage does not exist on the server) and again whenever Settings changes it.
+  const [displayName, setDisplayNameState] = useState("");
+  useEffect(() => {
+    const read = () => setDisplayNameState(getDisplayName());
+    read();
+    window.addEventListener(PREFS_CHANGED_EVENT, read);
+    return () => window.removeEventListener(PREFS_CHANGED_EVENT, read);
+  }, []);
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -67,9 +80,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="flex w-60 shrink-0 flex-col gap-5 border-r border-line bg-surface-solid/60 px-3 py-5">
         <Link href="/products/dashboard" className="flex items-center gap-2.5 px-1.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent-from to-accent-to text-sm font-bold text-white shadow-[0_4px_16px_-4px_var(--color-accent-to)]">
-            A
+            {(displayName || "A").charAt(0).toUpperCase()}
           </div>
-          <span className="text-[13.5px] font-semibold tracking-tight text-text-primary">Agentic Project Manager</span>
+          <span className="text-[13.5px] font-semibold tracking-tight text-text-primary">{displayName || "Agentic Project Manager"}</span>
         </Link>
 
         <form onSubmit={handleSearchSubmit} className="px-1.5">

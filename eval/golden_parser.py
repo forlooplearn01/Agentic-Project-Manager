@@ -118,3 +118,26 @@ def parse_meeting(path: str) -> GoldenMeeting:
                 should_not_lines.append(stripped)
 
     return GoldenMeeting(new_tasks=new_tasks, should_not_be_picked=should_not_lines, update_events=update_events)
+
+
+@dataclass
+class GoldenDeliverable:
+    title: str
+    subtasks: list = field(default_factory=list)
+
+
+def parse_sow_hierarchy(path: str) -> list:
+    """The SOW golden file's top-level tasks (the deliverables) each with their Subtasks list - the answer key for
+    "which deliverable does this task belong to". parse_sow() deliberately ignores subtasks; this reads only them."""
+    text = open(path).read()
+    tasks_section = re.search(r"TASKS:\s*\n(.*?)\n\nEVENTS:", text, re.DOTALL)
+    body = tasks_section.group(1) if tasks_section else ""
+    out = []
+    for block in re.split(r"\n(?=\d+\.\s)", body.strip()):
+        title = re.match(r"\d+\.\s+(.+)", block)
+        if not title:
+            continue
+        subs = re.search(r"Subtasks:\s*\n(.*)", block, re.DOTALL)
+        items = [m.strip() for m in re.findall(r"^\s*-\s+(.+)$", subs.group(1), re.M)] if subs else []
+        out.append(GoldenDeliverable(title=title.group(1).strip(), subtasks=items))
+    return out

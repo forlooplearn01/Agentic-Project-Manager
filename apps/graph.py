@@ -9,6 +9,7 @@ from apps.nodes.planning_node import task_planning_node
 from apps.nodes.sync_reporting_node import task_sync_reporting_node
 from apps.nodes.meeting_coordinator_node import task_meeting_coordinator_node
 from apps.nodes.format import task_format_node
+from apps.nodes.sow_registers_node import task_sow_registers_node
 from apps.nodes.finalize_node import task_finalize_node
 
 
@@ -22,6 +23,7 @@ def build_graph():
     graph.add_node("match", task_match_node)
     graph.add_node("planning", task_planning_node)
     graph.add_node("format", task_format_node)
+    graph.add_node("sow_registers", task_sow_registers_node)
     graph.add_node("sync_reporting", task_sync_reporting_node)
     graph.add_node("meeting_coordinator", task_meeting_coordinator_node)
     graph.add_node("finalize", task_finalize_node)
@@ -41,7 +43,8 @@ def build_graph():
     graph.add_edge("normalize", "match")
     graph.add_edge("match", "planning")
     graph.add_edge("planning", "format")
-    graph.add_edge("format", "sync_reporting")
+    graph.add_edge("format", "sow_registers")
+    graph.add_edge("sow_registers", "sync_reporting")
     graph.add_edge("sync_reporting", "meeting_coordinator")
     graph.add_edge("meeting_coordinator", "finalize")
     graph.add_edge("finalize", END)

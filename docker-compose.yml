@@ -43,6 +43,8 @@ services:
             DB_HOST: postgres
             DB_PORT: 5432
             MCP_SERVER_URL: http://mcp:8001
+            # Model for AI RAID suggestions only (measured better than the app-wide default, see DECISIONS.md); set empty to use LLM_MODEL.
+            RAID_AI_MODEL: ${RAID_AI_MODEL-gpt-4.1}
         ports:
             - "8010:8000"
         volumes:

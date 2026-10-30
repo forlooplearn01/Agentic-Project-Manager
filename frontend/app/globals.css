@@ -29,6 +29,13 @@
   --info-base: #38bdf8;
   --info-bg-base: #38bdf81a;
   --link-base: #a5b4fc;
+  /* RAID statuses: open = orange, mitigating = yellow (closed reuses the success green). */
+  --status-open-base: #fb923c;
+  --status-open-bg-base: #fb923c22;
+  --status-open-line-base: #fb923c55;
+  --status-mitigating-base: #facc15;
+  --status-mitigating-bg-base: #facc1522;
+  --status-mitigating-line-base: #facc1555;
 
   /* Vivid, distinct hues for dashboard stat cards and the activity feed - deliberately
      not all the same accent gradient, so metrics read as lively, not monochrome. */
@@ -68,6 +75,12 @@
   --info-base: #0284c7;
   --info-bg-base: #38bdf81f;
   --link-base: #4338ca;
+  --status-open-base: #c2410c;
+  --status-open-bg-base: #fb923c2e;
+  --status-open-line-base: #ea580c66;
+  --status-mitigating-base: #a16207;
+  --status-mitigating-bg-base: #facc1540;
+  --status-mitigating-line-base: #ca8a0466;
 
   --stat-indigo: #4f46e5;
   --stat-blue: #0284c7;
@@ -105,6 +118,12 @@
   --color-danger-bg: var(--danger-bg-base);
   --color-info: var(--info-base);
   --color-info-bg: var(--info-bg-base);
+  --color-status-open: var(--status-open-base);
+  --color-status-open-bg: var(--status-open-bg-base);
+  --color-status-open-line: var(--status-open-line-base);
+  --color-status-mitigating: var(--status-mitigating-base);
+  --color-status-mitigating-bg: var(--status-mitigating-bg-base);
+  --color-status-mitigating-line: var(--status-mitigating-line-base);
 
   --color-stat-indigo: var(--stat-indigo);
   --color-stat-blue: var(--stat-blue);
@@ -115,6 +134,17 @@
 
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
+}
+
+/* Compact tables (Settings > Table rows): tighter cell padding in every table. Un-layered, so it beats the utility classes. */
+[data-density="compact"] table :is(td, th) {
+  padding-block: 0.25rem;
+}
+
+html {
+  /* Reserve the scrollbar's width even when there is none, so a page that becomes taller (new rows, an open panel) never
+     pushes everything sideways. */
+  scrollbar-gutter: stable;
 }
 
 body {

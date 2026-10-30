@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchPendingMeetings, fetchProjects } from "@/lib/api";
+import { fetchHoursSummary, fetchPendingMeetings, fetchProjects } from "@/lib/api";
 import { getActivityFeedCollapsed, setActivityFeedCollapsed } from "@/lib/preferences";
-import type { ProjectRollup } from "@/lib/types";
+import { formatDateTime } from "@/lib/format";
+import type { HoursSummaryRow, ProjectRollup } from "@/lib/types";
+import { StatusPill, h as hoursText } from "@/components/hours/shared";
 import StatCard from "@/components/StatCard";
 import ActivityFeed from "@/components/ActivityFeed";
 import { IconAlertTriangle, IconCalendar, IconChecklist, IconClock, IconFlame, IconFolder, IconUsers } from "@/components/icons";
@@ -13,6 +15,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<ProjectRollup[] | null>(null);
   const [pendingMeetingsCount, setPendingMeetingsCount] = useState<number | null>(null);
+  const [hoursRows, setHoursRows] = useState<HoursSummaryRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [activityCollapsed, setActivityCollapsedState] = useState(() => getActivityFeedCollapsed());
 
@@ -31,6 +34,9 @@ export default function DashboardPage() {
     fetchPendingMeetings()
       .then((r) => setPendingMeetingsCount(r.meetings.length))
       .catch(() => setPendingMeetingsCount(null));
+    fetchHoursSummary()
+      .then((r) => setHoursRows(r.projects))
+      .catch(() => setHoursRows([]));
   }, []);
 
   const totals = (projects ?? []).reduce(
@@ -70,11 +76,36 @@ export default function DashboardPage() {
             </div>
           </section>
 
+          {hoursRows.length > 0 && (
+            <section aria-label="Hours">
+              <h2 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-text-faint">Hours left</h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                {hoursRows.map((r) => (
+                  <button
+                    key={r.project_id}
+                    onClick={() => router.push(`/products/hours?project=${encodeURIComponent(r.project_id)}`)}
+                    className="hover-tint glass-panel animate-card-in rounded-xl p-4 text-left transition"
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <h3 className="truncate text-sm font-semibold text-text-primary">{r.project_id}</h3>
+                      <StatusPill status={r.status} />
+                    </div>
+                    <p className="text-2xl font-semibold tracking-tight tabular-nums text-text-primary">
+                      {r.hours_left_in_budget === null ? "–" : `${hoursText(r.hours_left_in_budget)} h`}
+                      <span className="ml-1.5 text-[12px] font-normal text-text-muted">left{r.budget_hours !== null && ` of ${hoursText(r.budget_hours)} h`}</span>
+                    </p>
+                    <p className="mt-1 text-[12px] text-text-faint">{hoursText(r.logged_hours)} h logged · forecast {hoursText(r.forecast_at_completion)} h</p>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
           <section>
             <h2 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-text-faint">Projects</h2>
             {!projects && !error && <p className="text-[13px] text-text-faint">Loading…</p>}
             {projects && projects.length === 0 && (
-              <p className="text-[13px] text-text-faint">No projects yet - submit an SOW in Task Extractor to create one.</p>
+              <p className="text-[13px] text-text-faint">No projects yet - submit an SOW in Extractor to create one.</p>
             )}
             {projects && projects.length > 0 && (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
@@ -103,7 +134,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                     {p.last_updated && (
-                      <p className="mt-2 text-[11px] text-text-faint">Updated {new Date(p.last_updated).toLocaleString()}</p>
+                      <p className="mt-2 text-[11px] text-text-faint">Updated {formatDateTime(p.last_updated)}</p>
                     )}
                   </button>
                 ))}

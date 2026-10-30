@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { ProjectPerson } from "@/lib/types";
-import { addProjectPerson, fetchProjectPeople, removeProjectPerson } from "@/lib/api";
+import { addProjectPerson, fetchProjectPeople, removeProjectPerson, setPersonCapacity } from "@/lib/api";
+import { NumberCell, SkillsCell } from "./hours/shared";
 import { IconAlertTriangle, IconPlus, IconX } from "./icons";
 
 export default function PeoplePanel({
@@ -138,6 +139,27 @@ export default function PeoplePanel({
                       No email on file - add one
                     </button>
                   )}
+                  <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[12px] text-text-faint">
+                    <span>Capacity</span>
+                    <NumberCell
+                      value={p.weekly_capacity_hours}
+                      placeholder="set"
+                      title="Hours per week this person can give the project"
+                      onSave={async (v) => {
+                        const r = await setPersonCapacity(projectId, p.name, { weekly_capacity_hours: v });
+                        setPeople(r.people);
+                      }}
+                    />
+                    <span>h/week · Skills</span>
+                    <SkillsCell
+                      name={p.name}
+                      skills={p.skills ?? []}
+                      onSave={async (skills) => {
+                        const r = await setPersonCapacity(projectId, p.name, { skills });
+                        setPeople(r.people);
+                      }}
+                    />
+                  </p>
                 </div>
               </div>
               {confirmingName === p.name ? (

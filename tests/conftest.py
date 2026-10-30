@@ -11,7 +11,8 @@ import uuid
 
 import pytest
 
-from apps.db.db import ensure_duplicate_handling_schema, get_connection
+from apps.db.db import ensure_duplicate_handling_schema, ensure_registers_schema, get_connection
+from apps.db.hours_db import ensure_hours_schema
 
 
 @pytest.fixture
@@ -25,13 +26,21 @@ def test_project():
     than production's delete_project(), which intentionally preserves project_people for
     real users. Test data has no such reason to survive."""
     ensure_duplicate_handling_schema()
+    ensure_registers_schema()
+    ensure_hours_schema()
     project_id = f"test-{uuid.uuid4().hex[:10]}"
     try:
         yield project_id
     finally:
         conn = get_connection()
         cur = conn.cursor()
+        cur.execute("DELETE FROM plan_changes WHERE project_id = %s", (project_id,))
+        cur.execute("DELETE FROM time_entries WHERE project_id = %s", (project_id,))
+        cur.execute("DELETE FROM project_hours_settings WHERE project_id = %s", (project_id,))
+        cur.execute("DELETE FROM hours_imports WHERE project_id = %s", (project_id,))
         cur.execute("DELETE FROM duplicate_decisions WHERE project_id = %s", (project_id,))
+        cur.execute("DELETE FROM raid_items WHERE project_id = %s", (project_id,))
+        cur.execute("DELETE FROM deliverables WHERE project_id = %s", (project_id,))
         cur.execute("DELETE FROM document_chunks WHERE project_id = %s", (project_id,))
         cur.execute(
             "DELETE FROM task_events WHERE source_doc_id IN "

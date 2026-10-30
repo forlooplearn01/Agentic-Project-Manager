@@ -1,29 +1,70 @@
 import concurrent.futures
 import hashlib
 import json
+import re
 import threading
 import uuid
-from typing import Optional
+from datetime import date, timedelta
+from typing import List, Literal, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 
 from apps.agent.chat import run_chat_agent
 from apps.graph import build_graph
+from apps.utils.raid_ai import suggest_raid_items_from_text
+from apps.utils.hours_budget_ai import suggest_budget_hours
+from apps.utils import hours_import, timesheet_service, timesheet_watcher
+from apps.utils.plan_export import build_plan_workbook
+from apps.db.plan_db import create_plan_task, list_plan_changes, plan_has_content, plan_summary, remove_plan_task, set_plan_baseline
+from apps.utils.hours import week_start as _week_start
+from apps.utils.registers_export import build_registers_workbook
+from apps.utils.deliverable_ai import propose_assignments, suggest_deliverables_from_text
+from apps.db.hours_db import (
+    apply_plan_import,
+    apply_timesheet_import,
+    availability_report,
+    create_import_record,
+    ensure_hours_schema,
+    fetch_active_tasks_for_hours,
+    fetch_hours_inputs,
+    fetch_time_entries,
+    get_hours_settings,
+    get_import,
+    get_timesheet_week,
+    last_applied_at,
+    list_folder_imports,
+    list_imports,
+    reassign_import_group,
+    project_hours_report,
+    project_ids_with_hours,
+    save_timesheet_week,
+    set_hours_settings,
+    set_person_capacity,
+    set_task_hours,
+    undo_import,
+)
 from apps.db.db import (
+    assign_tasks_to_deliverables,
     add_task_dependency,
     approve_meeting_record,
     cache_pipeline_result,
     cleanup_old_jobs,
     complete_job,
+    create_deliverable,
+    create_deliverables_from_tasks,
     create_job,
+    create_raid_item,
+    delete_deliverable,
     delete_project,
+    delete_raid_item,
     dismiss_possible_duplicate,
     ensure_document_chunks_table,
     ensure_duplicate_handling_schema,
+    ensure_registers_schema,
     ensure_jobs_table,
     ensure_meetings_table,
     ensure_project_people_email_nullable,
@@ -31,8 +72,24 @@ from apps.db.db import (
     ensure_tasks_jira_column,
     fail_job,
     fetch_chat_history,
+    fetch_documents_to_scan,
+    fetch_latest_sow_text,
     fetch_project_tasks_with_dependencies,
+    fetch_unassigned_tasks,
+    find_tasks_similar_to_deliverables,
+    fetch_raci_matrix,
+    list_deliverables,
+    list_raid_items,
+    mark_documents_scanned,
     merge_tasks,
+    promote_risk_to_issue,
+    set_deliverable_raci,
+    set_task_deliverable,
+    store_suggested_deliverables,
+    store_suggested_raid_items,
+    set_task_raci,
+    update_deliverable,
+    update_raid_item,
     fetch_projects,
     fetch_recent_agent_activity,
     get_cached_pipeline_result,
@@ -88,6 +145,9 @@ def _startup():
     ensure_project_people_email_nullable()
     ensure_document_chunks_table()
     ensure_duplicate_handling_schema()
+    ensure_registers_schema()
+    ensure_hours_schema()
+    timesheet_watcher.start_watcher()
     deleted = cleanup_old_jobs(max_age_hours=24)
     if deleted:
         logger.info(f"Startup cleanup: removed {deleted} stale job row(s)")
@@ -365,7 +425,7 @@ def remove_project_person(project_id: str, name: str):
 
 @app.post("/projects/{project_id}/schedule-meeting")
 def schedule_project_meeting(project_id: str, body: ScheduleMeetingRequest):
-    """Manually schedule a meeting from Task Manager, bypassing the Meeting Coordinator
+    """Manually schedule a meeting from the Workspace, bypassing the Meeting Coordinator
     agent entirely - the user filled in every field by hand (title, attendees, time),
     which is already the deliberate decision an agent would otherwise have to infer, so
     there's nothing left for an LLM to reason about here. Calls the same calendar tool
@@ -474,22 +534,27 @@ def put_project_integrations(project_id: str, body: ProjectIntegrationsRequest):
 
 @app.get("/projects/{project_id}/export")
 def export_project_excel(project_id: str):
-    """On-demand Excel export of a project's current tasks - calls the same
-    generate_report the Sync/Reporting agent uses, but directly (no LLM reasoning
-    needed for a deterministic "export what's there right now" action), and streams
-    the file back so a plain <a href download> link in the browser just works."""
-    raw = generate_report(format="excel", project_id=project_id)
-    data = json.loads(raw)
-
-    if "error" in data:
-        raise HTTPException(status_code=500, detail=data["error"])
-    if data.get("tasks_count", 0) == 0:
+    """Excel export of the project's plan: every task with phase, weeks, estimate, baseline, logged and remaining hours, a summary and the
+    change history. One-way (the app is the master); the Sync/Reporting agent keeps using its own generate_report."""
+    if not fetch_project_tasks_with_dependencies(project_id):
         raise HTTPException(status_code=404, detail=f"No tasks found for project '{project_id}'")
-
-    return FileResponse(
-        data["file"],
-        filename=f"{project_id}-tasks.xlsx",
+    return Response(
+        content=build_plan_workbook(project_id),
+        headers={"Content-Disposition": f'attachment; filename="{project_id}-plan.xlsx"'},
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
+@app.get("/projects/{project_id}/registers/export")
+def export_registers_excel(project_id: str):
+    """Excel snapshot of the project's registers (RAID log, RACI by deliverable and by task, deliverables). Read-only: edits
+    made in the file never flow back. Items still waiting for review are left out and counted on the Summary sheet."""
+    data = build_registers_workbook(project_id)
+    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", project_id)  # the id is user text going into a header
+    return Response(
+        content=data,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{safe_name}-registers.xlsx"'},
     )
 
 
@@ -587,6 +652,658 @@ def remove_dependency(task_id: str, depends_on_task_id: str):
     """Remove a dependency edge between two tasks."""
     remove_task_dependency(task_id, depends_on_task_id)
     return {"task_id": task_id, "depends_on_task_id": depends_on_task_id, "status": "removed"}
+
+
+# ---------------------------------------------------------------------------
+# Registers: RAID log and RACI matrix
+# ---------------------------------------------------------------------------
+
+RaidType = Literal["risk", "assumption", "issue", "dependency"]
+RaidStatus = Literal["open", "mitigating", "closed"]
+RaidLevel = Literal["low", "medium", "high"]
+RaidReviewState = Literal["suggested", "confirmed", "rejected"]
+
+
+class RaidItemCreate(BaseModel):
+    item_type: RaidType
+    title: str
+    description: Optional[str] = None
+    owner: Optional[str] = None
+    status: RaidStatus = "open"
+    probability: Optional[RaidLevel] = None
+    impact: Optional[RaidLevel] = None
+    review_date: Optional[date] = None
+
+
+class RaidItemPatch(BaseModel):
+    item_type: Optional[RaidType] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    owner: Optional[str] = None
+    status: Optional[RaidStatus] = None
+    probability: Optional[RaidLevel] = None
+    impact: Optional[RaidLevel] = None
+    review_date: Optional[date] = None
+    review_state: Optional[RaidReviewState] = None
+
+
+class TaskRaciRequest(BaseModel):
+    person: str
+    roles: List[Literal["R", "A", "C", "I"]]
+
+
+@app.get("/projects/{project_id}/raid")
+def get_raid_items(
+    project_id: str,
+    item_type: Optional[RaidType] = Query(None),
+    status: Optional[RaidStatus] = Query(None),
+    review_state: Optional[RaidReviewState] = Query(None),
+):
+    """The project's RAID log. Suggested (AI-proposed, not yet reviewed) items sort first."""
+    return {"items": list_raid_items(project_id, item_type, status, review_state)}
+
+
+@app.post("/projects/{project_id}/raid")
+def add_raid_item(project_id: str, body: RaidItemCreate):
+    try:
+        return create_raid_item(project_id, **body.model_dump())
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+class SuggestRaidRequest(BaseModel):
+    force: bool = False  # re-read documents that were already scanned
+
+
+@app.post("/projects/{project_id}/raid/suggest")
+def suggest_raid_items(project_id: str, body: SuggestRaidRequest = SuggestRaidRequest()):
+    """Ask the assistant to read the project's stored documents (only ones not scanned yet, unless force) and propose RAID
+    items. They are saved as 'suggested' - not part of the log - until a person accepts them; items that restate one already
+    in the log (any state, so rejections are remembered) are skipped. A document the assistant could not read is reported and
+    left unscanned so the next click retries it."""
+    docs = fetch_documents_to_scan(project_id, body.force)
+    if not docs and not fetch_documents_to_scan(project_id, True):
+        raise HTTPException(status_code=400, detail="No documents have been submitted for this project yet.")
+    suggestions, scanned, failed = [], [], 0
+    for doc in docs:
+        kind = "Statement of Work" if doc["document_type"] == "sow" else "set of meeting minutes"
+        try:
+            suggestions.extend(suggest_raid_items_from_text(doc["content"], kind))
+            scanned.append(doc["doc_id"])
+        except RuntimeError:
+            failed += 1
+    if docs and not scanned:
+        raise HTTPException(status_code=502, detail="The assistant could not read the documents right now - try again.")
+    result = store_suggested_raid_items(project_id, suggestions)
+    mark_documents_scanned(scanned)
+    return {**result, "documents_scanned": len(scanned), "documents_failed": failed}
+
+
+@app.patch("/raid/{item_id}")
+def patch_raid_item(item_id: str, body: RaidItemPatch):
+    fields = body.model_dump(exclude_unset=True)
+    try:
+        item = update_raid_item(item_id, fields)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if item is None:
+        raise HTTPException(status_code=404, detail=f"No RAID item with id {item_id}")
+    return item
+
+
+@app.post("/raid/{item_id}/promote-to-issue")
+def promote_raid_risk(item_id: str):
+    """The risk happened: creates an Issue from it and closes the risk, linked to the new issue."""
+    try:
+        return promote_risk_to_issue(item_id)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.delete("/raid/{item_id}")
+def remove_raid_item(item_id: str):
+    if not delete_raid_item(item_id):
+        raise HTTPException(status_code=404, detail=f"No RAID item with id {item_id}")
+    return {"item_id": item_id, "status": "deleted"}
+
+
+@app.get("/projects/{project_id}/raci")
+def get_raci(project_id: str, subject: Literal["task", "deliverable"] = Query("task")):
+    """People columns + one row per task (or per deliverable) with its R/A/C/I assignments and warnings."""
+    return fetch_raci_matrix(project_id, subject)
+
+
+@app.put("/tasks/{task_id}/raci")
+def put_task_raci(task_id: str, body: TaskRaciRequest):
+    """Replace one person's roles on one task (empty list clears them)."""
+    try:
+        roles = set_task_raci(task_id, body.person, body.roles)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"task_id": task_id, "person": body.person.strip(), "roles": roles}
+
+
+# ---------------------------------------------------------------------------
+# Deliverables register (manual-first; see DECISIONS.md "Deliverable-level RACI")
+# ---------------------------------------------------------------------------
+
+TaskStatus = Literal["not_started", "in_progress", "completed", "blocked", "on_hold"]
+
+
+class DeliverableCreate(BaseModel):
+    title: str
+    number: Optional[str] = None
+    owner: Optional[str] = None
+    deadline: Optional[str] = None
+    status: TaskStatus = "not_started"
+
+
+class DeliverablePatch(BaseModel):
+    title: Optional[str] = None
+    number: Optional[str] = None
+    owner: Optional[str] = None
+    deadline: Optional[str] = None
+    status: Optional[TaskStatus] = None
+    review_state: Optional[Literal["suggested", "confirmed", "rejected"]] = None  # accept / reject an AI suggestion
+
+
+class SuggestDeliverablesRequest(BaseModel):
+    definition: Optional[str] = None  # overrides the default definition of "deliverable" for this call only
+
+
+class TaskAssignment(BaseModel):
+    task_id: str
+    deliverable_id: Optional[str] = None
+
+
+class AssignTasksRequest(BaseModel):
+    assignments: List[TaskAssignment]
+
+
+class TaskDeliverableRequest(BaseModel):
+    deliverable_id: Optional[str] = None
+
+
+class DeliverablesFromTasks(BaseModel):
+    task_ids: List[str]
+
+
+@app.get("/projects/{project_id}/deliverables")
+def get_deliverables(project_id: str):
+    return {"deliverables": list_deliverables(project_id)}
+
+
+@app.post("/projects/{project_id}/deliverables")
+def add_deliverable(project_id: str, body: DeliverableCreate):
+    try:
+        return create_deliverable(project_id, **body.model_dump())
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/projects/{project_id}/deliverables/from-tasks")
+def promote_tasks_to_deliverables(project_id: str, body: DeliverablesFromTasks):
+    """Promote extracted tasks to deliverables (the task stays a task). Already-promoted tasks are skipped."""
+    try:
+        return create_deliverables_from_tasks(project_id, body.task_ids)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.get("/projects/{project_id}/deliverables/similar-tasks")
+def get_tasks_similar_to_deliverables(project_id: str):
+    """For the 'Add from tasks' picker: tasks that look like an existing deliverable. A similarity hint a person judges
+    (related sub-tasks score as high as true restatements) - never a duplicate verdict."""
+    return {"similar": find_tasks_similar_to_deliverables(project_id)}
+
+
+@app.post("/projects/{project_id}/deliverables/suggest")
+def suggest_deliverables(project_id: str, body: SuggestDeliverablesRequest = SuggestDeliverablesRequest()):
+    """Ask the assistant to suggest deliverables from the project's latest SOW. They are saved as 'suggested' (not real
+    deliverables, not RACI rows) until a person accepts them; ones that restate an existing deliverable, including a
+    rejected suggestion, are skipped."""
+    sow = fetch_latest_sow_text(project_id)
+    if not sow:
+        raise HTTPException(status_code=400, detail="No SOW has been submitted for this project yet.")
+    try:
+        suggestions = suggest_deliverables_from_text(sow, body.definition)
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    return store_suggested_deliverables(project_id, suggestions)
+
+
+@app.post("/projects/{project_id}/deliverables/suggest-assignments")
+def suggest_task_assignments(project_id: str):
+    """Propose, for each unassigned task, which deliverable it contributes to. Nothing is saved - the proposals are
+    reviewed and then applied with PUT /projects/{id}/deliverables/assign."""
+    deliverables = list_deliverables(project_id, states=("confirmed",))
+    if not deliverables:
+        raise HTTPException(status_code=400, detail="Add or accept some deliverables first.")
+    return {"proposals": propose_assignments(deliverables, fetch_unassigned_tasks(project_id))}
+
+
+@app.put("/projects/{project_id}/deliverables/assign")
+def assign_tasks(project_id: str, body: AssignTasksRequest):
+    try:
+        changed = assign_tasks_to_deliverables(project_id, [a.model_dump() for a in body.assignments])
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return {"changed": changed}
+
+
+@app.put("/tasks/{task_id}/deliverable")
+def put_task_deliverable(task_id: str, body: TaskDeliverableRequest):
+    """Assign one task to a deliverable, or clear it with deliverable_id = null."""
+    try:
+        set_task_deliverable(task_id, body.deliverable_id)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return {"task_id": task_id, "deliverable_id": body.deliverable_id}
+
+
+@app.patch("/deliverables/{deliverable_id}")
+def patch_deliverable(deliverable_id: str, body: DeliverablePatch):
+    try:
+        row = update_deliverable(deliverable_id, body.model_dump(exclude_unset=True))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"No deliverable with id {deliverable_id}")
+    return row
+
+
+@app.delete("/deliverables/{deliverable_id}")
+def remove_deliverable(deliverable_id: str):
+    if not delete_deliverable(deliverable_id):
+        raise HTTPException(status_code=404, detail=f"No deliverable with id {deliverable_id}")
+    return {"deliverable_id": deliverable_id, "status": "deleted"}
+
+
+@app.put("/deliverables/{deliverable_id}/raci")
+def put_deliverable_raci(deliverable_id: str, body: TaskRaciRequest):
+    """Replace one person's roles on one deliverable (empty list clears them)."""
+    try:
+        roles = set_deliverable_raci(deliverable_id, body.person, body.roles)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"deliverable_id": deliverable_id, "person": body.person.strip(), "roles": roles}
+
+
+# ---------------------------------------------------------------------------
+# Hours: budget, estimates, weekly timesheet, availability, plan / timesheet import.
+# The rules behind every number are in apps/utils/hours.py; the design is in DECISIONS.md ("Hours").
+# ---------------------------------------------------------------------------
+
+MAX_IMPORT_ROWS = 5000
+
+
+class HoursSettingsRequest(BaseModel):
+    week_start_day: Optional[int] = None  # 0 = Monday ... 6 = Sunday
+    budget_hours: Optional[float] = None
+    kickoff_date: Optional[date] = None
+    role_budgets: Optional[dict] = None
+
+
+class PlanTaskRequest(BaseModel):
+    task_text: str
+    owner: Optional[str] = None
+    phase: Optional[str] = None
+    estimate_hours: Optional[float] = None
+    plan_start_week: Optional[int] = None
+    plan_finish_week: Optional[int] = None
+
+
+class TaskHoursRequest(BaseModel):
+    phase: Optional[str] = None
+    estimate_hours: Optional[float] = None
+    plan_start_week: Optional[int] = None
+    plan_finish_week: Optional[int] = None
+    hours_still_needed: Optional[float] = None
+
+
+class TimesheetEntry(BaseModel):
+    task_id: Optional[str] = None  # None = "Other": meetings, admin, time on no listed task
+    hours: float
+    note: Optional[str] = None
+
+
+class TimesheetSaveRequest(BaseModel):
+    person: str
+    week_start: date
+    entries: List[TimesheetEntry]
+
+
+class PersonCapacityRequest(BaseModel):
+    weekly_capacity_hours: Optional[float] = None
+    skills: Optional[List[str]] = None
+
+
+class ImportDecision(BaseModel):
+    idx: int
+    task_id: Optional[str] = None  # timesheet: the task (None = Other); plan: the task to update
+    person: Optional[str] = None
+    action: Optional[Literal["update", "create", "skip"]] = None  # plan rows
+    skip: bool = False  # timesheet rows
+
+
+class ReassignRequest(BaseModel):
+    label: Optional[str] = None
+    person: str
+    task_id: Optional[str] = None  # None = Other
+
+
+class ConfirmImportRequest(BaseModel):
+    decisions: List[ImportDecision] = []
+    apply_budget: bool = True
+    apply_kickoff: bool = True
+
+
+@app.get("/projects/{project_id}/plan/summary")
+def get_plan_summary(project_id: str):
+    """What the Plan view's strip shows: whether a plan exists, the baseline and current totals, and tasks added or removed since."""
+    return plan_summary(project_id)
+
+
+@app.get("/projects/{project_id}/plan/changes")
+def get_plan_changes(project_id: str, limit: int = Query(100, ge=1, le=1000)):
+    return {"changes": list_plan_changes(project_id, limit)}
+
+
+@app.post("/projects/{project_id}/plan/baseline")
+def post_plan_baseline(project_id: str):
+    """Freeze the plan as it stands as the baseline (once). A plan import does this by itself."""
+    try:
+        return set_plan_baseline(project_id)
+    except ValueError as e:
+        raise HTTPException(status_code=409 if "already" in str(e) else 400, detail=str(e))
+
+
+@app.post("/projects/{project_id}/plan/tasks")
+def post_plan_task(project_id: str, body: PlanTaskRequest):
+    """Add a task to the plan by hand."""
+    try:
+        return create_plan_task(project_id, **body.model_dump())
+    except ValueError as e:
+        raise HTTPException(status_code=409 if "already exists" in str(e) else 400, detail=str(e))
+
+
+@app.delete("/tasks/{task_id}")
+def delete_plan_task(task_id: str):
+    """Take a task out of the plan. Its logged hours stay in the project total as hours not on a task."""
+    try:
+        return remove_plan_task(task_id)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.get("/projects/{project_id}/hours")
+def get_project_hours(project_id: str, as_of: Optional[date] = None):
+    """Budget, hours logged, forecast, burn check and per-task hours for one project."""
+    return project_hours_report(project_id, as_of)
+
+
+@app.get("/hours/summary")
+def get_hours_summary():
+    """One row per project that has any hours data - powers the Dashboard's hours card."""
+    rows = []
+    for pid in project_ids_with_hours():
+        r = project_hours_report(pid)
+        rows.append({"project_id": pid, "budget_hours": r["budget_hours"], "logged_hours": r["logged_hours"],
+                     "hours_left_in_budget": r["hours_left_in_budget"], "forecast_at_completion": r["forecast_at_completion"],
+                     "status": r["burn_check"]["status"]})
+    return {"projects": rows}
+
+
+@app.get("/projects/{project_id}/hours/settings")
+def get_project_hours_settings(project_id: str):
+    return get_hours_settings(project_id)
+
+
+@app.put("/projects/{project_id}/hours/settings")
+def put_project_hours_settings(project_id: str, body: HoursSettingsRequest):
+    """Set the hours budget, kickoff date and per-role budgets. Only the fields sent are changed (null clears one)."""
+    try:
+        return set_hours_settings(project_id, **{k: getattr(body, k) for k in body.model_fields_set})
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/projects/{project_id}/hours/budget/suggest")
+def suggest_project_hours_budget(project_id: str):
+    """Look for a total hours budget in the project's latest SOW. Nothing is saved: the quote and number are shown and a
+    person sets the budget with PUT .../hours/settings."""
+    sow = fetch_latest_sow_text(project_id)
+    if not sow:
+        raise HTTPException(status_code=400, detail="No SOW has been submitted for this project yet.")
+    try:
+        return suggest_budget_hours(sow)
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+
+@app.put("/tasks/{task_id}/hours")
+def put_task_hours(task_id: str, body: TaskHoursRequest):
+    """Set a task's estimate, planned start/finish weeks and 'hours still needed'. Only the fields sent are changed."""
+    try:
+        return set_task_hours(task_id, **{k: getattr(body, k) for k in body.model_fields_set})
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/projects/{project_id}/timesheet")
+def get_timesheet(project_id: str, person: str = Query(...), week: date = Query(...)):
+    """One person's week: every active task with its estimate, hours logged so far by everyone, and this person's hours this week."""
+    wk = _week_start(week, get_hours_settings(project_id)["week_start_day"])
+    logged = {}
+    for e in fetch_time_entries(project_id):
+        if e["task_id"]:
+            logged[e["task_id"]] = logged.get(e["task_id"], 0.0) + e["hours"]
+    mine = {e["task_id"]: e for e in get_timesheet_week(project_id, person, wk)}
+    tasks = []
+    for t in fetch_active_tasks_for_hours(project_id):
+        est = None if t["estimate_hours"] is None else float(t["estimate_hours"])
+        total = round(logged.get(t["task_id"], 0.0), 2)
+        tasks.append({
+            "task_id": t["task_id"], "task_text": t["task_text"], "owner": t["owner"], "status": t["status"],
+            "estimate_hours": est, "logged_hours": total,
+            "hours_still_needed": None if t["hours_still_needed"] is None else float(t["hours_still_needed"]),
+            "hours_this_week": mine[t["task_id"]]["hours"] if t["task_id"] in mine else 0,
+            "note": mine[t["task_id"]]["note"] if t["task_id"] in mine else None,
+        })
+    other = mine.get(None)
+    return {"person": person, "week_start": wk.isoformat(), "tasks": tasks,
+            "other_hours": other["hours"] if other else 0, "other_note": other["note"] if other else None}
+
+
+@app.put("/projects/{project_id}/timesheet")
+def put_timesheet(project_id: str, body: TimesheetSaveRequest):
+    """Replace everything one person logged for one week."""
+    try:
+        saved = save_timesheet_week(project_id, body.person, body.week_start, [e.model_dump() for e in body.entries])
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"week_start": _week_start(body.week_start, get_hours_settings(project_id)["week_start_day"]).isoformat(), "saved": saved}
+
+
+@app.put("/projects/{project_id}/people/{name}/capacity")
+def put_person_capacity(project_id: str, name: str, body: PersonCapacityRequest):
+    """Set a person's weekly capacity (hours) and skills for this project. Only the fields sent are changed."""
+    try:
+        set_person_capacity(project_id, name, **{k: getattr(body, k) for k in body.model_fields_set})
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"people": list_project_people(project_id)}
+
+
+@app.get("/projects/{project_id}/availability")
+def get_availability(project_id: str, from_date: Optional[date] = Query(None, alias="from"),
+                     to_date: Optional[date] = Query(None, alias="to"), skill: Optional[str] = None):
+    """Free hours per person in a window (default: the next four weeks), optionally for people whose role or skills match."""
+    start = from_date or date.today()
+    end = to_date or start + timedelta(days=27)
+    if end < start or (end - start).days > 366:
+        raise HTTPException(status_code=400, detail="The window must end after it starts and be at most a year long.")
+    return availability_report(project_id, start, end, skill)
+
+
+def _preview_timesheet(project_id: str, filename: str, content: bytes, mapping_json: Optional[str]) -> dict:
+    return timesheet_service.preview_timesheet(project_id, filename, content, mapping_json)
+
+
+def _preview_plan(project_id: str, filename: str, content: bytes) -> dict:
+    parsed = hours_import.parse_plan(filename, content)
+    tasks = fetch_active_tasks_for_hours(project_id)
+    rows = parsed["rows"]
+    matches = hours_import.propose_task_matches([{"label": r["label"], "person": r["owner"]} for r in rows], tasks, mode="plan")
+    for idx, (r, m) in enumerate(zip(rows, matches)):
+        matched = m["match"] in ("exact", "suggested", "llm")
+        r.update(idx=idx, task_id=m["task_id"], task_text=m["task_text"], match=m["match"], score=m["score"],
+                 action="skip" if r["estimate"] is None else ("update" if matched else "create"))
+    current = get_hours_settings(project_id)
+    new = {"budget_hours": parsed["budget_hours"], "role_budgets": parsed["role_budgets"],
+           "kickoff_date": parsed["kickoff_date"].isoformat() if parsed["kickoff_date"] else None}
+    payload = {"rows": rows, "settings": new}
+    import_id = create_import_record(project_id, "plan", filename, "plan", payload)
+    return {"import_id": import_id, "kind": "plan", "layout": "plan", "warnings": parsed["warnings"], "rows": rows,
+            "settings_new": new,
+            "settings_current": {"budget_hours": current["budget_hours"], "role_budgets": current["role_budgets"],
+                                 "kickoff_date": current["kickoff_date"].isoformat() if current["kickoff_date"] else None},
+            "summary": {"rows": len(rows), "estimated_hours": round(sum(r["estimate"] or 0 for r in rows), 2),
+                        "to_update": sum(r["action"] == "update" for r in rows), "to_create": sum(r["action"] == "create" for r in rows)},
+            "tasks": [{"task_id": t["task_id"], "task_text": t["task_text"]} for t in tasks]}
+
+
+@app.post("/projects/{project_id}/hours/import/preview")
+def preview_hours_import(project_id: str, kind: Literal["timesheet", "plan"] = Form(...), file: UploadFile = File(...),
+                         mapping: Optional[str] = Form(None)):
+    """Read a plan or timesheet file and return what WOULD be imported, matched to the project's people and tasks. Nothing is
+    changed until POST /hours/imports/{id}/confirm. `mapping` ({"person": "Employee", ...}) overrides column detection."""
+    content = file.file.read()
+    if kind == "plan" and plan_has_content(project_id):
+        raise HTTPException(status_code=409, detail="This project already has a plan. Edit it in Workspace, Plan; a plan is only uploaded the first time.")
+    try:
+        if kind == "timesheet":
+            return _preview_timesheet(project_id, file.filename or "upload", content, mapping)
+        return _preview_plan(project_id, file.filename or "upload", content)
+    except hours_import.HoursImportError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="The column mapping was not valid JSON.")
+
+
+@app.post("/hours/imports/{import_id}/confirm")
+def confirm_hours_import(import_id: str, body: ConfirmImportRequest):
+    """Apply a previewed import with the user's changes. Re-importing the same entries REPLACES them, never adds."""
+    imp = get_import(import_id)
+    if not imp:
+        raise HTTPException(status_code=404, detail="No such import.")
+    project_id, payload = imp["project_id"], imp["payload"]
+    decisions = {d.idx: d for d in body.decisions}
+    valid_tasks = {t["task_id"] for t in fetch_active_tasks_for_hours(project_id)}
+    try:
+        if imp["kind"] == "timesheet":
+            result = timesheet_service.confirm_timesheet(import_id, {
+                d.idx: {"skip": d.skip, "person": d.person, "has_task": "task_id" in d.model_fields_set, "task_id": d.task_id}
+                for d in body.decisions})
+            timesheet_watcher.finish_review(import_id)
+            return result
+        items = []
+        for r in payload["rows"]:
+            d = decisions.get(r["idx"])
+            action = d.action if d and d.action else r["action"]
+            if action == "skip" or r["estimate"] is None:
+                continue
+            if action == "update":
+                task_id = d.task_id if d and d.task_id else r["task_id"]
+                if not task_id or task_id not in valid_tasks:
+                    continue
+                items.append({"action": "update", "task_id": task_id, "estimate_hours": r["estimate"],
+                              "plan_start_week": r["start_wk"], "plan_finish_week": r["finish_wk"], "phase": r.get("phase")})
+            else:
+                items.append({"action": "create", "task_text": r["label"], "owner": r["owner"], "estimate_hours": r["estimate"],
+                              "plan_start_week": r["start_wk"], "plan_finish_week": r["finish_wk"], "phase": r.get("phase")})
+        new, settings_update = payload["settings"], {}
+        if body.apply_budget and new.get("budget_hours") is not None:
+            settings_update["budget_hours"] = new["budget_hours"]
+        if body.apply_budget and new.get("role_budgets"):
+            settings_update["role_budgets"] = new["role_budgets"]
+        if body.apply_kickoff and new.get("kickoff_date"):
+            settings_update["kickoff_date"] = date.fromisoformat(new["kickoff_date"])
+        return apply_plan_import(import_id, items, settings_update)
+    except timesheet_service.BadChoice as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.post("/hours/imports/{import_id}/undo")
+def undo_hours_import(import_id: str):
+    try:
+        return undo_import(import_id)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+
+@app.get("/projects/{project_id}/timesheet-inbox")
+def get_timesheet_inbox(project_id: str):
+    """The Incoming timesheets card: the folder, when it was last checked, the files picked up from it, and the lines whose task was only
+    guessed ("check these matches")."""
+    items, to_check = [], []
+    for r in list_folder_imports(project_id):
+        s = r["summary"] or {}
+        items.append({"import_id": r["import_id"], "filename": r["filename"], "status": r["status"], "reason": r["reason"],
+                      "hours": s.get("hours_total"), "entries": s.get("entries_written"), "replaced": s.get("replaced"),
+                      "to_check_count": len(s.get("to_check", [])) if r["status"] == "applied" else 0,
+                      "can_review": r["status"] == "held" and bool(r["has_rows"]),
+                      "created_at": r["created_at"], "applied_at": r["applied_at"]})
+        if r["status"] == "applied":
+            to_check += [{"import_id": r["import_id"], "filename": r["filename"], **c} for c in s.get("to_check", [])]
+    applied = last_applied_at(project_id)
+    return {"enabled": timesheet_watcher.STATUS["enabled"], "folder": f"timesheets/{project_id}",
+            "poll_seconds": timesheet_watcher.STATUS["poll_seconds"], "last_checked_at": timesheet_watcher.STATUS["last_checked_at"],
+            "last_applied_at": applied.isoformat() if applied else None, "items": items, "to_check": to_check,
+            "tasks": [{"task_id": t["task_id"], "task_text": t["task_text"]} for t in fetch_active_tasks_for_hours(project_id)]}
+
+
+@app.get("/hours/imports/{import_id}/review")
+def get_import_review(import_id: str):
+    """A held file's stored preview, in the shape the review screen takes."""
+    try:
+        return timesheet_service.review_payload(import_id)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.post("/hours/imports/{import_id}/reassign")
+def reassign_hours(import_id: str, body: ReassignRequest):
+    """Move one group of an imported file's hours to another task (or Other). Totals do not change; the import can still be undone."""
+    try:
+        return reassign_import_group(import_id, body.label, body.person, body.task_id)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+
+@app.get("/projects/{project_id}/hours/imports")
+def get_hours_imports(project_id: str):
+    return {"imports": list_imports(project_id)}
 
 
 @app.get("/chat/history")

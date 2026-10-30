@@ -1,0 +1,690 @@
+{
+  "project_id": "forloop",
+  "kickoff": "2026-09-28",
+  "weeks_covered": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "budget_hours": 700,
+  "budget_by_role": {
+    "Engineering Lead": 130,
+    "Backend Engineer": 170,
+    "Frontend Engineer": 150,
+    "QA Engineer": 70,
+    "Infrastructure Engineer": 40,
+    "Project Manager": 80,
+    "Delivery Manager": 40,
+    "Technical Director": 20
+  },
+  "people": [
+    {
+      "name": "Sofia Martins",
+      "role": "Project Manager",
+      "weekly_capacity_hours": 28,
+      "in_flat_csv": true,
+      "in_grid_xlsx": false
+    },
+    {
+      "name": "Elena Ruiz",
+      "role": "Engineering Lead",
+      "weekly_capacity_hours": 36,
+      "in_flat_csv": true,
+      "in_grid_xlsx": false
+    },
+    {
+      "name": "Marcus Chen",
+      "role": "Backend Engineer",
+      "weekly_capacity_hours": 40,
+      "in_flat_csv": true,
+      "in_grid_xlsx": false
+    },
+    {
+      "name": "Priya Patel",
+      "role": "Frontend Engineer",
+      "weekly_capacity_hours": 40,
+      "in_flat_csv": false,
+      "in_grid_xlsx": true
+    },
+    {
+      "name": "David Osei",
+      "role": "QA Engineer",
+      "weekly_capacity_hours": 32,
+      "in_flat_csv": false,
+      "in_grid_xlsx": true
+    },
+    {
+      "name": "Nirmal Babu",
+      "role": "Delivery Manager",
+      "weekly_capacity_hours": 12,
+      "in_flat_csv": true,
+      "in_grid_xlsx": false
+    },
+    {
+      "name": "Ram Anandkumar",
+      "role": "Infrastructure Engineer",
+      "weekly_capacity_hours": 20,
+      "in_flat_csv": false,
+      "in_grid_xlsx": true
+    },
+    {
+      "name": "Rucheek",
+      "role": "Technical Director",
+      "weekly_capacity_hours": 6,
+      "in_flat_csv": true,
+      "in_grid_xlsx": false
+    }
+  ],
+  "metrics": {
+    "actual_hours_total": 363,
+    "hours_left_in_budget": 337,
+    "remaining_hours_on_open_estimated_tasks": 346,
+    "forecast_at_completion": 709,
+    "budget_minus_forecast": -9,
+    "sum_of_task_estimates": 612,
+    "hours_not_tied_to_a_task": 90,
+    "budget_used_pct": 51.9,
+    "work_completed_pct_of_estimates": 29.4,
+    "open_tasks_without_estimate": [
+      "Review VPN access resolution"
+    ],
+    "open_tasks_over_their_estimate": [
+      {
+        "task": "Coordinate with Meridian's IT team to set up secure VPN access",
+        "estimate": 12,
+        "actual": 16
+      },
+      {
+        "task": "Draft Quality Assurance test plans for Sales Trends and Customer Segmentation views",
+        "estimate": 12,
+        "actual": 14
+      }
+    ]
+  },
+  "actual_hours_by_person_by_week": {
+    "Sofia Martins": {
+      "1": 13,
+      "2": 17,
+      "3": 7,
+      "4": 5,
+      "total": 42
+    },
+    "Elena Ruiz": {
+      "1": 13,
+      "2": 19,
+      "3": 13,
+      "4": 9,
+      "total": 54
+    },
+    "Marcus Chen": {
+      "1": 26,
+      "2": 40,
+      "3": 40,
+      "4": 26,
+      "total": 132
+    },
+    "Priya Patel": {
+      "1": 6,
+      "2": 6,
+      "3": 18,
+      "4": 28,
+      "total": 58
+    },
+    "David Osei": {
+      "1": 0,
+      "2": 2,
+      "3": 8,
+      "4": 10,
+      "total": 20
+    },
+    "Nirmal Babu": {
+      "1": 6,
+      "2": 6,
+      "3": 6,
+      "4": 6,
+      "total": 24
+    },
+    "Ram Anandkumar": {
+      "1": 6,
+      "2": 8,
+      "3": 8,
+      "4": 5,
+      "total": 27
+    },
+    "Rucheek": {
+      "1": 0,
+      "2": 2,
+      "3": 2,
+      "4": 2,
+      "total": 6
+    }
+  },
+  "tasks": [
+    {
+      "key": "discovery",
+      "db_task_text": "Lead technical discovery session with Meridian's IT team",
+      "plan_label": "Technical discovery session with Meridian IT",
+      "owner": "Elena Ruiz",
+      "estimate_hours": 16,
+      "status_assumed": "completed",
+      "actual_by_week": {
+        "1": 10,
+        "2": 4,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 14,
+      "remaining_hours": 0,
+      "variance_vs_estimate": -2
+    },
+    {
+      "key": "etl",
+      "db_task_text": "Build secure Extract Transform Load pipeline to ingest daily sales and inventory data",
+      "plan_label": "Secure ETL pipeline: POS sales + inventory ingest",
+      "owner": "Marcus Chen",
+      "estimate_hours": 60,
+      "status_assumed": "completed",
+      "actual_by_week": {
+        "1": 22,
+        "2": 26,
+        "3": 18,
+        "4": 0
+      },
+      "actual_total": 66,
+      "remaining_hours": 0,
+      "variance_vs_estimate": 6
+    },
+    {
+      "key": "crm",
+      "db_task_text": "Implement nightly sync job to pull customer records from CRM",
+      "plan_label": "Nightly CRM customer sync",
+      "owner": "Marcus Chen",
+      "estimate_hours": 32,
+      "status_assumed": "completed",
+      "actual_by_week": {
+        "1": 0,
+        "2": 10,
+        "3": 12,
+        "4": 0
+      },
+      "actual_total": 22,
+      "remaining_hours": 0,
+      "variance_vs_estimate": -10
+    },
+    {
+      "key": "schema",
+      "db_task_text": "Design analytics data schema to support dashboard metrics",
+      "plan_label": "Analytics data schema (fact + dimension tables)",
+      "owner": "Elena Ruiz",
+      "estimate_hours": 24,
+      "status_assumed": "completed",
+      "actual_by_week": {
+        "1": 0,
+        "2": 12,
+        "3": 10,
+        "4": 0
+      },
+      "actual_total": 22,
+      "remaining_hours": 0,
+      "variance_vs_estimate": -2
+    },
+    {
+      "key": "vpn",
+      "db_task_text": "Coordinate with Meridian's IT team to set up secure VPN access",
+      "plan_label": "VPN access to staging POS replica",
+      "owner": "Ram Anandkumar",
+      "estimate_hours": 12,
+      "status_assumed": "in_progress",
+      "actual_by_week": {
+        "1": 4,
+        "2": 6,
+        "3": 6,
+        "4": 0
+      },
+      "actual_total": 16,
+      "remaining_hours": 0,
+      "variance_vs_estimate": 4
+    },
+    {
+      "key": "mapping",
+      "db_task_text": "Deliver data mapping document to Meridian for sign-off",
+      "plan_label": "Data mapping document and client sign-off",
+      "owner": "Sofia Martins",
+      "estimate_hours": 20,
+      "status_assumed": "completed",
+      "actual_by_week": {
+        "1": 8,
+        "2": 12,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 20,
+      "remaining_hours": 0,
+      "variance_vs_estimate": 0
+    },
+    {
+      "key": "layout",
+      "db_task_text": "Build dashboard's core layout and navigation shell",
+      "plan_label": "Dashboard shell and navigation",
+      "owner": "Priya Patel",
+      "estimate_hours": 28,
+      "status_assumed": "completed",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 14,
+        "4": 16
+      },
+      "actual_total": 30,
+      "remaining_hours": 0,
+      "variance_vs_estimate": 2
+    },
+    {
+      "key": "sales",
+      "db_task_text": "Implement Sales Trends view in the dashboard",
+      "plan_label": "Sales Trends view",
+      "owner": "Priya Patel",
+      "estimate_hours": 36,
+      "status_assumed": "in_progress",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 8
+      },
+      "actual_total": 8,
+      "remaining_hours": 28,
+      "variance_vs_estimate": -28
+    },
+    {
+      "key": "custseg",
+      "db_task_text": "Implement Customer Segmentation view in the dashboard",
+      "plan_label": "Customer Segmentation view",
+      "owner": "Priya Patel",
+      "estimate_hours": 36,
+      "status_assumed": "not_started",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 0,
+      "remaining_hours": 36,
+      "variance_vs_estimate": -36
+    },
+    {
+      "key": "inventory",
+      "db_task_text": "Implement Inventory Turnover view in the dashboard",
+      "plan_label": "Inventory Turnover view",
+      "owner": "Priya Patel",
+      "estimate_hours": 32,
+      "status_assumed": "not_started",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 0,
+      "remaining_hours": 32,
+      "variance_vs_estimate": -32
+    },
+    {
+      "key": "api",
+      "db_task_text": "Build backend API endpoints for dashboard views",
+      "plan_label": "Backend API endpoints for dashboard views",
+      "owner": "Marcus Chen",
+      "estimate_hours": 48,
+      "status_assumed": "in_progress",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 6,
+        "4": 22
+      },
+      "actual_total": 28,
+      "remaining_hours": 20,
+      "variance_vs_estimate": -20
+    },
+    {
+      "key": "rbac",
+      "db_task_text": "Implement role-based access control for dashboard",
+      "plan_label": "Role-based access control",
+      "owner": "Elena Ruiz",
+      "estimate_hours": 28,
+      "status_assumed": "in_progress",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 6
+      },
+      "actual_total": 6,
+      "remaining_hours": 22,
+      "variance_vs_estimate": -22
+    },
+    {
+      "key": "qa_e2e",
+      "db_task_text": "Conduct end-to-end Quality Assurance across all dashboard views",
+      "plan_label": "End-to-end QA, all dashboard views",
+      "owner": "David Osei",
+      "estimate_hours": 40,
+      "status_assumed": "not_started",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 0,
+      "remaining_hours": 40,
+      "variance_vs_estimate": -40
+    },
+    {
+      "key": "load",
+      "db_task_text": "Perform load testing on the backend API",
+      "plan_label": "Load testing (200 concurrent users)",
+      "owner": "David Osei",
+      "estimate_hours": 24,
+      "status_assumed": "not_started",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 0,
+      "remaining_hours": 24,
+      "variance_vs_estimate": -24
+    },
+    {
+      "key": "uat",
+      "db_task_text": "Coordinate user acceptance testing with pilot group",
+      "plan_label": "UAT with pilot store managers",
+      "owner": "Sofia Martins",
+      "estimate_hours": 20,
+      "status_assumed": "not_started",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 0,
+      "remaining_hours": 20,
+      "variance_vs_estimate": -20
+    },
+    {
+      "key": "bugs",
+      "db_task_text": "Address critical bugs surfaced during User Acceptance Testing",
+      "plan_label": "Critical bug fixes after UAT",
+      "owner": "Elena Ruiz",
+      "estimate_hours": 24,
+      "status_assumed": "not_started",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 0,
+      "remaining_hours": 24,
+      "variance_vs_estimate": -24
+    },
+    {
+      "key": "training",
+      "db_task_text": "Deliver training session and user guide to Meridian's staff",
+      "plan_label": "Training session and user guide",
+      "owner": "Sofia Martins",
+      "estimate_hours": 24,
+      "status_assumed": "not_started",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 0,
+      "remaining_hours": 24,
+      "variance_vs_estimate": -24
+    },
+    {
+      "key": "oversee",
+      "db_task_text": "Oversee final delivery coordination and sign-off with stakeholders",
+      "plan_label": "Final delivery coordination and sign-off",
+      "owner": "Nirmal Babu",
+      "estimate_hours": 16,
+      "status_assumed": "not_started",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 0,
+      "remaining_hours": 16,
+      "variance_vs_estimate": -16
+    },
+    {
+      "key": "deploy",
+      "db_task_text": "Deploy the dashboard to Meridian's production environment",
+      "plan_label": "Production deployment",
+      "owner": "Team",
+      "estimate_hours": 16,
+      "status_assumed": "not_started",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 0,
+      "remaining_hours": 16,
+      "variance_vs_estimate": -16
+    },
+    {
+      "key": "returns",
+      "db_task_text": "Build Returns & Refunds trend view",
+      "plan_label": "Returns & Refunds trend view (CR-01)",
+      "owner": "Priya Patel",
+      "estimate_hours": 24,
+      "status_assumed": "not_started",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "actual_total": 0,
+      "remaining_hours": 24,
+      "variance_vs_estimate": -24
+    },
+    {
+      "key": "qaplans",
+      "db_task_text": "Draft Quality Assurance test plans for Sales Trends and Customer Segmentation views",
+      "plan_label": "QA test plans: Sales Trends and Customer Segmentation",
+      "owner": "David Osei",
+      "estimate_hours": 12,
+      "status_assumed": "in_progress",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 6,
+        "4": 8
+      },
+      "actual_total": 14,
+      "remaining_hours": 0,
+      "variance_vs_estimate": 2
+    },
+    {
+      "key": "pm",
+      "db_task_text": null,
+      "plan_label": "Project management and status reporting",
+      "owner": "Sofia Martins",
+      "estimate_hours": 40,
+      "status_assumed": "in_progress",
+      "actual_by_week": {
+        "1": 5,
+        "2": 5,
+        "3": 5,
+        "4": 5
+      },
+      "actual_total": 20,
+      "remaining_hours": 20,
+      "variance_vs_estimate": -20
+    },
+    {
+      "key": "followup",
+      "db_task_text": "Follow up with Meridian's IT contact",
+      "plan_label": null,
+      "owner": null,
+      "estimate_hours": null,
+      "status_assumed": "completed",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 2,
+        "4": 0
+      },
+      "actual_total": 2,
+      "remaining_hours": 0,
+      "variance_vs_estimate": null
+    },
+    {
+      "key": "vpnreview",
+      "db_task_text": "Review VPN access resolution",
+      "plan_label": null,
+      "owner": null,
+      "estimate_hours": null,
+      "status_assumed": "in_progress",
+      "actual_by_week": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 5
+      },
+      "actual_total": 5,
+      "remaining_hours": 0,
+      "variance_vs_estimate": null
+    }
+  ],
+  "label_to_task_key": {
+    "Admin": [
+      "other"
+    ],
+    "Analytics schema - team review + finalize": [
+      "schema"
+    ],
+    "Analytics schema design (fact/dim tables)": [
+      "schema"
+    ],
+    "Architecture review": [
+      "other"
+    ],
+    "Backend API - sales trends endpoint": [
+      "api"
+    ],
+    "CRM nightly sync job": [
+      "crm"
+    ],
+    "CRM sync - dedupe + verification": [
+      "crm"
+    ],
+    "Chase Meridian IT contact (VPN)": [
+      "followup"
+    ],
+    "Dashboard API endpoints": [
+      "api"
+    ],
+    "Dashboard shell + nav (React)": [
+      "layout"
+    ],
+    "Data mapping doc - Meridian sign-off": [
+      "mapping"
+    ],
+    "Data mapping doc - draft": [
+      "mapping"
+    ],
+    "Delivery management / leadership check-ins": [
+      "other"
+    ],
+    "Discovery session - data sources catalog": [
+      "discovery"
+    ],
+    "Discovery session follow-ups": [
+      "discovery"
+    ],
+    "Discovery session prep w/ Meridian IT": [
+      "discovery"
+    ],
+    "ETL - secure connection setup": [
+      "etl"
+    ],
+    "ETL pipeline - POS ingest": [
+      "etl"
+    ],
+    "ETL pipeline build - ingest": [
+      "etl"
+    ],
+    "ETL pipeline build - transform": [
+      "etl"
+    ],
+    "ETL prod rollout + monitoring": [
+      "etl"
+    ],
+    "Meetings": [
+      "other"
+    ],
+    "Meetings / admin": [
+      "other"
+    ],
+    "Onboarding / design reviews": [
+      "other"
+    ],
+    "Onboarding / ramp-up": [
+      "other"
+    ],
+    "PM: status reports + planning": [
+      "pm"
+    ],
+    "QA test plans - Sales/Segmentation": [
+      "qaplans"
+    ],
+    "RBAC design for dashboard": [
+      "rbac"
+    ],
+    "Sales Trends view": [
+      "sales"
+    ],
+    "Standup / internal meetings": [
+      "other"
+    ],
+    "Standup / meetings": [
+      "other"
+    ],
+    "VPN access resolution review": [
+      "vpnreview"
+    ],
+    "VPN blocker - leadership review": [
+      "vpnreview"
+    ],
+    "VPN blocker review": [
+      "vpnreview"
+    ],
+    "VPN setup - Meridian staging POS": [
+      "vpn"
+    ]
+  },
+  "week5_upload": {
+    "file": "forloop-timesheet-week5.csv",
+    "hours": 100,
+    "logged_after": 463.0,
+    "hours_left_in_budget_after": 237.0,
+    "forecast_after": 737,
+    "budget_minus_forecast_after": -37,
+    "derivation": "forecast = logged + remaining on open tasks; the 100 h of Week 5 cut remaining by 72 h (API 20, RBAC 14, Sales Trends 16, Customer Segmentation 14, UAT 3, project management 5), so remaining 346 -> 274 and forecast = 463 + 274 = 737"
+  },
+  "note": "Remaining hours = estimate - actual for open tasks (0 if over or completed); forecast = actual + remaining. 'other' means time not tied to any plan task. Statuses are the assumed state at the end of Week 4 and are not what the live forloop rows currently say."
+}

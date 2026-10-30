@@ -1,0 +1,46 @@
+Week Ending,Employee,Project,Activity,Hours,Comments
+02-Oct-2026,Elena Ruiz,Forloop - Meridian,Discovery session prep w/ Meridian IT,6,approved
+02-Oct-2026,Elena Ruiz,Forloop - Meridian,Discovery session - data sources catalog,4,approved
+02-Oct-2026,Elena Ruiz,Forloop - Meridian,Standup / internal meetings,3,approved
+02-Oct-2026,Marcus Chen,Forloop - Meridian,ETL pipeline - POS ingest,14,approved
+02-Oct-2026,Marcus Chen,Forloop - Meridian,ETL - secure connection setup,8,approved
+02-Oct-2026,Marcus Chen,Forloop - Meridian,Standup / meetings,3,approved
+02-Oct-2026,Marcus Chen,,Admin,1,approved
+02-Oct-2026,Nirmal Babu,Forloop - Meridian,Delivery management / leadership check-ins,6,approved
+02-Oct-2026,Sofia Martins,Forloop - Meridian,Data mapping doc - draft,8,approved
+02-Oct-2026,Sofia Martins,Forloop - Meridian,PM: status reports + planning,5,approved
+09-Oct-2026,Elena Ruiz,Forloop - Meridian,Discovery session follow-ups,4,approved
+09-Oct-2026,Elena Ruiz,Forloop - Meridian,Analytics schema design (fact/dim tables),12,approved
+09-Oct-2026,Elena Ruiz,Forloop - Meridian,Standup / internal meetings,3,approved
+09-Oct-2026,Marcus Chen,Forloop - Meridian,ETL pipeline build - ingest,13.5,approved
+09-Oct-2026,Marcus Chen,Forloop - Meridian,ETL pipeline build - transform,12.5,approved
+09-Oct-2026,Marcus Chen,Forloop - Meridian,CRM nightly sync job,10,approved
+09-Oct-2026,Marcus Chen,Forloop - Meridian,Standup / meetings,3,approved
+09-Oct-2026,Marcus Chen,,Admin,1,approved
+09-Oct-2026,Nirmal Babu,Forloop - Meridian,Delivery management / leadership check-ins,6,approved
+09-Oct-2026,Rucheek,Forloop - Meridian,Architecture review,2,approved
+09-Oct-2026,Sofia Martins,Forloop - Meridian,Data mapping doc - Meridian sign-off,12,approved
+09-Oct-2026,Sofia Martins,Forloop - Meridian,PM: status reports + planning,5,approved
+16-Oct-2026,Marcus Chen,Forloop - Meridian,ETL prod rollout + monitoring,18,approved
+16-Oct-2026,Marcus Chen,Forloop - Meridian,CRM sync - dedupe + verification,12,approved
+16-Oct-2026,Marcus Chen,Forloop - Meridian,Dashboard API endpoints,6,approved
+16-Oct-2026,Marcus Chen,Forloop - Meridian,Standup / meetings,3,approved
+16-Oct-2026,Marcus Chen,,Admin,1,approved
+16-Oct-2026,Nirmal Babu,Forloop - Meridian,Delivery management / leadership check-ins,6,approved
+16-Oct-2026,Rucheek,Forloop - Meridian,Architecture review,2,approved
+16-Oct-2026,"Ruiz, Elena",Forloop - Meridian,Analytics schema - team review + finalize,10,approved
+16-Oct-2026,"Ruiz, Elena",Forloop - Meridian,Standup / internal meetings,3,approved
+16-Oct-2026,Sofia Martins,Forloop - Meridian,Chase Meridian IT contact (VPN),2,approved
+16-Oct-2026,Sofia Martins,Forloop - Meridian,PM: status reports + planning,5,approved
+23-Oct-2026,Elena Ruiz,Forloop - Meridian,RBAC design for dashboard,6,submitted
+23-Oct-2026,Elena Ruiz,Forloop - Meridian,Standup / internal meetings,3,submitted
+23-Oct-2026,M. Chen,Forloop - Meridian,Backend API - sales trends endpoint,22,submitted
+23-Oct-2026,M. Chen,Forloop - Meridian,Standup / meetings,3,submitted
+23-Oct-2026,M. Chen,,Admin,1,submitted
+23-Oct-2026,Nirmal Babu,Forloop - Meridian,Delivery management / leadership check-ins,5,submitted
+23-Oct-2026,Nirmal Babu,Forloop - Meridian,VPN blocker - leadership review,1,submitted
+23-Oct-2026,Rucheek,Forloop - Meridian,Architecture review,1,submitted
+23-Oct-2026,Rucheek,Forloop - Meridian,VPN blocker review,1,submitted
+23-Oct-2026,Sofia Martins,Forloop - Meridian,PM: status reports + planning,5,submitted
+
+,,,TOTAL,258,

@@ -1,3 +1,5 @@
+import { formatDate } from "./format";
+
 export function relativeTime(iso: string): string {
   const then = new Date(iso).getTime();
   const diffSec = Math.max(0, Math.round((Date.now() - then) / 1000));
@@ -10,5 +12,5 @@ export function relativeTime(iso: string): string {
   if (diffHr < 24) return `${diffHr}h ago`;
   const diffDay = Math.round(diffHr / 24);
   if (diffDay < 7) return `${diffDay}d ago`;
-  return new Date(iso).toLocaleDateString();
+  return formatDate(iso);
 }

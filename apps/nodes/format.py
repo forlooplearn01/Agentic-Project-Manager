@@ -241,10 +241,12 @@ def apply_task_updates(state: AgentState):
             update_task_field(task_id, "owner", event.get("owner"))
             _ensure_owner_people(project_id, event.get("owner"))
 
-        # Update blocker and mark task status as blocked for blocker events
+        # Update blocker and mark task status as blocked for blocker events. A blocker event only exists when the document
+        # stated no status (infer_event_type checks status first), so event["status"] is empty here - writing it would
+        # blank the task's status. Fall back to "blocked", which is what the dashboard already treats a blocker as.
         elif event_type == "blocker":
             update_task_field(task_id, "blocker", event.get("blocker"))
-            update_task_field(task_id, "status", event.get("status"))
+            update_task_field(task_id, "status", event.get("status") or "blocked")
 
         # Generic update: write any populated fields (owner, deadline, status, blocker)
         elif event_type == "task_update":

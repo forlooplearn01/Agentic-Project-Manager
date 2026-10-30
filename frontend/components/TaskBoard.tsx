@@ -32,6 +32,14 @@ function TaskCard({ task }: { task: Task }) {
             {task.deadline}
           </span>
         )}
+        {task.deliverable && (
+          <span
+            className="inline-flex max-w-[140px] items-center gap-1 truncate rounded-md border border-line bg-surface px-1.5 py-0.5 text-[11px] text-text-muted"
+            title={`Deliverable: ${task.deliverable.title}`}
+          >
+            <span className="font-mono">{task.deliverable.number ?? "D"}</span>
+          </span>
+        )}
         {task.depends_on.length > 0 && (
           <span
             className="inline-flex items-center gap-1 rounded-md border border-line bg-surface px-1.5 py-0.5 text-[11px] text-text-muted"

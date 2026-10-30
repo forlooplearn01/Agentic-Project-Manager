@@ -7,11 +7,15 @@ import { IconPlus } from "@/components/icons";
 import MessageBubble from "./MessageBubble";
 import TypingIndicator from "./TypingIndicator";
 
+// One question per topic, each checked against the golden `forloop` project: the answer comes from a tool and matches the data
+// (task counts, hours left and the forecast, tasks over their estimate, who is free, a dependency, and a fact from the SOW).
 const SUGGESTED_PROMPTS = [
-  "What's blocked across all my projects?",
-  "Who's overloaded right now?",
-  "What's overdue in vmware-sim?",
-  "What did the agents do most recently?",
+  "Give me a status summary of forloop: how many tasks are completed, in progress and not started?",
+  "How many hours are left in forloop, and are we on track?",
+  "Which forloop tasks have used more hours than estimated?",
+  "Who is free for QA or backend work in forloop over the next 4 weeks?",
+  "What does the Sales Trends view in forloop depend on, and is that finished?",
+  "What does the forloop SOW say about the go-live date and the number of concurrent users?",
 ];
 
 const SESSION_STORAGE_KEY = "chat-session-id";
@@ -69,7 +73,7 @@ export default function ChatWindow() {
 
     try {
       const res = await sendChatMessage(sessionId, text);
-      setMessages((prev) => [...prev, { id: newId(), role: "assistant", text: res.text }]);
+      setMessages((prev) => [...prev, { id: newId(), role: "assistant", text: res.text, trace: res.trace }]);
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -96,16 +100,7 @@ export default function ChatWindow() {
 
   return (
     <div className="mx-auto flex h-[calc(100vh-32px)] w-full max-w-3xl flex-col px-6">
-      <div className="flex justify-end pt-4">
-        <button
-          type="button"
-          onClick={handleNewChat}
-          className="hover-tint inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface-solid px-3 py-1.5 text-[12.5px] font-medium text-text-muted transition hover:text-text-primary"
-        >
-          <IconPlus className="h-3.5 w-3.5" />
-          New Chat
-        </button>
-      </div>
+      <div className="pt-4" />
 
       <div className="flex-1 overflow-y-auto py-8">
         {loadingHistory ? null : messages.length === 0 ? (
@@ -117,15 +112,15 @@ export default function ChatWindow() {
                 </div>
               </div>
               <h1 className="text-[17px] font-medium text-text-primary">What do you need to know?</h1>
-              <p className="mt-1 text-[13px] text-text-muted">Ask about status, owners, deadlines, blockers, or dependencies.</p>
+              <p className="mt-1 text-[13px] text-text-muted">Ask about tasks, hours, who is free, dependencies, or what a document says.</p>
             </div>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="grid w-full max-w-2xl grid-cols-1 gap-2 sm:grid-cols-2">
               {SUGGESTED_PROMPTS.map((prompt) => (
                 <button
                   key={prompt}
                   type="button"
                   onClick={() => submit(prompt)}
-                  className="hover-tint rounded-full border border-line bg-surface px-3.5 py-1.5 text-[12.5px] text-text-muted transition hover:border-accent-to/40 hover:text-text-primary"
+                  className="hover-tint rounded-xl border border-line bg-surface px-3.5 py-2.5 text-left text-[12.5px] leading-snug text-text-muted transition hover:border-accent-to/40 hover:text-text-primary"
                 >
                   {prompt}
                 </button>
@@ -143,8 +138,16 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </div>
 
-      <form onSubmit={handleSubmitForm} className="pb-6">
-        <div className="flex items-end gap-2 rounded-2xl border border-line bg-surface px-3.5 py-2.5 shadow-lg focus-within:border-accent-to/50 focus-within:shadow-[0_0_0_1px_var(--color-accent-to)]">
+      <form onSubmit={handleSubmitForm} className="flex items-end gap-2 pb-6">
+        <button
+          type="button"
+          onClick={handleNewChat}
+          className="hover-tint inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-line bg-surface-solid px-3 text-[12.5px] font-medium text-text-muted transition hover:text-text-primary"
+        >
+          <IconPlus className="h-3.5 w-3.5" />
+          New Chat
+        </button>
+        <div className="flex min-w-0 flex-1 items-end gap-2 rounded-2xl border border-line bg-surface px-3.5 py-2.5 shadow-lg focus-within:border-accent-to/50 focus-within:shadow-[0_0_0_1px_var(--color-accent-to)]">
           <textarea
             ref={textareaRef}
             value={input}

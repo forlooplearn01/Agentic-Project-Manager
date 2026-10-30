@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { fetchProjectMeetings, fetchProjectPeople, fetchProjectTasks, fetchProjects, projectExportUrl } from "@/lib/api";
+import { fetchDeliverables, fetchProjectMeetings, fetchProjectPeople, fetchProjectTasks, fetchProjects, projectExportUrl } from "@/lib/api";
 import {
   getActivityFeedCollapsed,
   getDefaultProject,
@@ -12,12 +12,12 @@ import {
   setDefaultProject,
   setDefaultView,
 } from "@/lib/preferences";
-import type { Meeting, ProjectPerson, ProjectRollup, Task } from "@/lib/types";
+import type { Deliverable, Meeting, ProjectPerson, ProjectRollup, Task } from "@/lib/types";
 import StatCard from "@/components/StatCard";
 import ProjectSelector from "@/components/ProjectSelector";
 import Tabs, { type TabDef } from "@/components/Tabs";
 import TaskBoard from "@/components/TaskBoard";
-import TaskTracker from "@/components/TaskTracker";
+import PlanView from "@/components/PlanView";
 import ActivityFeed from "@/components/ActivityFeed";
 import MeetingsPanel from "@/components/MeetingsPanel";
 import PeoplePanel from "@/components/PeoplePanel";
@@ -47,7 +47,7 @@ function TaskManager() {
   const [projects, setProjects] = useState<ProjectRollup[] | null>(null);
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [view, setViewState] = useState<"board" | "list">(() => getDefaultView());
+  const [view, setViewState] = useState<"plan" | "board">(() => getDefaultView());
   const [checkedDefaultProject, setCheckedDefaultProject] = useState(false);
   const [schedulingMeeting, setSchedulingMeeting] = useState(false);
   const [deletingProject, setDeletingProject] = useState(false);
@@ -56,6 +56,7 @@ function TaskManager() {
   // Page-level copies, only used for the tab badges - the panels still load their own lists.
   const [meetings, setMeetings] = useState<Meeting[] | null>(null);
   const [people, setPeople] = useState<ProjectPerson[] | null>(null);
+  const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
   const [activityCollapsed, setActivityCollapsedState] = useState(() => getActivityFeedCollapsed());
 
   function toggleActivityCollapsed() {
@@ -66,7 +67,7 @@ function TaskManager() {
     });
   }
 
-  function setView(next: "board" | "list") {
+  function setView(next: "plan" | "board") {
     setViewState(next);
     setDefaultView(next);
   }
@@ -106,6 +107,18 @@ function TaskManager() {
       cancelled = true;
     };
   }, [selectedProject, meetingsRefreshKey]);
+
+  useEffect(() => {
+    setDeliverables([]);
+    if (!selectedProject) return;
+    let cancelled = false;
+    fetchDeliverables(selectedProject)
+      .then((r) => !cancelled && setDeliverables(r.deliverables.filter((d) => d.review_state === "confirmed")))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProject]);
 
   useEffect(() => {
     setPeople(null);
@@ -171,8 +184,8 @@ function TaskManager() {
     <main className="mx-auto max-w-[1800px] px-6 py-8">
       <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-text-primary">Task Manager</h1>
-          <p className="text-[12.5px] text-text-muted">Track status, owner, deadline, blocker, and dependency for one project at a time.</p>
+          <h1 className="text-lg font-semibold tracking-tight text-text-primary">Workspace</h1>
+          <p className="text-[12.5px] text-text-muted">Tasks, meetings and people for one project at a time.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {projects && projects.length > 0 && (
@@ -205,14 +218,14 @@ function TaskManager() {
             href="/products/extractor"
             className="hover-tint inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-br from-accent-from to-accent-to px-4 py-2 text-[13px] font-medium text-white transition"
           >
-            Submit an SOW in Task Extractor
+            Submit an SOW in Extractor
           </Link>
         </div>
       )}
 
       {projects && projects.length > 0 && !currentProject && (
         <div className="glass-panel rounded-2xl p-6 text-center">
-          <p className="text-[13px] text-text-muted">Select a project above to see its tasks.</p>
+          <p className="text-[13px] text-text-muted">Select a project above to open its workspace.</p>
         </div>
       )}
 
@@ -251,6 +264,14 @@ function TaskManager() {
                       </a>
                       <div className="flex gap-1 rounded-lg border border-line bg-surface-solid p-1">
                         <button
+                          onClick={() => setView("plan")}
+                          className={`rounded-md px-3 py-1 text-[12.5px] font-medium transition ${
+                            view === "plan" ? "bg-gradient-to-br from-accent-from to-accent-to text-white" : "text-text-muted hover-tint"
+                          }`}
+                        >
+                          Plan
+                        </button>
+                        <button
                           onClick={() => setView("board")}
                           className={`rounded-md px-3 py-1 text-[12.5px] font-medium transition ${
                             view === "board" ? "bg-gradient-to-br from-accent-from to-accent-to text-white" : "text-text-muted hover-tint"
@@ -258,23 +279,16 @@ function TaskManager() {
                         >
                           Board
                         </button>
-                        <button
-                          onClick={() => setView("list")}
-                          className={`rounded-md px-3 py-1 text-[12.5px] font-medium transition ${
-                            view === "list" ? "bg-gradient-to-br from-accent-from to-accent-to text-white" : "text-text-muted hover-tint"
-                          }`}
-                        >
-                          List
-                        </button>
                       </div>
                     </div>
                   </div>
 
                   {!tasks && <p className="text-[13px] text-text-faint">Loading…</p>}
-                  {tasks && tasks.length === 0 && <p className="text-[13px] text-text-faint">No tasks yet in this project.</p>}
-                  {tasks && tasks.length > 0 && (
-                    view === "board" ? <TaskBoard tasks={tasks} /> : <TaskTracker tasks={tasks} onTasksChange={setTasks} />
+                  {tasks && view === "plan" && (
+                    <PlanView projectId={currentProject.project_id} tasks={tasks} deliverables={deliverables} onTasksChange={setTasks} />
                   )}
+                  {tasks && view === "board" && tasks.length === 0 && <p className="text-[13px] text-text-faint">No tasks yet in this project.</p>}
+                  {tasks && view === "board" && tasks.length > 0 && <TaskBoard tasks={tasks} />}
                 </section>
               </div>
             )}

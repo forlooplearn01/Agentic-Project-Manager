@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatDate, formatWeekday } from "@/lib/format";
 import type { Meeting } from "@/lib/types";
 import { fetchProjectMeetings } from "@/lib/api";
 import { IconAlertTriangle, IconCalendar, IconCheckCircle, IconX } from "./icons";
@@ -15,11 +16,11 @@ function formatRange(startIso: string, endIso: string): string {
   const start = new Date(startIso);
   const end = new Date(endIso);
   const sameDay = start.toDateString() === end.toDateString();
-  const dateFmt: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" };
   const timeFmt: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
+  const day = (d: Date) => `${formatWeekday(d)} ${formatDate(d)}`;
   return sameDay
-    ? `${start.toLocaleDateString(undefined, dateFmt)} · ${start.toLocaleTimeString(undefined, timeFmt)}-${end.toLocaleTimeString(undefined, timeFmt)}`
-    : `${start.toLocaleString(undefined, { ...dateFmt, ...timeFmt })} - ${end.toLocaleString(undefined, { ...dateFmt, ...timeFmt })}`;
+    ? `${day(start)} · ${start.toLocaleTimeString(undefined, timeFmt)}-${end.toLocaleTimeString(undefined, timeFmt)}`
+    : `${day(start)}, ${start.toLocaleTimeString(undefined, timeFmt)} - ${day(end)}, ${end.toLocaleTimeString(undefined, timeFmt)}`;
 }
 
 export default function MeetingsPanel({

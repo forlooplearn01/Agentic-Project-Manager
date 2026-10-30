@@ -3,9 +3,13 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ChatMessage } from "@/lib/types";
+import { getShowChatSources } from "@/lib/preferences";
+import { sourcesOf } from "@/lib/toolLabels";
 
 export default function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
+  // Settings > "Show how the assistant got each answer". Only answers received in this session carry it (saved history does not).
+  const sources = !isUser && getShowChatSources() ? sourcesOf(message.trace) : [];
 
   return (
     <div className={`flex w-full animate-message-in flex-col ${isUser ? "items-end" : "items-start"} gap-2`}>
@@ -24,6 +28,7 @@ export default function MessageBubble({ message }: { message: ChatMessage }) {
           </div>
         )}
       </div>
+      {sources.length > 0 && <p className="px-1 text-[11.5px] text-text-faint">Looked at: {sources.join(" · ")}</p>}
     </div>
   );
 }

@@ -5,12 +5,16 @@ its own scope (Planning never touches Jira/report tools, Sync/Reporting never to
 calendar, etc. - see the manifests in apps/agent/manifests/)."""
 
 import json
+from datetime import date, timedelta
 
 from mcp_server.tools.postgres import search_tasks, get_task_by_id, list_projects
 from mcp_server.tools.calendar import check_owner_availability, resolve_attendees, propose_meeting
 from mcp_server.tools.jira import sync_task_to_jira
 from mcp_server.tools.report import generate_report
+from apps.db.hours_db import availability_report, project_hours_report
+from apps.db.plan_db import list_plan_changes, plan_summary
 from apps.db.db import (
+    fetch_project_tasks_with_dependencies,
     add_task_dependency,
     fetch_projects,
     fetch_owner_workload,
@@ -238,6 +242,70 @@ def _get_recent_activity(project_id: str = None, limit: int = 10) -> list:
     return fetch_recent_agent_activity(project_id=project_id, limit=limit)
 
 
+def _get_project_hours(project_id: str, task_query: str = None) -> dict:
+    """The Hours page's numbers for one project. Per-task rows are limited to tasks matching task_query, or else to the tasks
+    that need attention (open and over their estimate, or open with no estimate), so the reply stays short."""
+    report = project_hours_report(project_id)
+    tasks = report.pop("tasks")
+    if task_query:
+        words = [w for w in task_query.lower().split() if len(w) > 2]
+        tasks = [t for t in tasks if any(w in t["task_text"].lower() or w in (t["owner"] or "").lower() for w in words)]
+    else:
+        tasks = [t for t in tasks if t["status"] != "completed" and (t["remaining_hours"] is None or t["over_estimate_by"])]
+    report["tasks"] = tasks[:25]
+    return report
+
+
+def _get_project_dependencies(project_id: str) -> list:
+    """Dependency edges with task names, owners and statuses, so the answer never has to show an id: 'task X depends on task Y (Y's status)'."""
+    tasks = fetch_project_tasks_with_dependencies(project_id)
+    by_id = {t["task_id"]: t for t in tasks}
+    edges = []
+    for t in tasks:
+        for d in t["depends_on"]:
+            other = by_id.get(d["task_id"], {})
+            edges.append({"task": t["task_text"], "task_owner": t["owner"], "task_status": t["status"],
+                          "depends_on": d["task_text"], "depends_on_owner": other.get("owner"), "depends_on_status": other.get("status")})
+    return edges
+
+
+def _plan_value(field: str, value):
+    """A history value with its unit, so the answer cannot call a week number 'hours'."""
+    if value in (None, ""):
+        return None
+    if field in ("estimate_hours", "hours_still_needed", "budget_hours"):
+        return f"{value} h"
+    if field in ("plan_start_week", "plan_finish_week"):
+        return f"week {value}"
+    return value
+
+
+def _get_plan_changes(project_id: str, limit: int = 15) -> dict:
+    """The plan against its baseline plus what changed AFTER the baseline was set (the import that created the plan is not a change)."""
+    from datetime import datetime
+    summary = plan_summary(project_id)
+    baseline_at = datetime.fromisoformat(summary["baseline_set_at"]) if summary["baseline_set_at"] else None
+    changes = []
+    for c in list_plan_changes(project_id, 200):
+        if baseline_at and (c["changed_at"] <= baseline_at or c["field"] in ("baseline_set", "plan_imported")):
+            continue
+        changes.append({"when": c["changed_at"].date().isoformat(), "change": c["label"], "task": c["task_text"],
+                        "from": _plan_value(c["field"], c["old_value"]), "to": _plan_value(c["field"], c["new_value"])})
+    return {"summary": summary, "changes_since_baseline": changes[:min(max(limit, 1), 50)] if baseline_at else [],
+            "all_changes": [] if baseline_at else changes[:min(max(limit, 1), 50)]}
+
+
+def _find_available_people(project_id: str, skill: str = None, from_date: str = None, to_date: str = None) -> dict:
+    try:
+        start = date.fromisoformat(from_date) if from_date else date.today()
+        end = date.fromisoformat(to_date) if to_date else start + timedelta(days=27)
+    except ValueError:
+        return {"error": "Dates must be YYYY-MM-DD."}
+    if end < start:
+        return {"error": "to_date is before from_date."}
+    return availability_report(project_id, start, end, skill)
+
+
 CHAT_TOOL_SCHEMAS = [
     {
         "type": "function",
@@ -251,7 +319,7 @@ CHAT_TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "get_project_overview",
-            "description": "Rollup stats (total/open/blocked/completed/high-priority task counts, "
+            "description": "Rollup stats (total/open/blocked/completed/in_progress/not_started/high-priority task counts, "
                             "jira_synced_tasks, jira_unsynced_tasks, unique owners, last updated, "
                             "jira_project_key) for one project, or every project in a single call if "
                             "project_id is omitted - prefer omitting it over calling this once per "
@@ -316,8 +384,67 @@ CHAT_TOOL_SCHEMAS = [
     {
         "type": "function",
         "function": {
+            "name": "get_project_hours",
+            "description": "Hours for one project, computed by the app: the hours budget, hours logged, hours left in the budget, "
+                            "forecast at completion (logged + remaining on open tasks), budget minus forecast, a burn check "
+                            "(budget used vs work done vs work due by now, status on_track / watch / at_risk), recent weekly burn, "
+                            "hours logged by person and week, hours not tied to any task, open tasks with no estimate, open tasks over "
+                            "their estimate, and a 'notes' list of caveats. Use it for 'how many hours are left', 'are we over "
+                            "budget', 'how many hours has X logged', 'how many hours are left on <task>' (pass task_query). Report "
+                            "the numbers as returned and always mention the relevant 'notes' (for example a missing budget or tasks "
+                            "without estimates); never calculate your own totals.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "project_id": {"type": "string"},
+                    "task_query": {"type": "string", "description": "Only return per-task rows whose task text or owner matches these words"},
+                },
+                "required": ["project_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_plan_changes",
+            "description": "How the project plan has changed since its baseline (the plan as first agreed): baseline hours vs current hours "
+                            "(change_hours), tasks added and removed since, and the changes made after the baseline with dates (estimate or week changes "
+                            "with from -> to and their units, tasks added or removed, budget or kickoff edits). Use it for 'has the plan changed', 'what changed "
+                            "since the start', 'how much has scope grown'. baseline_set_at is null when no baseline exists. The history says "
+                            "when and what, never who.",
+            "parameters": {
+                "type": "object",
+                "properties": {"project_id": {"type": "string"}, "limit": {"type": "integer", "description": "How many recent changes, default 15"}},
+                "required": ["project_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "find_available_people",
+            "description": "Free hours per person for a date window (default: the next four weeks): weekly capacity for the working "
+                            "days in the window minus the remaining hours of their open tasks spread to each task's due date. "
+                            "Optionally filter by skill or role (for example 'backend', 'QA', 'infrastructure') - it matches each "
+                            "person's role and skill tags, so try the closest role words. People with no capacity set have unknown "
+                            "free hours, and tasks without an estimate or due date are listed per person as unknown; say so.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "project_id": {"type": "string"},
+                    "skill": {"type": "string", "description": "Role or skill words to match, e.g. 'backend engineer'"},
+                    "from_date": {"type": "string", "description": "YYYY-MM-DD, default today"},
+                    "to_date": {"type": "string", "description": "YYYY-MM-DD, default four weeks after from_date"},
+                },
+                "required": ["project_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "get_project_dependencies",
-            "description": "The full dependency graph for a project - which tasks depend on which.",
+            "description": "The dependency graph for a project as a list of {task, task_status, depends_on, depends_on_status, owners} - which task waits on which, by NAME with both statuses. Use it for 'what does X depend on' and 'what is X blocking' questions and report the names and statuses, never task ids.",
             "parameters": {
                 "type": "object",
                 "properties": {"project_id": {"type": "string"}},
@@ -401,7 +528,10 @@ CHAT_TOOL_IMPLS = {
     "search_tasks": search_tasks,
     "get_task_by_id": get_task_by_id,
     "get_owner_workload": fetch_owner_workload,
-    "get_project_dependencies": fetch_dependencies_for_project,
+    "get_project_hours": _get_project_hours,
+    "find_available_people": _find_available_people,
+    "get_plan_changes": _get_plan_changes,
+    "get_project_dependencies": _get_project_dependencies,
     "get_recent_activity": _get_recent_activity,
     "get_project_people": list_project_people,
     "get_project_meetings": list_meetings,
