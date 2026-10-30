@@ -10,7 +10,6 @@ import {
   IconChecklist,
   IconClock,
   IconGauge,
-  IconInbox,
   IconLayers,
   IconMessageCircle,
   IconPlug,
@@ -122,11 +121,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex flex-col gap-0.5">
             <p className="mb-1 px-3 text-[10.5px] font-semibold uppercase tracking-wide text-text-faint">Resources</p>
-            <NavLink item={{ href: "/resources", label: "Docs", icon: <IconBookOpen className="h-4 w-4" /> }} active={pathname.startsWith("/resources")} />
+            <NavLink item={{ href: "/resources", label: "Guide", icon: <IconBookOpen className="h-4 w-4" /> }} active={pathname.startsWith("/resources")} />
           </div>
 
           <div className="mt-auto flex flex-col gap-0.5 pt-2">
-            <NavLink item={{ href: "/feedback", label: "Feedback", icon: <IconInbox className="h-4 w-4" /> }} active={pathname === "/feedback"} />
             <span className="flex items-center gap-2.5 px-3 py-1 text-[11px] text-text-faint opacity-60">
               <IconLayers className="h-3.5 w-3.5" />
               More products soon
