@@ -1,8 +1,10 @@
 """Automatic timesheet pickup: watch a folder per project and import any timesheet that lands in it.
 
-    timesheets/<project-id>/              drop a file here
-    timesheets/<project-id>/processed/    ... it moves here once its hours are saved
-    timesheets/<project-id>/needs-review/ ... or here, with the reason, when a person has to look first
+    projects/<project-id>/timesheets/              drop a file here
+    projects/<project-id>/timesheets/processed/    ... it moves here once its hours are saved
+    projects/<project-id>/timesheets/needs-review/ ... or here, with the reason, when a person has to look first
+
+The plan/ and meetings/ folders are read by apps/utils/project_folders.py, which this loop also runs.
 
 The PROJECT is decided by the folder a file sits in, never by what is inside it, and the importer is only ever given that project's people
 and tasks, so a file cannot touch another project. A file is applied by itself only when ALL of these hold (DECISIONS.md "Timesheet folder"):
@@ -30,10 +32,13 @@ from apps.utils import hours_import, timesheet_service
 
 logger = get_logger("TIMESHEET_WATCHER")
 
-ROOT = Path(os.getenv("TIMESHEETS_DIR") or Path(__file__).resolve().parents[2] / "timesheets")
+ROOT = Path(os.getenv("PROJECTS_DIR") or Path(__file__).resolve().parents[2] / "projects")
 POLL_SECONDS = float(os.getenv("TIMESHEET_POLL_SECONDS", "10"))
 SETTLE_SECONDS = float(os.getenv("TIMESHEET_SETTLE_SECONDS", "2"))  # a file must not have been touched for this long
 PROCESSED, NEEDS_REVIEW, ARCHIVE = "processed", "needs-review", "_archive"
+TIMESHEETS = "timesheets"
+PROJECT_SUBFOLDERS = ("plan", "meetings", "timesheets")  # the folders every project gets
+SUBFOLDER_TREE = ("plan/versions", "meetings/processed", "meetings/needs-review", "timesheets/processed", "timesheets/needs-review")
 
 # Shown by the Hours page; the loop below runs in the API process, so this is the live state.
 STATUS = {"enabled": False, "root": str(ROOT), "poll_seconds": POLL_SECONDS, "last_checked_at": None}
@@ -47,13 +52,18 @@ def _safe_id(project_id: str) -> bool:
     return bool(re.fullmatch(r"[A-Za-z0-9._-]+", project_id or "")) and not project_id.startswith(".")
 
 
+def inbox_dir(project_id: str, root=None) -> Path:
+    """Where a project's timesheets are dropped."""
+    return Path(root or ROOT) / project_id / TIMESHEETS
+
+
 def ensure_folders(project_ids: list, root=None) -> None:
     root = Path(root or ROOT)
     root.mkdir(parents=True, exist_ok=True)
     for pid in project_ids:
         if _safe_id(pid):
-            (root / pid / PROCESSED).mkdir(parents=True, exist_ok=True)
-            (root / pid / NEEDS_REVIEW).mkdir(parents=True, exist_ok=True)
+            for sub in SUBFOLDER_TREE:
+                (root / pid / sub).mkdir(parents=True, exist_ok=True)
 
 
 def _ignorable(name: str) -> bool:
@@ -72,19 +82,26 @@ def _move(path: Path, dest_dir: Path) -> str:
 
 
 def archive_project_folder(project_id: str, root=None) -> int:
-    """Move every file under a project's timesheet folder (inbox, processed, needs-review) into timesheets/_archive/<project>-<time>/.
-    Used by the demo reset so each run starts with an empty inbox. Returns how many files moved."""
+    """Move every file under a project's plan, meetings and timesheets folders (inboxes, processed, needs-review, versions) into
+    projects/_archive/<project>-<time>/<folder>/. Used by the demo reset so each run starts with empty folders. Returns how many files moved."""
     root = Path(root or ROOT)
-    base = root / project_id
-    if not _safe_id(project_id) or not base.is_dir():
+    if not _safe_id(project_id):
         return 0
     dest = root / ARCHIVE / f"{project_id}-{datetime.now():%Y%m%d-%H%M%S}"
     moved = 0
-    for path in sorted(base.rglob("*")):
-        if path.is_file() and not path.is_symlink() and not path.name.startswith("."):
-            dest.mkdir(parents=True, exist_ok=True)
-            shutil.move(str(path), str(dest / path.name if not (dest / path.name).exists() else dest / f"{path.parent.name}-{path.name}"))
-            moved += 1
+    for sub in PROJECT_SUBFOLDERS:
+        base = root / project_id / sub
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*")):
+            if path.is_file() and not path.is_symlink() and not path.name.startswith("."):
+                target_dir = dest / sub
+                target_dir.mkdir(parents=True, exist_ok=True)
+                target = target_dir / path.name
+                if target.exists():
+                    target = target_dir / f"{path.parent.name}-{path.name}"
+                shutil.move(str(path), str(target))
+                moved += 1
     return moved
 
 
@@ -129,8 +146,7 @@ def _to_check(rows: list) -> list:
 # ---------------------------------------------------------------- one file
 
 def process_file(project_id: str, path: Path, all_project_ids: list, root=None) -> dict:
-    root = Path(root or ROOT)
-    inbox = root / project_id
+    inbox = inbox_dir(project_id, root)
     name = path.name
     out = {"project": project_id, "file": name}
     try:
@@ -200,10 +216,10 @@ def finish_review(import_id: str, root=None) -> None:
     if not imp or imp.get("source") != "folder":
         return
     folder_file = (imp["payload"] or {}).get("folder_file") or ""
-    root = Path(root or ROOT)
-    src = root / imp["project_id"] / folder_file
+    inbox = inbox_dir(imp["project_id"], root)
+    src = inbox / folder_file
     if folder_file.startswith(NEEDS_REVIEW + "/") and src.is_file() and not src.is_symlink():
-        update_import(import_id, payload_extra={"folder_file": _move(src, root / imp["project_id"] / PROCESSED)})
+        update_import(import_id, payload_extra={"folder_file": _move(src, inbox / PROCESSED)})
 
 
 # ---------------------------------------------------------------- scanning and the loop
@@ -233,7 +249,7 @@ def scan_once(root=None, project_ids: list = None, settle_seconds: float = None,
     for pid in known:
         if not _safe_id(pid):
             continue
-        inbox = root / pid
+        inbox = inbox_dir(pid, root)
         try:
             files = sorted(p for p in inbox.iterdir() if p.is_file() and not p.is_symlink() and not _ignorable(p.name))
         except OSError:
@@ -257,6 +273,11 @@ def _loop():
             scan_once()
         except Exception:
             logger.exception("Timesheet folder scan failed; trying again next time")
+        try:
+            from apps.utils import project_folders
+            project_folders.scan_all()
+        except Exception:
+            logger.exception("Plan and meeting folder scan failed; trying again next time")
         time.sleep(POLL_SECONDS)
 
 

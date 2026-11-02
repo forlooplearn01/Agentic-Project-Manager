@@ -2,23 +2,17 @@
 
 import type { PlanSummary } from "@/lib/types";
 import { formatDate } from "@/lib/format";
-import { BTN_PRIMARY, BTN_QUIET, h } from "@/components/hours/shared";
+import { BTN_QUIET, h } from "@/components/hours/shared";
 
-// The line above the plan table: where the plan stands against its baseline (the plan as first agreed), and the plan's actions.
+// The line above the plan table: where the plan stands against its baseline (the first version of the plan file that was read).
 export default function PlanSummaryStrip({
   summary,
   historyOpen,
-  busy,
   onToggleHistory,
-  onAddTask,
-  onSetBaseline,
 }: {
   summary: PlanSummary;
   historyOpen: boolean;
-  busy: boolean;
   onToggleHistory: () => void;
-  onAddTask: () => void;
-  onSetBaseline: () => void;
 }) {
   const change = summary.change_hours ?? 0;
   return (
@@ -28,8 +22,7 @@ export default function PlanSummaryStrip({
           <>
             <span className="font-medium text-text-primary">Baseline {formatDate(summary.baseline_set_at)}</span>
             {": "}
-            <span className="tabular-nums">{h(summary.baseline_hours)} h</span> planned, now <span className="tabular-nums text-text-primary">{h(summary.current_hours)} h</span>
-            {" "}
+            <span className="tabular-nums">{h(summary.baseline_hours)} h</span> planned, now <span className="tabular-nums text-text-primary">{h(summary.current_hours)} h</span>{" "}
             <span className={`rounded px-1.5 py-0.5 text-[11.5px] font-medium tabular-nums ${change > 0 ? "bg-warning-bg text-warning" : change < 0 ? "bg-success-bg text-success" : "bg-surface text-text-muted"}`}>
               {change > 0 ? "+" : ""}
               {h(change)} h
@@ -38,24 +31,14 @@ export default function PlanSummaryStrip({
             {summary.tasks_removed > 0 && <span className="ml-2">{summary.tasks_removed} removed</span>}
           </>
         ) : summary.has_plan ? (
-          <>No baseline yet. Set one to keep the plan as it stands today, so later changes show against it.</>
+          <>This plan has no baseline.</>
         ) : (
-          <>No plan yet. Add tasks by hand below, or upload the plan above.</>
+          <>No plan has been read yet.</>
         )}
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        {summary.has_plan && !summary.baseline_set_at && (
-          <button type="button" onClick={onSetBaseline} disabled={busy} className={BTN_PRIMARY}>
-            Set baseline
-          </button>
-        )}
-        <button type="button" onClick={onAddTask} className={BTN_QUIET}>
-          + Add task
-        </button>
-        <button type="button" onClick={onToggleHistory} aria-expanded={historyOpen} className={BTN_QUIET}>
-          Change history
-        </button>
-      </div>
+      <button type="button" onClick={onToggleHistory} aria-expanded={historyOpen} className={BTN_QUIET}>
+        Change history
+      </button>
     </div>
   );
 }

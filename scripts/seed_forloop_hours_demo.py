@@ -17,6 +17,7 @@ Two modes (run inside the api container):
 
 Uses the real LLM for task matching, so the printed preview counts are what a user sees in the review step."""
 import json
+import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -91,12 +92,13 @@ if EXISTING:
     # Hours data only: clear it so a re-run ends in the same state (tasks, deadlines, owners are not touched).
     # The plan: tasks added by hand in the Plan view during a demo go (found through the change history), tasks removed there come back,
     # and the baseline, history, phases and estimates are cleared so the plan import below sets them fresh.
-    cur.execute("SELECT DISTINCT task_id FROM plan_changes WHERE project_id = %s AND field = 'task_added' AND source = 'edit' AND task_id IS NOT NULL", (PROJECT,))
+    cur.execute("SELECT DISTINCT task_id FROM plan_changes WHERE project_id = %s AND field = 'task_added' AND source IN ('edit', 'plan_file') AND task_id IS NOT NULL", (PROJECT,))
     for (hand_added,) in cur.fetchall():
         cur.execute("DELETE FROM tasks WHERE task_id = %s", (hand_added,))
     cur.execute("UPDATE tasks SET is_active = TRUE, removed_at = NULL WHERE project_id = %s AND removed_at IS NOT NULL", (PROJECT,))
-    for table in ("time_entries", "hours_imports", "project_hours_settings", "plan_changes"):
+    for table in ("time_entries", "hours_imports", "project_hours_settings", "plan_changes", "plan_suggestions", "folder_files"):
         cur.execute(f"DELETE FROM {table} WHERE project_id = %s", (PROJECT,))
+    cur.execute("UPDATE tasks SET plan_ref = NULL WHERE project_id = %s", (PROJECT,))
     cur.execute("UPDATE tasks SET estimate_hours = NULL, plan_start_week = NULL, plan_finish_week = NULL, hours_still_needed = NULL, phase = NULL, "
                 "baseline_estimate_hours = NULL, baseline_start_week = NULL, baseline_finish_week = NULL WHERE project_id = %s", (PROJECT,))
     for p in exp["people"]:  # roles from the SOW, only where blank
@@ -107,7 +109,7 @@ if EXISTING:
     # Files the folder pickup already read (processed/, needs-review/) or has not read yet: moved aside so the next demo drop starts clean.
     moved = timesheet_watcher.archive_project_folder(PROJECT)
     if moved:
-        print(f"moved {moved} timesheet file(s) out of timesheets/{PROJECT}/ into timesheets/_archive/")
+        print(f"moved {moved} file(s) out of projects/{PROJECT}/plan, meetings and timesheets into projects/_archive/")
 else:
     delete_project(PROJECT)  # a clean slate: tasks, hours, imports and settings of the demo project
     timesheet_watcher.archive_project_folder(PROJECT)
@@ -151,3 +153,10 @@ print(f"  burn check {r['burn_check']}")
 print(f"  open without estimate: {r['open_tasks_without_estimate']}")
 print(f"  open over estimate: {[o['task'][:40] for o in r['open_tasks_over_their_estimate']]}")
 print(f"\nproject: {PROJECT}")
+
+# The plan file goes into the project's plan folder last, after the database is loaded: the folder pickup reads it, finds every task already
+# there (nothing added, nothing changed) and from then on the file is the plan. The week 5 timesheet and the week 5 meeting are the demo drops.
+plan_dir = timesheet_watcher.ROOT / PROJECT / "plan"
+plan_dir.mkdir(parents=True, exist_ok=True)
+shutil.copy(DATA / "forloop-plan.xlsx", plan_dir / f"{PROJECT}-plan.xlsx")
+print(f"plan file: projects/{PROJECT}/plan/{PROJECT}-plan.xlsx")

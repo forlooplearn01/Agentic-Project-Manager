@@ -13,6 +13,7 @@ import TimesheetPanel from "@/components/hours/TimesheetPanel";
 import CapacityPanel from "@/components/hours/CapacityPanel";
 import { StatusPill } from "@/components/hours/shared";
 import { useTimesheetInbox } from "@/components/hours/IncomingTimesheets";
+import WeeklySummary from "@/components/hours/WeeklySummary";
 
 type TabId = "overview" | "timesheet" | "capacity";
 const TAB_IDS: TabId[] = ["overview", "timesheet", "capacity"];
@@ -37,7 +38,6 @@ function Hours() {
   const [people, setPeople] = useState<ProjectPerson[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [checkedDefaultProject, setCheckedDefaultProject] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
 
   const fail = useCallback((e: unknown) => setError(e instanceof Error ? e.message : String(e)), []);
 
@@ -57,7 +57,6 @@ function Hours() {
     selectedProject ?? "",
     useCallback(() => {
       reload();
-      setReloadKey((k) => k + 1);
     }, [reload])
   );
 
@@ -152,11 +151,12 @@ function Hours() {
           {report && activeTab === "overview" && (
             <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview">
               <HoursOverview key={`${selectedProject}-${report.budget_hours}-${report.kickoff_date}`} projectId={currentProject.project_id} report={report} onChanged={reload} />
+              <div className="mt-5"><WeeklySummary key={`${selectedProject}-${report.logged_hours}`} projectId={currentProject.project_id} /></div>
             </div>
           )}
           {report && activeTab === "timesheet" && (
             <div role="tabpanel" id="tabpanel-timesheet" aria-labelledby="tab-timesheet">
-              <TimesheetPanel projectId={currentProject.project_id} people={people} weekStartDay={report.week_start_day} inbox={inbox} reloadInbox={reloadInbox} reloadKey={reloadKey} onChanged={reload} />
+              <TimesheetPanel projectId={currentProject.project_id} inbox={inbox} reloadInbox={reloadInbox} onChanged={reload} />
             </div>
           )}
           {report && activeTab === "capacity" && (

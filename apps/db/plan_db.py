@@ -15,7 +15,8 @@ HISTORY_FIELD_LABELS = {
     "estimate_hours": "Estimate", "plan_start_week": "Start week", "plan_finish_week": "Finish week", "phase": "Phase",
     "hours_still_needed": "Hours still needed", "budget_hours": "Hours budget", "kickoff_date": "Kickoff date",
     "task_added": "Task added", "task_removed": "Task removed", "baseline_set": "Baseline set", "plan_imported": "Plan imported",
-    "import_undone": "Plan import undone",
+    "import_undone": "Plan import undone", "owner": "Owner", "status": "Status", "task_text": "Task name",
+    "plan_file_read": "Plan file read",
 }
 
 

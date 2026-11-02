@@ -86,6 +86,7 @@ export interface RunResult {
   unresolved_events: Record<string, unknown>[];
   document_type?: string;
   status: string;
+  message?: string; // set when the run was redirected (meeting minutes belong in the meetings folder)
 }
 
 export interface JobPollResponse {
@@ -465,6 +466,43 @@ export interface TimesheetInbox {
   items: InboxItem[];
   to_check: InboxCheck[];
   tasks: { task_id: string; task_text: string }[];
+}
+
+export interface FolderFile {
+  file_id: string;
+  kind: "plan" | "meeting";
+  filename: string;
+  status: "applied" | "held" | "duplicate" | "failed";
+  reason: string | null;
+  summary: Record<string, number | string | boolean | string[]>;
+  created_at: string;
+  applied_at: string | null;
+}
+
+export interface ProjectFolders {
+  enabled: boolean;
+  last_checked_at: string | null;
+  plan: { folder: string; current_file: string | null; open_in_excel: boolean; writable: boolean; files: FolderFile[] };
+  meetings: { folder: string; files: FolderFile[] };
+}
+
+export type SuggestionState = "suggested" | "approved" | "waiting" | "blocked" | "merged" | "confirmed" | "missing" | "applied" | "rejected";
+
+export interface PlanSuggestion {
+  suggestion_id: string;
+  file_id: string | null;
+  source_name: string | null;
+  kind: "new_task" | "change";
+  task_id: string | null;
+  task_text: string;
+  fields: { owner?: string; status?: string; finish_week?: number; deadline?: string; blocker?: string; evidence?: string };
+  changes: Record<string, { from: string | number | null; to: string | number }>;
+  confidence: string | null;
+  state: SuggestionState;
+  reason: string | null;
+  plan_ref: string | null;
+  jira_key: string | null;
+  created_at: string;
 }
 
 export interface PlanSummary {

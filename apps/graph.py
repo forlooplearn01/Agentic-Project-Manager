@@ -11,6 +11,7 @@ from apps.nodes.meeting_coordinator_node import task_meeting_coordinator_node
 from apps.nodes.format import task_format_node
 from apps.nodes.sow_registers_node import task_sow_registers_node
 from apps.nodes.finalize_node import task_finalize_node
+from apps.nodes.redirect_node import route_after_supervisor, task_redirect_node
 
 
 def build_graph():
@@ -27,6 +28,7 @@ def build_graph():
     graph.add_node("sync_reporting", task_sync_reporting_node)
     graph.add_node("meeting_coordinator", task_meeting_coordinator_node)
     graph.add_node("finalize", task_finalize_node)
+    graph.add_node("redirect", task_redirect_node)
 
     # Entry point - Supervisor decides sow vs mom (code, with a conditional LLM
     # tie-break only when the task-count heuristic conflicts with document content).
@@ -38,7 +40,9 @@ def build_graph():
     # but internally conditional - each node decides whether its agent actually runs
     # (should_trigger_sync_reporting / followup_signal), so a no-op run costs zero extra
     # LLM calls even though the node is always visited.
-    graph.add_edge("supervisor", "extract")
+    # From the Extractor page (sow_only) minutes are not run: they stop at "redirect". Everything else (tests, evals) goes straight on.
+    graph.add_conditional_edges("supervisor", route_after_supervisor, {"extract": "extract", "redirect": "redirect"})
+    graph.add_edge("redirect", END)
     graph.add_edge("extract", "normalize")
     graph.add_edge("normalize", "match")
     graph.add_edge("match", "planning")

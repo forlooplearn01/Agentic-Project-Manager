@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { fetchDeliverables, fetchProjectMeetings, fetchProjectPeople, fetchProjectTasks, fetchProjects, projectExportUrl } from "@/lib/api";
+import { fetchProjectMeetings, fetchProjectPeople, fetchProjectTasks, fetchProjects, fetchSuggestions, projectExportUrl } from "@/lib/api";
 import {
   getActivityFeedCollapsed,
   getDefaultProject,
@@ -12,7 +12,7 @@ import {
   setDefaultProject,
   setDefaultView,
 } from "@/lib/preferences";
-import type { Deliverable, Meeting, ProjectPerson, ProjectRollup, Task } from "@/lib/types";
+import type { Meeting, ProjectPerson, ProjectRollup, Task } from "@/lib/types";
 import StatCard from "@/components/StatCard";
 import ProjectSelector from "@/components/ProjectSelector";
 import Tabs, { type TabDef } from "@/components/Tabs";
@@ -21,13 +21,14 @@ import PlanView from "@/components/PlanView";
 import ActivityFeed from "@/components/ActivityFeed";
 import MeetingsPanel from "@/components/MeetingsPanel";
 import PeoplePanel from "@/components/PeoplePanel";
+import SuggestionsPanel from "@/components/SuggestionsPanel";
 import ProjectSettings from "@/components/ProjectSettings";
 import ScheduleMeetingModal from "@/components/ScheduleMeetingModal";
 import DeleteProjectModal from "@/components/DeleteProjectModal";
 import { IconAlertTriangle, IconCalendar, IconChecklist, IconClock, IconDownload, IconFlame, IconFolder, IconTrash } from "@/components/icons";
 
-type TabId = "tasks" | "meetings" | "people";
-const TAB_IDS: TabId[] = ["tasks", "meetings", "people"];
+type TabId = "tasks" | "suggestions" | "meetings" | "people";
+const TAB_IDS: TabId[] = ["tasks", "suggestions", "meetings", "people"];
 
 export default function TaskManagerPage() {
   return (
@@ -56,7 +57,7 @@ function TaskManager() {
   // Page-level copies, only used for the tab badges - the panels still load their own lists.
   const [meetings, setMeetings] = useState<Meeting[] | null>(null);
   const [people, setPeople] = useState<ProjectPerson[] | null>(null);
-  const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
+  const [pendingSuggestions, setPendingSuggestions] = useState(0);
   const [activityCollapsed, setActivityCollapsedState] = useState(() => getActivityFeedCollapsed());
 
   function toggleActivityCollapsed() {
@@ -108,15 +109,25 @@ function TaskManager() {
     };
   }, [selectedProject, meetingsRefreshKey]);
 
+  // Files dropped in the project's folders arrive by themselves: look again every few seconds for new suggestions and plan changes.
   useEffect(() => {
-    setDeliverables([]);
+    setPendingSuggestions(0);
     if (!selectedProject) return;
     let cancelled = false;
-    fetchDeliverables(selectedProject)
-      .then((r) => !cancelled && setDeliverables(r.deliverables.filter((d) => d.review_state === "confirmed")))
-      .catch(() => {});
+    const look = () => {
+      if (document.hidden) return;
+      fetchSuggestions(selectedProject, ["suggested"])
+        .then((r) => !cancelled && setPendingSuggestions(r.counts.suggested ?? 0))
+        .catch(() => {});
+      fetchProjectTasks(selectedProject)
+        .then((r) => !cancelled && setTasks(r.tasks))
+        .catch(() => {});
+    };
+    look();
+    const timer = setInterval(look, 8000);
     return () => {
       cancelled = true;
+      clearInterval(timer);
     };
   }, [selectedProject]);
 
@@ -171,11 +182,11 @@ function TaskManager() {
 
   const currentProject = projects?.find((p) => p.project_id === selectedProject);
 
-  const duplicateCount = tasks?.filter((t) => t.possible_duplicate_of).length ?? 0;
   const pendingMeetingCount = meetings?.filter((m) => m.status === "pending_approval").length ?? 0;
   const peopleWithoutEmailCount = people?.filter((p) => !p.email).length ?? 0;
   const tabs: TabDef<TabId>[] = [
-    { id: "tasks", label: "Tasks", badge: duplicateCount, badgeTitle: `${duplicateCount} possible duplicate task(s) to review` },
+    { id: "tasks", label: "Tasks" },
+    { id: "suggestions", label: "Suggestions", badge: pendingSuggestions, badgeTitle: `${pendingSuggestions} suggestion(s) from meetings waiting for your decision` },
     { id: "meetings", label: "Meetings", badge: pendingMeetingCount, badgeTitle: `${pendingMeetingCount} meeting(s) waiting for approval` },
     { id: "people", label: "People", badge: peopleWithoutEmailCount, badgeTitle: `${peopleWithoutEmailCount} person/people without an email` },
   ];
@@ -185,7 +196,7 @@ function TaskManager() {
       <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-text-primary">Workspace</h1>
-          <p className="text-[12.5px] text-text-muted">Tasks, meetings and people for one project at a time.</p>
+          <p className="text-[12.5px] text-text-muted">The plan, meeting suggestions, meetings and people for one project at a time.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {projects && projects.length > 0 && (
@@ -285,10 +296,19 @@ function TaskManager() {
 
                   {!tasks && <p className="text-[13px] text-text-faint">Loading…</p>}
                   {tasks && view === "plan" && (
-                    <PlanView projectId={currentProject.project_id} tasks={tasks} deliverables={deliverables} onTasksChange={setTasks} />
+                    <PlanView projectId={currentProject.project_id} tasks={tasks} />
                   )}
                   {tasks && view === "board" && tasks.length === 0 && <p className="text-[13px] text-text-faint">No tasks yet in this project.</p>}
                   {tasks && view === "board" && tasks.length > 0 && <TaskBoard tasks={tasks} />}
+                </section>
+              </div>
+            )}
+
+            {activeTab === "suggestions" && (
+              <div role="tabpanel" id="tabpanel-suggestions" aria-labelledby="tab-suggestions">
+                <section>
+                  <h2 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-text-faint">Suggestions from meetings</h2>
+                  <SuggestionsPanel projectId={currentProject.project_id} onChanged={() => loadTasks(currentProject.project_id)} />
                 </section>
               </div>
             )}

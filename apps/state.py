@@ -5,6 +5,7 @@ from typing import TypedDict, List, Dict, Any, Optional
 class AgentState(TypedDict):
     raw_input: str  # original document text (SOW or MoM)
     project_id: str  # all DB reads/writes are scoped by this value
+    sow_only: bool  # set by the Extractor page: only an SOW is run; a document the Supervisor takes for meeting minutes stops at the redirect node
     document_type: str  # "sow" | "mom" - set by the Supervisor; extract/normalize/match/planning ignore it. Read by sow_registers (sow), meeting_coordinator (mom) and stored on the source document by format
 
     # Core pipeline outputs (extract -> normalize -> match)

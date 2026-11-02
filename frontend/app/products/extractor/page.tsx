@@ -33,7 +33,7 @@ export default function ExtractorPage() {
       <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-text-primary">Extractor</h1>
-          <p className="text-[12.5px] text-text-muted">Turn an SOW into a plan, then keep it current with meeting minutes.</p>
+          <p className="text-[12.5px] text-text-muted">Start a project from its SOW. Plan, meetings and timesheets arrive later by folder.</p>
         </div>
         {projects && projects.length > 0 && (
           <ProjectSelector projects={projects} selected={selectedProject} onSelect={setSelectedProject} />

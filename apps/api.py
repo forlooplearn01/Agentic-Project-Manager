@@ -17,7 +17,7 @@ from apps.agent.chat import run_chat_agent
 from apps.graph import build_graph
 from apps.utils.raid_ai import suggest_raid_items_from_text
 from apps.utils.hours_budget_ai import suggest_budget_hours
-from apps.utils import hours_import, timesheet_service, timesheet_watcher
+from apps.utils import hours_import, plan_file, plan_merge, plan_starter, project_folders, timesheet_service, timesheet_watcher
 from apps.utils.plan_export import build_plan_workbook
 from apps.db.plan_db import create_plan_task, list_plan_changes, plan_has_content, plan_summary, remove_plan_task, set_plan_baseline
 from apps.utils.hours import week_start as _week_start
@@ -170,6 +170,7 @@ def _initial_state(input_text: str, project_id: str) -> dict:
         "raw_input": input_text,
         "project_id": project_id,
         "document_type": "",
+        "sow_only": True,  # the Extractor takes an SOW; meeting minutes arrive by folder and are approved first
         "tasks": [],
         "normalized_events": [],
         "followup_signal": False,
@@ -207,6 +208,13 @@ def _run_graph_job(job_id: str, input_text: str, project_id: str) -> None:
         complete_job(job_id, final_output)
         if final_output.get("tasks_count", 0) > 0:
             cache_pipeline_result(input_text, final_output, project_id)
+        if result_state.get("document_type") == "sow" and final_output.get("tasks_count", 0) > 0:
+            try:  # the SOW's tasks become a plan FILE in the project's plan folder (only when it has none yet)
+                plan_starter.write_starter_plan(project_id)
+            except plan_starter.PlanExists:
+                pass
+            except Exception:
+                logger.exception(f"Job {job_id}: the starter plan file could not be written")
     except Exception as e:
         logger.error(f"Job {job_id} failed: {e}")
         fail_job(job_id, str(e))
@@ -1275,10 +1283,76 @@ def get_timesheet_inbox(project_id: str):
         if r["status"] == "applied":
             to_check += [{"import_id": r["import_id"], "filename": r["filename"], **c} for c in s.get("to_check", [])]
     applied = last_applied_at(project_id)
-    return {"enabled": timesheet_watcher.STATUS["enabled"], "folder": f"timesheets/{project_id}",
+    return {"enabled": timesheet_watcher.STATUS["enabled"], "folder": f"projects/{project_id}/timesheets",
             "poll_seconds": timesheet_watcher.STATUS["poll_seconds"], "last_checked_at": timesheet_watcher.STATUS["last_checked_at"],
             "last_applied_at": applied.isoformat() if applied else None, "items": items, "to_check": to_check,
             "tasks": [{"task_id": t["task_id"], "task_text": t["task_text"]} for t in fetch_active_tasks_for_hours(project_id)]}
+
+
+class SuggestionDecision(BaseModel):
+    ids: list[str]
+
+
+@app.post("/projects/{project_id}/starter-plan")
+def create_starter_plan(project_id: str):
+    """Write a plan file from the project's tasks into its plan folder (only when the folder has no plan yet)."""
+    try:
+        path = plan_starter.write_starter_plan(project_id)
+    except plan_starter.PlanExists as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"file": path.name, "folder": f"projects/{project_id}/plan"}
+
+
+@app.get("/projects/{project_id}/weekly-summary")
+def get_weekly_summary(project_id: str):
+    """A short plain-text status for the PMO, built from the app's own numbers. Nothing is sent."""
+    from apps.utils.weekly_summary import build_weekly_summary
+    return build_weekly_summary(project_id)
+
+
+@app.get("/projects/{project_id}/folders")
+def get_project_folders(project_id: str):
+    """The plan and meeting folders of a project: where to drop files, what was read, and whether the plan file is ready to be updated."""
+    from apps.db.plan_sync import list_folder_files
+    root = timesheet_watcher.ROOT
+    plan_dir = root / project_id / "plan"
+    current = plan_file.current_plan_file(plan_dir)
+    plan_files = list_folder_files(project_id, "plan", 10)
+    meetings = list_folder_files(project_id, "meeting", 15)
+    return {"enabled": timesheet_watcher.STATUS["enabled"], "last_checked_at": timesheet_watcher.STATUS["last_checked_at"],
+            "plan": {"folder": f"projects/{project_id}/plan", "current_file": current.name if current else None,
+                     "open_in_excel": bool(current and plan_file.is_open_elsewhere(current)),
+                     "writable": bool(current and current.suffix.lower() == plan_file.WRITABLE_SUFFIX), "files": plan_files},
+            "meetings": {"folder": f"projects/{project_id}/meetings", "files": meetings}}
+
+
+@app.get("/projects/{project_id}/suggestions")
+def get_suggestions(project_id: str, states: Optional[str] = None):
+    from apps.db.suggestions_db import counts, list_suggestions
+    wanted = [x for x in (states or "").split(",") if x] or None
+    return {"suggestions": list_suggestions(project_id, states=wanted), "counts": counts(project_id)}
+
+
+@app.post("/projects/{project_id}/suggestions/approve")
+def approve_suggestions(project_id: str, body: SuggestionDecision):
+    """The PMO approves: each suggestion is written into the project's plan file (or, with no plan file, into the app's task list)."""
+    return plan_merge.approve(project_id, body.ids)
+
+
+@app.post("/projects/{project_id}/suggestions/reject")
+def reject_suggestions(project_id: str, body: SuggestionDecision):
+    return {"rejected": plan_merge.reject(project_id, body.ids)}
+
+
+@app.post("/projects/{project_id}/plan-files/{file_id}/apply")
+def apply_held_plan_file(project_id: str, file_id: str):
+    """A plan version that was held (it drops most of the plan) is applied after a person confirms it."""
+    try:
+        return project_folders.apply_held_plan(project_id, file_id)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @app.get("/hours/imports/{import_id}/review")

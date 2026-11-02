@@ -30,6 +30,10 @@ EST_H = ["est hours", "estimated hours", "planned hours", "estimate", "est", "ef
 START_H = ["start wk", "start week", "start", "from week"]
 FINISH_H = ["finish wk", "finish week", "end week", "end wk", "finish", "end", "to week"]
 PHASE_H = ["phase", "stage", "workstream"]
+REF_H = ["task id", "task no", "task number", "unique id", "uid", "wbs", "id", "ref", "reference"]
+STATUS_H = ["status", "state", "percent complete", "complete", "progress"]
+NOTES_H = ["notes", "note", "comments", "comment", "remarks"]
+DEPENDS_H = ["depends on", "dependencies", "dependency", "predecessors", "predecessor", "depends"]
 DAY_NAMES = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 TOTAL_WORDS = ("total", "subtotal", "grand total", "sum")
 OTHER_PATTERNS = re.compile(r"\b(meeting|meetings|standup|stand-up|stand up|admin|administration|holiday|leave|pto|sick|vacation|"
@@ -297,11 +301,48 @@ def _parse_matrix_sheet(sh, reference, warnings, start_day=0):
 
 # ---------------------------------------------------------------- plan
 
+STATUS_WORDS = {
+    "not_started": ("not started", "to do", "todo", "open", "new", "planned", "backlog", "not begun", "pending"),
+    "in_progress": ("in progress", "started", "wip", "ongoing", "underway", "in flight", "active", "working"),
+    "blocked": ("blocked", "stuck", "impediment"),
+    "on_hold": ("on hold", "hold", "paused", "deferred"),
+    "completed": ("completed", "complete", "done", "finished", "closed", "delivered"),
+}
+
+
+def map_status(raw):
+    """A plan file's status cell -> not_started | in_progress | blocked | on_hold | completed, or None when it says nothing usable.
+    Words ("Done", "In progress") and percentages (0 / 40% / 100%, or 0.4 as a fraction) are both understood."""
+    if raw is None or isinstance(raw, bool):
+        return None
+    if isinstance(raw, (int, float)):
+        pct = raw * 100 if 0 < raw <= 1 else raw  # Excel stores 40% as 0.4 and 100% as 1
+        return "completed" if pct >= 100 else "in_progress" if pct > 0 else "not_started"
+    text = _norm(raw)
+    if not text:
+        return None
+    m = re.fullmatch(r"(\d+(?:\.\d+)?)\s*(?:percent)?", text)
+    if m:
+        return map_status(float(m.group(1)))
+    for status, words in STATUS_WORDS.items():
+        if text in words:
+            return status
+    for status in ("blocked", "on_hold", "completed", "in_progress", "not_started"):  # a phrase: the most specific word wins
+        if any(re.search(rf"\b{re.escape(w)}\b", text) for w in STATUS_WORDS[status]):
+            return status
+    return None
+
+
 def parse_plan(filename: str, content: bytes) -> dict:
-    """-> {rows: [{label, owner, phase, start_wk, finish_wk, estimate, source_ref}], budget_hours, role_budgets, kickoff_date, warnings}."""
+    """-> {rows: [{label, owner, phase, start_wk, finish_wk, estimate, source_ref, task_ref, status, notes, depends, row}],
+    budget_hours, role_budgets, kickoff_date, warnings, layout}.
+    `layout` says where the tasks sit in the file ({sheet, header_row, cols: field -> column index, headers: field -> header text,
+    last_row}); row numbers are 0-based positions in the sheet. The plan writer uses it to put approved changes back in the right cells."""
     sheets = read_sheets(filename, content)
-    spec = {"task": PLAN_TASK_H, "estimate": EST_H, "owner": OWNER_H, "start": START_H, "finish": FINISH_H, "phase": PHASE_H}
-    rows, warnings, budget, role_budgets, kickoff = [], [], None, {}, None
+    # task_ref goes first so a "Task ID" column is claimed as the id and not mistaken for the task-name column
+    spec = {"task_ref": REF_H, "task": PLAN_TASK_H, "estimate": EST_H, "owner": OWNER_H, "start": START_H, "finish": FINISH_H,
+            "phase": PHASE_H, "status": STATUS_H, "notes": NOTES_H, "depends": DEPENDS_H}
+    rows, warnings, budget, role_budgets, kickoff, layout = [], [], None, {}, None, None
     for sh in sheets:
         for r in sh["rows"][:8]:
             m = re.search(r"(?i)kick[- ]?off\s*:?\s*([^\s].*?)(?:\s{2,}|$)", " ".join(_s(c) for c in r if _s(c)).replace(" Duration", "  Duration"))
@@ -310,6 +351,7 @@ def parse_plan(filename: str, content: bytes) -> dict:
         for hi, header in enumerate(sh["rows"][:30]):
             cols = _find_cols(header, spec)
             if {"task", "estimate"} <= set(cols):
+                last_row = hi
                 for ri in range(hi + 1, len(sh["rows"])):
                     r = sh["rows"][ri] + [None] * (len(header) - len(sh["rows"][ri]))
                     label = _s(r[cols["task"]])
@@ -317,9 +359,16 @@ def parse_plan(filename: str, content: bytes) -> dict:
                         continue
                     est = _to_hours(r[cols["estimate"]])
                     get = lambda f: r[cols[f]] if f in cols else None  # noqa: E731
+                    ref = _s(get("task_ref")) or None
                     rows.append({"label": label, "owner": _s(get("owner")) or None, "phase": _s(get("phase")) or None,
                                  "start_wk": _to_week_no(get("start")), "finish_wk": _to_week_no(get("finish")),
-                                 "estimate": est, "source_ref": f"{sh['name']}, row {ri + 1}"})
+                                 "estimate": est, "source_ref": f"{sh['name']}, row {ri + 1}", "task_ref": ref,
+                                 "status": map_status(get("status")), "notes": _s(get("notes")) or None,
+                                 "depends": _s(get("depends")) or None, "row": ri})
+                    last_row = ri
+                if layout is None:
+                    layout = {"sheet": sh["name"], "header_row": hi, "cols": cols, "last_row": last_row,
+                              "headers": {f: _s(header[i]) for f, i in cols.items()}}
                 break
         for ri, r in enumerate(sh["rows"]):
             label = _norm(r[0]) if r else ""
@@ -338,7 +387,7 @@ def parse_plan(filename: str, content: bytes) -> dict:
                                "estimated-hours column.")
     if sum(1 for r in rows if r["estimate"] is None):
         warnings.append(f"{sum(1 for r in rows if r['estimate'] is None)} plan row(s) have no estimate and will not get one.")
-    return {"rows": rows, "budget_hours": budget, "role_budgets": role_budgets, "kickoff_date": kickoff, "warnings": warnings}
+    return {"rows": rows, "budget_hours": budget, "role_budgets": role_budgets, "kickoff_date": kickoff, "warnings": warnings, "layout": layout}
 
 
 def _to_week_no(v):

@@ -96,6 +96,8 @@ def ensure_hours_schema():
     conn.commit()
     cur.close()
     conn.close()
+    from apps.db.plan_sync import ensure_plan_sync_schema  # plan ids, plan / meeting files, suggestions
+    ensure_plan_sync_schema()
 
 
 def merge_task_hours(cur, source_task_id: str, target_task_id: str):
@@ -126,7 +128,7 @@ def merge_task_hours(cur, source_task_id: str, target_task_id: str):
 
 def delete_project_hours(cur, project_id: str):
     """Called inside delete_project's transaction."""
-    for table in ("time_entries", "project_hours_settings", "hours_imports", "plan_changes"):
+    for table in ("time_entries", "project_hours_settings", "hours_imports", "plan_changes", "plan_suggestions", "folder_files"):
         cur.execute(f"DELETE FROM {table} WHERE project_id = %s", (project_id,))
 
 

@@ -1,115 +1,84 @@
 "use client";
 
-import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { fetchPlanSummary, fetchProjectTasks, setPlanBaseline } from "@/lib/api";
-import type { Deliverable, PlanSummary, Task } from "@/lib/types";
-import ImportButton from "./hours/ImportReview";
-import { errorText } from "./hours/shared";
-import AddTaskPanel from "./plan/AddTaskPanel";
+import { useEffect, useState } from "react";
+import { createStarterPlan, fetchPlanSummary, fetchProjectFolders } from "@/lib/api";
+import type { PlanSummary, ProjectFolders, Task } from "@/lib/types";
+import { formatDateTime } from "@/lib/format";
+import { BTN_QUIET, errorText } from "./hours/shared";
 import ChangeHistoryPanel from "./plan/ChangeHistoryPanel";
 import PlanSummaryStrip from "./plan/PlanSummaryStrip";
 import TaskTracker from "./TaskTracker";
 
-// Workspace > Tasks > Plan: the project plan the project manager maintains here. It is loaded from a file ONCE (the upload is offered only
-// while the project has no plan) and edited in place afterwards; the baseline and the change history say how it has moved.
-export default function PlanView({
-  projectId,
-  tasks,
-  deliverables,
-  onTasksChange,
-}: {
-  projectId: string;
-  tasks: Task[];
-  deliverables: Deliverable[];
-  onTasksChange: Dispatch<SetStateAction<Task[] | null>>;
-}) {
+// Workspace > Tasks > Plan: a VIEW of the project plan. The plan lives in an Excel file in the project's plan folder and is read again whenever
+// it changes; the baseline is the first version read and the change history is what changed between versions. Nothing here is edited.
+export default function PlanView({ projectId, tasks }: { projectId: string; tasks: Task[] }) {
   const [summary, setSummary] = useState<PlanSummary | null>(null);
+  const [folders, setFolders] = useState<ProjectFolders | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [historyKey, setHistoryKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
-
-  // After any change to the plan: reload the tasks and the summary together so the table, the strip and the history agree.
-  const reload = useCallback(async () => {
-    try {
-      const [t, s] = await Promise.all([fetchProjectTasks(projectId), fetchPlanSummary(projectId)]);
-      onTasksChange(t.tasks);
-      setSummary(s);
-      setHistoryKey((k) => k + 1);
-    } catch (e) {
-      setError(errorText(e));
-    }
-  }, [projectId, onTasksChange]);
 
   useEffect(() => {
     setSummary(null);
+    setFolders(null);
     setError(null);
     fetchPlanSummary(projectId)
       .then(setSummary)
       .catch((e) => setError(errorText(e)));
+    fetchProjectFolders(projectId)
+      .then(setFolders)
+      .catch(() => setFolders(null));
   }, [projectId]);
 
-  async function handleSetBaseline() {
-    setBusy(true);
+  async function makeStarter() {
     setError(null);
     try {
-      setSummary(await setPlanBaseline(projectId));
-      setHistoryKey((k) => k + 1);
-      await reload();
+      await createStarterPlan(projectId);
+      const [s, f] = await Promise.all([fetchPlanSummary(projectId), fetchProjectFolders(projectId)]);
+      setSummary(s);
+      setFolders(f);
     } catch (e) {
       setError(errorText(e));
-    } finally {
-      setBusy(false);
     }
   }
 
-  const owners = Array.from(new Set(tasks.map((t) => t.owner).filter((o): o is string => !!o))).sort();
-  const phases = Array.from(new Set(tasks.map((t) => t.phase).filter((p): p is string => !!p))).sort();
+  const lastRead = folders?.plan.files.find((f) => f.status === "applied");
+  const held = folders?.plan.files[0]?.status === "held" ? folders.plan.files[0] : null;
 
   return (
     <div className="flex flex-col gap-3">
       {error && <p className="text-[13px] text-danger">{error}</p>}
 
-      {summary && !summary.has_plan && (
-        <div className="glass-panel flex flex-col gap-2 rounded-xl p-4">
-          <h3 className="text-[13px] font-semibold text-text-primary">Load the plan</h3>
-          <p className="text-[12.5px] text-text-muted">
-            Upload the project plan once (an Excel or CSV file with tasks, estimates and planned weeks). After that it lives here and you edit it in this table;
-            there is no second upload.
-          </p>
-          <ImportButton projectId={projectId} kind="plan" label="Upload plan" onImported={reload} />
+      {summary && <PlanSummaryStrip summary={summary} historyOpen={historyOpen} onToggleHistory={() => setHistoryOpen((o) => !o)} />}
+
+      {folders && (
+        <p className="text-[12.5px] text-text-faint">
+          Plan file: <code className="rounded bg-surface px-1 py-0.5 text-[12px]">{folders.plan.current_file ? `${folders.plan.folder}/${folders.plan.current_file}` : folders.plan.folder}</code>
+          {lastRead ? `, last read ${formatDateTime(lastRead.applied_at ?? lastRead.created_at)}` : ", not read yet"}. Edit the plan in that file; the app reads it again within seconds.
+        </p>
+      )}
+      {folders && !folders.plan.current_file && tasks.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-[12.5px] text-text-muted">
+          <span>These tasks do not have a plan file yet. Create one from them, then keep editing it in Excel.</span>
+          <button type="button" onClick={makeStarter} className={BTN_QUIET}>Create the plan file</button>
         </div>
       )}
-
-      {summary && (
-        <PlanSummaryStrip
-          summary={summary}
-          historyOpen={historyOpen}
-          busy={busy}
-          onToggleHistory={() => setHistoryOpen((o) => !o)}
-          onAddTask={() => setAdding(true)}
-          onSetBaseline={handleSetBaseline}
-        />
+      {held && (
+        <p className="rounded-lg border border-warning-line bg-warning-bg px-3 py-2 text-[12.5px] text-warning">
+          The latest version of the plan was not applied: {held.reason} See Suggestions.
+        </p>
       )}
-      {adding && (
-        <AddTaskPanel
-          projectId={projectId}
-          owners={owners}
-          phases={phases}
-          onAdded={() => {
-            setAdding(false);
-            reload();
-          }}
-          onCancel={() => setAdding(false)}
-        />
-      )}
-      {historyOpen && <ChangeHistoryPanel projectId={projectId} refreshKey={historyKey} />}
+      {historyOpen && <ChangeHistoryPanel projectId={projectId} refreshKey={0} />}
 
       {tasks.length > 0 ? (
-        <TaskTracker tasks={tasks} deliverables={deliverables} onTasksChange={onTasksChange} hasBaseline={!!summary?.baseline_set_at} onPlanChange={reload} />
+        <TaskTracker tasks={tasks} hasBaseline={!!summary?.baseline_set_at} />
       ) : (
-        <p className="text-[13px] text-text-faint">No tasks yet in this project. Add one above or upload the plan.</p>
+        <div className="glass-panel rounded-xl p-5 text-[13px] text-text-muted">
+          <p className="font-medium text-text-primary">No plan yet.</p>
+          <p className="mt-1">
+            Run the project&apos;s SOW in Extractor (it creates a plan file from the SOW&apos;s tasks), or copy your own plan (an Excel file with a Task, Owner, Start and Finish week, Est. hours and Status column) into{" "}
+            <code className="rounded bg-surface px-1 py-0.5 text-[12px]">{folders?.plan.folder ?? `projects/${projectId}/plan`}</code>. It is read within a few seconds and shows up here.
+          </p>
+        </div>
       )}
     </div>
   );

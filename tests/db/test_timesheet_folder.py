@@ -45,7 +45,7 @@ def world(test_project, tmp_path, monkeypatch):
 
 def drop(w, name, content, project=None):
     pid = project or w["p"]
-    folder = w["root"] / pid
+    folder = w["root"] / pid / "timesheets"
     folder.mkdir(parents=True, exist_ok=True)
     (folder / name).write_bytes(content if isinstance(content, bytes) else content.encode())
     return folder / name
@@ -71,7 +71,7 @@ def test_a_clean_file_is_applied_once_and_moved_to_processed(world):
     [r] = scan(w)
     assert (r["status"], r["hours"]) == ("applied", 100)
     assert total(w["p"]) == 100
-    inbox = w["root"] / w["p"]
+    inbox = w["root"] / w["p"] / "timesheets"
     assert not (inbox / good_name(w)).exists() and (inbox / "processed" / good_name(w)).exists()
     assert scan(w) == []  # nothing left to do
     rec = list_folder_imports(w["p"])[0]
@@ -82,7 +82,7 @@ def test_a_file_still_being_written_is_left_alone(world):
     w = world
     drop(w, good_name(w), WEEK5)
     assert scan(w, settle=3600) == []  # touched a moment ago: wait
-    assert (w["root"] / w["p"] / good_name(w)).exists() and total(w["p"]) == 0
+    assert (w["root"] / w["p"] / "timesheets" / good_name(w)).exists() and total(w["p"]) == 0
     assert scan(w)[0]["status"] == "applied"
 
 
@@ -107,7 +107,7 @@ def test_a_file_with_an_unknown_person_is_held_and_nothing_is_written(world):
     [r] = scan(w)
     assert r["status"] == "held" and "Zed Unknown" in r["reason"] and "people list" in r["reason"]
     assert total(w["p"]) == 0
-    assert (w["root"] / w["p"] / "needs-review" / good_name(w)).exists()
+    assert (w["root"] / w["p"] / "timesheets" / "needs-review" / good_name(w)).exists()
 
 
 def test_a_held_file_can_be_reviewed_and_approved(world):
@@ -120,7 +120,7 @@ def test_a_held_file_can_be_reviewed_and_approved(world):
     zed = next(r for r in review["rows"] if r["person_raw"] == "Zed Unknown")
     done = client.post(f"/hours/imports/{held['import_id']}/confirm", json={"decisions": [{"idx": zed["idx"], "person": "Ram Anandkumar"}]})
     assert done.status_code == 200 and total(w["p"]) == 105
-    assert (w["root"] / w["p"] / "processed" / good_name(w)).exists() and not (w["root"] / w["p"] / "needs-review" / good_name(w)).exists()
+    assert (w["root"] / w["p"] / "timesheets" / "processed" / good_name(w)).exists() and not (w["root"] / w["p"] / "timesheets" / "needs-review" / good_name(w)).exists()
     assert get_import(held["import_id"])["status"] == "applied"
 
 
@@ -216,7 +216,7 @@ def test_an_unexpected_error_is_recorded_and_the_loop_carries_on(world, monkeypa
     drop(w, good_name(w, "b-fine.csv"), WEEK5.replace(b"Sales Trends view", b"Sales Trends view "))
     statuses = {r["file"]: r["status"] for r in scan(w)}
     assert statuses[good_name(w, "a-boom.csv")] == "failed" and statuses[good_name(w, "b-fine.csv")] == "applied"
-    assert (w["root"] / w["p"] / "needs-review" / good_name(w, "a-boom.csv")).exists()
+    assert (w["root"] / w["p"] / "timesheets" / "needs-review" / good_name(w, "a-boom.csv")).exists()
     assert {r["status"] for r in list_folder_imports(w["p"])} == {"failed", "applied"}
 
 
@@ -224,7 +224,7 @@ def test_an_unexpected_error_is_recorded_and_the_loop_carries_on(world, monkeypa
 
 def test_junk_and_misplaced_files_are_ignored(world):
     w = world
-    inbox = w["root"] / w["p"]
+    inbox = w["root"] / w["p"] / "timesheets"
     drop(w, ".hidden.csv", WEEK5)
     drop(w, "~$lock.xlsx", WEEK5)
     drop(w, good_name(w, "half.csv.tmp"), WEEK5)
@@ -242,7 +242,8 @@ def test_junk_and_misplaced_files_are_ignored(world):
 def test_unsafe_project_ids_never_get_folders(tmp_path):
     tw.ensure_folders(["good-id", "../escape", ".hidden", "a/b", ""], tmp_path)
     assert sorted(p.name for p in tmp_path.iterdir()) == ["good-id"]
-    assert (tmp_path / "good-id" / "processed").is_dir() and (tmp_path / "good-id" / "needs-review").is_dir()
+    for sub in ("plan", "plan/versions", "meetings", "meetings/processed", "meetings/needs-review", "timesheets", "timesheets/processed", "timesheets/needs-review"):
+        assert (tmp_path / "good-id" / sub).is_dir()
 
 
 # ---------------------------------------------------------------- a file can only touch the project whose folder it is in
@@ -279,7 +280,7 @@ def test_guessed_lines_are_listed_and_can_be_moved_without_changing_totals(world
     drop(w, good_name(w), WEEK5)
     r = scan(w)[0]
     inbox = client.get(f"/projects/{w['p']}/timesheet-inbox").json()
-    assert inbox["enabled"] in (True, False) and inbox["folder"] == f"timesheets/{w['p']}" and inbox["last_applied_at"]
+    assert inbox["enabled"] in (True, False) and inbox["folder"] == f"projects/{w['p']}/timesheets" and inbox["last_applied_at"]
     to_check = inbox["to_check"]
     assert to_check and all(c["match"] in ("suggested", "llm", "none") for c in to_check)
     assert all(c["label"] not in ("Meetings", "Standup / meetings") for c in to_check)  # plain meetings are not "guesses"
@@ -324,7 +325,7 @@ def test_the_demo_reset_empties_the_inbox_into_the_archive(world):
     drop(w, "stray-note.csv", WEEK5)
     moved = tw.archive_project_folder(w["p"], w["root"])
     assert moved == 2
-    assert not list((w["root"] / w["p"]).rglob("*.csv")) and len(list((w["root"] / "_archive").rglob("*.csv"))) == 2
+    assert not list((w["root"] / w["p"] / "timesheets").rglob("*.csv")) and len(list((w["root"] / "_archive").rglob("*.csv"))) == 2
 
 
 def test_the_inbox_endpoint_for_an_empty_project(test_project):

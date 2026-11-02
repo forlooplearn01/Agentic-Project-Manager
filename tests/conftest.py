@@ -7,12 +7,14 @@ exact same DB_HOST/DB_PORT and installed dependencies as the running app - no se
 test environment to keep in sync.
 """
 import json
+import shutil
 import uuid
 
 import pytest
 
 from apps.db.db import ensure_duplicate_handling_schema, ensure_registers_schema, get_connection
 from apps.db.hours_db import ensure_hours_schema
+from apps.utils import timesheet_watcher
 
 
 @pytest.fixture
@@ -35,6 +37,8 @@ def test_project():
         conn = get_connection()
         cur = conn.cursor()
         cur.execute("DELETE FROM plan_changes WHERE project_id = %s", (project_id,))
+        cur.execute("DELETE FROM plan_suggestions WHERE project_id = %s", (project_id,))
+        cur.execute("DELETE FROM folder_files WHERE project_id = %s", (project_id,))
         cur.execute("DELETE FROM time_entries WHERE project_id = %s", (project_id,))
         cur.execute("DELETE FROM project_hours_settings WHERE project_id = %s", (project_id,))
         cur.execute("DELETE FROM hours_imports WHERE project_id = %s", (project_id,))
@@ -57,6 +61,10 @@ def test_project():
         conn.commit()
         cur.close()
         conn.close()
+        # The running API's folder watcher creates projects/<id>/ for every project it can see, including this disposable one.
+        folder = timesheet_watcher.ROOT / project_id
+        if folder.is_dir() and not any(p.is_file() and p.name != ".DS_Store" for p in folder.rglob("*")):
+            shutil.rmtree(folder, ignore_errors=True)
 
 
 # ---------------------------------------------------------------------------

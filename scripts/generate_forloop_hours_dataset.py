@@ -169,6 +169,9 @@ def header(ws, row, cols):
         cell.font = Font(bold=True)
 
 
+STATUS_WORDS = {"completed": "Completed", "in_progress": "In progress", "not_started": "Not started", "blocked": "Blocked"}  # as a plan file would say it (end of Week 4)
+
+
 def write_plan():
     wb = Workbook()
     ws = wb.active
@@ -177,18 +180,18 @@ def write_plan():
     ws["A1"].font = Font(bold=True, size=13)
     ws["A2"] = "Project plan, baseline v1 (change requests appended below)"
     ws["A3"] = f"Kickoff: {KICKOFF:%d %b %Y}    Duration: 8 weeks"
-    header(ws, 5, ["WBS", "Phase", "Task", "Owner", "Start wk", "Finish wk", "Est. hours", "Notes"])
+    header(ws, 5, ["WBS", "Phase", "Task", "Owner", "Start wk", "Finish wk", "Est. hours", "Notes", "Status"])
     planned = [t for t in TASKS if t[2]]
     r = 6
     for n, t in enumerate(planned, start=1):
-        _, _, label, phase, owner, start, finish, est, _ = t
+        _, _, label, phase, owner, start, finish, est, status = t
         note = "Added by change request CR-01 in Week 3" if phase == CR else ("Ongoing, spread over the engagement" if t[0] == "pm" else "")
-        for c, v in enumerate([f"{n}.0", phase, label, owner, start, finish, est, note], start=1):
+        for c, v in enumerate([f"{n}.0", phase, label, owner, start, finish, est, note, STATUS_WORDS[status]], start=1):
             ws.cell(row=r, column=c, value=v)
         r += 1
     ws.cell(row=r + 1, column=3, value="Total estimated hours").font = Font(bold=True)
     ws.cell(row=r + 1, column=7, value=sum(t[7] for t in planned)).font = Font(bold=True)
-    for col, width in zip("ABCDEFGH", (7, 38, 54, 18, 10, 10, 11, 40)):
+    for col, width in zip("ABCDEFGHI", (7, 38, 54, 18, 10, 10, 11, 40, 13)):
         ws.column_dimensions[col].width = width
 
     bs = wb.create_sheet("Budget")

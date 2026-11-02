@@ -82,7 +82,7 @@ export default function RunPanel({ defaultProjectId, onCompleted }: { defaultPro
 
       setResult(poll.result ?? null);
       setState("completed");
-      onCompleted?.();
+      if (poll.result?.status !== "redirected") onCompleted?.();
 
       if (!from_cache) {
         try {
@@ -100,9 +100,11 @@ export default function RunPanel({ defaultProjectId, onCompleted }: { defaultPro
 
   return (
     <div className="glass-panel w-full rounded-2xl p-5">
-      <h2 className="mb-3 text-sm font-semibold tracking-tight text-text-primary">Submit a document</h2>
+      <h2 className="mb-3 text-sm font-semibold tracking-tight text-text-primary">Submit an SOW</h2>
       <p className="mb-4 text-[13px] text-text-muted">
-        The first document for a project is treated as an SOW (creates the plan); later documents are treated as meeting minutes (update it).
+        Upload or paste a statement of work to start a project: it creates the first tasks, risks and deliverables. Meeting minutes do not go here. Drop
+        them in the project&apos;s meetings folder (<code className="rounded bg-surface px-1 py-0.5 text-[12px]">projects/&lt;project id&gt;/meetings/</code>) and
+        approve what comes back under Workspace &gt; Suggestions.
       </p>
 
       <div className="mb-3 flex gap-1 rounded-lg border border-line bg-surface-solid p-1" style={{ width: "fit-content" }}>
@@ -239,7 +241,11 @@ export default function RunPanel({ defaultProjectId, onCompleted }: { defaultPro
         </div>
       )}
 
-      {result && (
+      {result && result.status === "redirected" && (
+        <div className="mt-5 rounded-lg border border-warning-line bg-warning-bg px-3 py-2.5 text-[13px] text-warning">{result.message}</div>
+      )}
+
+      {result && result.status !== "redirected" && (
         <div className="mt-5 flex flex-col gap-3 border-t border-line pt-4">
           <div className="flex items-center gap-2 text-[13px] text-text-muted">
             <span className="rounded-full bg-success-bg px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-success">

@@ -3,6 +3,8 @@ import type {
   AvailabilityReport,
   HoursImportRecord,
   TimesheetInbox,
+  ProjectFolders,
+  PlanSuggestion,
   TimesheetImportPreview,
   HoursReport,
   HoursSettings,
@@ -436,6 +438,35 @@ export function fetchImportReview(importId: string): Promise<TimesheetImportPrev
 // Moves one group of a picked-up file's hours to another task (taskId null = Other). Totals do not change.
 export function reassignImportGroup(importId: string, label: string, person: string, taskId: string | null): Promise<Record<string, unknown>> {
   return request(`/hours/imports/${importId}/reassign`, { method: "POST", body: JSON.stringify({ label, person, task_id: taskId }) });
+}
+
+export function fetchProjectFolders(projectId: string): Promise<ProjectFolders> {
+  return request(`/projects/${encodeURIComponent(projectId)}/folders`);
+}
+
+export function fetchSuggestions(projectId: string, states?: string[]): Promise<{ suggestions: PlanSuggestion[]; counts: Record<string, number> }> {
+  const q = states?.length ? `?states=${states.join(",")}` : "";
+  return request(`/projects/${encodeURIComponent(projectId)}/suggestions${q}`);
+}
+
+export function approveSuggestions(projectId: string, ids: string[]): Promise<Record<string, number>> {
+  return request(`/projects/${encodeURIComponent(projectId)}/suggestions/approve`, { method: "POST", body: JSON.stringify({ ids }) });
+}
+
+export function rejectSuggestions(projectId: string, ids: string[]): Promise<{ rejected: number }> {
+  return request(`/projects/${encodeURIComponent(projectId)}/suggestions/reject`, { method: "POST", body: JSON.stringify({ ids }) });
+}
+
+export function applyHeldPlanFile(projectId: string, fileId: string): Promise<Record<string, unknown>> {
+  return request(`/projects/${encodeURIComponent(projectId)}/plan-files/${fileId}/apply`, { method: "POST" });
+}
+
+export function createStarterPlan(projectId: string): Promise<{ file: string; folder: string }> {
+  return request(`/projects/${encodeURIComponent(projectId)}/starter-plan`, { method: "POST" });
+}
+
+export function fetchWeeklySummary(projectId: string): Promise<{ subject: string; text: string }> {
+  return request(`/projects/${encodeURIComponent(projectId)}/weekly-summary`);
 }
 
 export function fetchHoursSettings(projectId: string): Promise<HoursSettings> {

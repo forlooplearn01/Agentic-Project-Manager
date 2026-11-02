@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { HoursReport } from "@/lib/types";
-import { saveHoursSettings, setTaskHours, suggestHoursBudget } from "@/lib/api";
+import { saveHoursSettings, suggestHoursBudget } from "@/lib/api";
 import { IconAlertTriangle } from "@/components/icons";
-import { BTN_PRIMARY, BTN_QUIET, INPUT, NumberCell, StatusPill, errorText, formatWeek, h } from "./shared";
+import { BTN_PRIMARY, BTN_QUIET, INPUT, StatusPill, errorText, formatWeek, h } from "./shared";
 
 function Metric({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "good" | "bad" }) {
   return (
@@ -180,10 +180,7 @@ export default function HoursOverview({ projectId, report, onChanged }: { projec
                     {h(t.logged_hours)} h logged of {h(t.estimate_hours)} estimated, still open
                   </span>
                 </span>
-                <span className="flex items-center gap-1.5 text-text-muted">
-                  Hours still needed
-                  <NumberCell value={null} placeholder="enter" onSave={async (v) => { await setTaskHours(t.task_id, { hours_still_needed: v }); onChanged(); }} />
-                </span>
+                <span className="text-text-muted">Raise the estimate in the plan file</span>
               </div>
             ))}
           {report.tasks
@@ -194,10 +191,7 @@ export default function HoursOverview({ projectId, report, onChanged }: { projec
                   {t.task_text}
                   <span className="ml-2 text-text-faint">no estimate, left out of the forecast</span>
                 </span>
-                <span className="flex items-center gap-1.5 text-text-muted">
-                  Estimate (h)
-                  <NumberCell value={null} placeholder="enter" onSave={async (v) => { await setTaskHours(t.task_id, { estimate_hours: v }); onChanged(); }} />
-                </span>
+                <span className="text-text-muted">Add an estimate in the plan file</span>
               </div>
             ))}
         </section>
