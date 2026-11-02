@@ -1,0 +1,140 @@
+--- NEW TASKS (SHOULD BE EXTRACTED + DECOMPOSED) ---
+
+1.
+task: Replace Forloop OpenAI API key with Tarnwood's own OpenAI API key in production .env file and verify with a test run
+owner: Priya Nair
+deadline: November 11, 2026
+status: null
+blocker: null
+dependency: null
+
+2.
+task: Transfer Forloop GitHub repository to Tarnwood-Industrial GitHub organization
+owner: Rucheek
+deadline: November 11, 2026
+status: null
+blocker: null
+dependency: Tarnwood GitHub org handle received from Priya
+
+3.
+task: Flag output directory and report index JSON for inclusion in nightly backup schedule to Ben Okeke
+owner: Priya Nair
+deadline: November 12, 2026
+status: null
+blocker: null
+dependency: null
+
+4.
+task: Submit Milestone 4 invoice to Tarnwood accounts payable (finance@tarnwood.example)
+owner: Nirmal Babu
+deadline: November 11, 2026
+status: null
+blocker: null
+dependency: null
+
+5.
+task: Send formal project closure email to all stakeholders confirming all eleven deliverables complete
+owner: Nirmal Babu
+deadline: November 11, 2026
+status: null
+blocker: null
+dependency: null
+
+6.
+task: Complete and deliver technical reference document including AI agent architecture section
+owner: Ram Anandkumar
+deadline: November 11, 2026
+status: null
+blocker: null
+dependency: null
+
+
+--- UPDATE EVENTS (SHOULD NOT BE DECOMPOSED) ---
+
+1.
+event_type: status_change
+task: Push dataset cache key fix
+owner: Rucheek
+status: completed
+note: Fixed and deployed November 4
+
+2.
+event_type: status_change
+task: Update UAT report to full pass after regression
+owner: Ram Anandkumar
+status: completed
+note: Updated November 4 EOD; Deliverable 4.7 complete
+
+3.
+event_type: status_change
+task: Write up smoke test results document
+owner: Rucheek
+status: completed
+note: Submitted November 4; Deliverable 4.8 complete
+
+4.
+event_type: status_change
+task: Review and approve deployment runbook
+owner: Priya Nair
+status: completed
+note: Approved November 8; Deliverable 4.9 complete
+
+5.
+event_type: status_change
+task: Add file locking for report index JSON
+owner: Rucheek
+status: completed
+note: Implemented November 6; concurrent access test passes
+
+6.
+event_type: status_change
+task: Finalize user guide with CLI screenshots and deliver
+owner: Ram Anandkumar
+status: completed
+note: Delivered November 9; Deliverable 4.10 (user guide portion) complete
+
+7.
+event_type: status_change
+task: Conduct requirements audit
+owner: Ram Anandkumar
+status: completed
+note: All 27 requirements implemented and tested; all 11 SOW acceptance criteria met
+
+8.
+event_type: status_change
+task: Schedule knowledge transfer session and send invites
+owner: Nirmal Babu
+status: completed
+note: Session confirmed November 12 at 10 AM CST with Priya, Rajan, Lisa, Ben Okeke
+
+
+--- SHOULD NOT BE PICKED (IGNORE) ---
+
+- Deliverable status readout (formal checklist, not new tasks):
+  "Deliverable 4.1 through 4.11" status summary read by Nirmal
+  (These are confirmations of completed work, not new assignments)
+
+- Lessons learned discussion (retrospective content, no action items):
+  Nirmal's reflection on weekly cadence working well
+  Rucheek's reflection on Thursday working session being valuable
+  Priya's reflection on stat key document timing
+  Ram's reflection on multi-graph test coverage gap
+
+- Knowledge transfer session content details (informational):
+  Rucheek's demo plan (two end-to-end runs)
+  Ram's plan to highlight Common Use Cases section
+  Rajan's specific heatmap query (VM CPU utilization heatmap on cluster-gamma)
+
+- Minor SOW interpretation gap (acknowledged as acceptable, no task needed):
+  "Executive summary narrative length not explicitly constrained"
+  (Documented in audit as acceptable interpretation - no code change required)
+
+- Closing remarks and thank-yous:
+  "Eight weeks and I'm proud of what this team has built"
+  "This kind of collaboration is rare"
+  General goodbyes and appreciation
+
+- Payment terms context:
+  "Payment is due within fifteen business days"
+  "Any objections must be communicated within fifteen business days"
+  (These are contract terms, not tasks)

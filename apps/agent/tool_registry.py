@@ -4,6 +4,7 @@ only contains the tools its manifest declares, so an agent can never call a tool
 its own scope (Planning never touches Jira/report tools, Sync/Reporting never touches the
 calendar, etc. - see the manifests in apps/agent/manifests/)."""
 
+import re
 import json
 from datetime import date, timedelta
 
@@ -12,8 +13,11 @@ from mcp_server.tools.calendar import check_owner_availability, resolve_attendee
 from mcp_server.tools.jira import sync_task_to_jira
 from mcp_server.tools.report import generate_report
 from apps.db.hours_db import availability_report, project_hours_report
+from apps.utils import clock
 from apps.db.plan_db import list_plan_changes, plan_summary
 from apps.db.db import (
+    list_deliverables,
+    list_raid_items,
     fetch_project_tasks_with_dependencies,
     add_task_dependency,
     fetch_projects,
@@ -269,6 +273,32 @@ def _get_project_dependencies(project_id: str) -> list:
     return edges
 
 
+def _get_project_risks(project_id: str, item_type: str = None, status: str = None) -> dict:
+    """The project's RAID log (risks, assumptions, issues, dependencies) as the PMO has confirmed it, plus how many more are only suggested."""
+    rows = list_raid_items(project_id, item_type=item_type, status=status)
+    keep = ("item_type", "title", "description", "owner", "status", "probability", "impact", "evidence")
+    confirmed = [{k: r[k] for k in keep} for r in rows if r["review_state"] == "confirmed"]
+    return {"items": confirmed, "count": len(confirmed), "suggested_not_yet_reviewed": sum(1 for r in rows if r["review_state"] == "suggested"),
+            "note": "Only confirmed items are listed; suggested ones are waiting for the PMO's review in Registers."}
+
+
+def _get_project_deliverables(project_id: str) -> dict:
+    """Deliverables with number, owner, deadline, status, the number of tasks behind each, and who is Responsible / Accountable / Consulted / Informed."""
+    from apps.db.db import get_connection
+    rows = [d for d in list_deliverables(project_id, states=("confirmed",))]
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute("SELECT deliverable_id, person, role FROM deliverable_raci WHERE deliverable_id = ANY(%s::uuid[])", ([str(d["deliverable_id"]) for d in rows],))
+        raci = {}
+        for did, person, role in cur.fetchall():
+            raci.setdefault(str(did), {}).setdefault(role, []).append(person)
+    conn.close()
+    names = {"R": "responsible", "A": "accountable", "C": "consulted", "I": "informed"}
+    items = [{"number": d["number"], "title": d["title"], "owner": d["owner"], "deadline": d["deadline"], "status": d["status"], "tasks_behind_it": d["task_count"],
+              "raci": {names[r]: ", ".join(p) for r, p in raci.get(str(d["deliverable_id"]), {}).items()}} for d in rows]
+    return {"deliverables": items, "count": len(items)}
+
+
 def _plan_value(field: str, value):
     """A history value with its unit, so the answer cannot call a week number 'hours'."""
     if value in (None, ""):
@@ -297,7 +327,7 @@ def _get_plan_changes(project_id: str, limit: int = 15) -> dict:
 
 def _find_available_people(project_id: str, skill: str = None, from_date: str = None, to_date: str = None) -> dict:
     try:
-        start = date.fromisoformat(from_date) if from_date else date.today()
+        start = date.fromisoformat(from_date) if from_date else clock.today()
         end = date.fromisoformat(to_date) if to_date else start + timedelta(days=27)
     except ValueError:
         return {"error": "Dates must be YYYY-MM-DD."}
@@ -455,6 +485,27 @@ CHAT_TOOL_SCHEMAS = [
     {
         "type": "function",
         "function": {
+            "name": "get_project_risks",
+            "description": "The project's RAID log: risks, issues, dependencies and assumptions the PMO has confirmed, each with title, owner, status (open / mitigating / closed), probability, impact and the evidence it came from. Use it for 'what are the risks', 'what is blocking us', 'which assumptions does the plan rest on'. item_type narrows it to risk, issue, dependency or assumption.",
+            "parameters": {
+                "type": "object",
+                "properties": {"project_id": {"type": "string"}, "item_type": {"type": "string", "enum": ["risk", "issue", "dependency", "assumption"]},
+                               "status": {"type": "string", "enum": ["open", "mitigating", "closed"]}},
+                "required": ["project_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_project_deliverables",
+            "description": "The project's deliverables: number, title, owner, deadline, status, how many tasks sit behind each, and the RACI (responsible, accountable, consulted, informed). Use it for 'what are the deliverables', 'what is due', 'who is accountable for deliverable X'.",
+            "parameters": {"type": "object", "properties": {"project_id": {"type": "string"}}, "required": ["project_id"]},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "get_recent_activity",
             "description": "Recent agent actions (Planning, Sync/Reporting, Meeting Coordinator) for "
                             "a project, or across all projects if project_id is omitted.",
@@ -532,8 +583,56 @@ CHAT_TOOL_IMPLS = {
     "find_available_people": _find_available_people,
     "get_plan_changes": _get_plan_changes,
     "get_project_dependencies": _get_project_dependencies,
+    "get_project_risks": _get_project_risks,
+    "get_project_deliverables": _get_project_deliverables,
     "get_recent_activity": _get_recent_activity,
     "get_project_people": list_project_people,
     "get_project_meetings": list_meetings,
     "search_documents": search_document_chunks,
 }
+
+
+def _known_project_ids() -> list:
+    from apps.db.db import get_connection
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute("SELECT DISTINCT project_id FROM tasks WHERE is_active ORDER BY 1")
+        ids = [r[0] for r in cur.fetchall()]
+    conn.close()
+    return ids
+
+
+def resolve_project_id(given):
+    """A project id as the user probably meant it. Exact (any case) first; then the one known id that is inside what was given or contains it
+    ("the halvane portal", "halvane-portal" -> halvane). None when nothing, or more than one id, fits."""
+    if not given:
+        return None
+    known, low = _known_project_ids(), str(given).strip().lower()
+    if low in [k.lower() for k in known]:
+        return next(k for k in known if k.lower() == low)
+    words = {w for w in re.split(r"[^a-z0-9]+", low) if w}
+    near = [k for k in known if k.lower() in low or low in k.lower() or k.lower() in words]
+    return near[0] if len(near) == 1 else None
+
+
+def _forgiving(fn):
+    """Wraps a chat tool that takes a project_id: a loosely written one is corrected; an unknown one gets the list of real projects instead of
+    an empty answer the model would read as 'nothing there'."""
+    import functools
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        if "project_id" in kwargs and kwargs["project_id"] is not None:
+            real = resolve_project_id(kwargs["project_id"])
+            if real is None:
+                return {"error": f"There is no project with the id '{kwargs['project_id']}'.", "known_projects": _known_project_ids()}
+            kwargs["project_id"] = real
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+import inspect  # noqa: E402
+
+for _name, _fn in list(CHAT_TOOL_IMPLS.items()):
+    if "project_id" in inspect.signature(_fn).parameters:
+        CHAT_TOOL_IMPLS[_name] = _forgiving(_fn)

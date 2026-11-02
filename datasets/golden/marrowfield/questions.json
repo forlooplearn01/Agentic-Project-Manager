@@ -1,0 +1,99 @@
+[
+ {
+  "q": "How many hours are left in the marrowfield budget?",
+  "expect_all": [
+   "516"
+  ],
+  "expect_any": [],
+  "tool": "get_project_hours"
+ },
+ {
+  "q": "Is the marrowfield project on track?",
+  "expect_all": [],
+  "expect_any": [
+   "on track"
+  ],
+  "tool": "get_project_hours"
+ },
+ {
+  "q": "Who is available for data work on marrowfield in the next four weeks?",
+  "expect_all": [],
+  "expect_any": [
+   "Luis"
+  ],
+  "tool": "find_available_people"
+ },
+ {
+  "q": "What dependencies could delay marrowfield?",
+  "expect_all": [],
+  "expect_any": [
+   "WMS",
+   "credentials",
+   "test accounts"
+  ],
+  "tool": "search_tasks / get_project_risks"
+ },
+ {
+  "q": "What are the main risks on marrowfield?",
+  "expect_all": [],
+  "expect_any": [
+   "Carrier API",
+   "Quality of",
+   "WMS vendor"
+  ],
+  "tool": "get_project_risks"
+ },
+ {
+  "q": "What deliverables does marrowfield have and who is accountable or responsible for them?",
+  "expect_all": [],
+  "expect_any": [
+   "Integration",
+   "Integration",
+   "WMS",
+   "Carrier",
+   "Shipment",
+   "Tracking"
+  ],
+  "tool": "get_project_deliverables"
+ },
+ {
+  "q": "Has the marrowfield plan changed since the baseline?",
+  "expect_all": [],
+  "expect_any": [
+   "no change",
+   "not changed",
+   "hasn't changed",
+   "has not changed",
+   "unchanged",
+   "556"
+  ],
+  "tool": "get_plan_changes"
+ },
+ {
+  "q": "How many carriers does the Marrowfield project integrate at launch, and what happens if a fourth is wanted?",
+  "expect_all": [],
+  "expect_any": [
+   "three",
+   "3",
+   "change request"
+  ],
+  "tool": "search_documents"
+ },
+ {
+  "q": "What meetings are scheduled for marrowfield?",
+  "expect_all": [],
+  "expect_any": [
+   "Kickoff meeting",
+   "Week 2"
+  ],
+  "tool": "get_project_meetings"
+ },
+ {
+  "q": "What does the task \"Build the tracking dashboard\" depend on in marrowfield?",
+  "expect_all": [],
+  "expect_any": [
+   "Design the tracking"
+  ],
+  "tool": "get_project_dependencies"
+ }
+]

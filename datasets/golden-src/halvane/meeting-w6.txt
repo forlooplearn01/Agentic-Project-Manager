@@ -1,0 +1,20 @@
+Forloop / Halvane Financial — Weekly Sync, Week 6
+Date: Wednesday 21 October 2026
+Attendees: Nirmal Babu, Ram Anandkumar, Elise Marchetti, Hye-jin Park, Kofi Mensah, Rucheek, Ana Beltrán
+
+Notes
+
+Halvane's Head of Digital Onboarding asked for open banking account linking, so customers can connect
+their bank account instead of entering card details. The team estimated about 52 hours. Nirmal raised
+it as change request CR-01. The launch date has not moved, so Nirmal flagged that this puts the budget
+and the schedule under pressure. Elise will own the open banking work.
+
+Ana started preparing the fraud-signal features from the sample data.
+
+The ID-verification vendor access and the payment gateway sandbox credentials are both still outstanding.
+Rucheek and Ram are blocked on them. Nirmal will report both as issues to Halvane in writing.
+
+Kofi said the front end is the team's bottleneck: he is carrying the front end, the notifications and the
+payment screens in weeks 7 to 9. Elise suggested moving something off him, to be decided next week.
+
+Next sync: Wednesday 28 October.

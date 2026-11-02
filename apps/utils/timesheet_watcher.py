@@ -267,17 +267,45 @@ def scan_once(root=None, project_ids: list = None, settle_seconds: float = None,
     return results
 
 
+PAUSED, SCANNING = ".paused", ".scanning"  # marker files in the projects folder: a reset pauses the watcher and waits for a running scan to end
+
+
+def pause(root=None, timeout: float = 180) -> bool:
+    """Stop the watcher from starting a scan and wait for one that is running to finish. True when it is safe to change data and folders."""
+    root = Path(root or ROOT)
+    root.mkdir(parents=True, exist_ok=True)
+    (root / PAUSED).touch()
+    deadline = time.time() + timeout
+    marker = root / SCANNING
+    while marker.exists() and time.time() < deadline:
+        if time.time() - marker.stat().st_mtime > 900:  # a marker left behind by a crashed scan
+            break
+        time.sleep(0.5)
+    return not marker.exists() or time.time() - marker.stat().st_mtime > 900
+
+
+def resume(root=None) -> None:
+    (Path(root or ROOT) / PAUSED).unlink(missing_ok=True)
+
+
 def _loop():
     while True:
-        try:
-            scan_once()
-        except Exception:
-            logger.exception("Timesheet folder scan failed; trying again next time")
-        try:
-            from apps.utils import project_folders
-            project_folders.scan_all()
-        except Exception:
-            logger.exception("Plan and meeting folder scan failed; trying again next time")
+        if not (ROOT / PAUSED).exists():
+            marker = ROOT / SCANNING
+            try:
+                marker.parent.mkdir(parents=True, exist_ok=True)
+                marker.touch()
+                try:
+                    scan_once()
+                except Exception:
+                    logger.exception("Timesheet folder scan failed; trying again next time")
+                try:
+                    from apps.utils import project_folders
+                    project_folders.scan_all()
+                except Exception:
+                    logger.exception("Plan and meeting folder scan failed; trying again next time")
+            finally:
+                marker.unlink(missing_ok=True)
         time.sleep(POLL_SECONDS)
 
 
@@ -291,5 +319,6 @@ def start_watcher() -> None:
         return
     _started = True
     STATUS["enabled"] = True
+    (ROOT / SCANNING).unlink(missing_ok=True)  # a marker from a scan the last process died in (a reload): no scan can be running in a new one
     threading.Thread(target=_loop, daemon=True, name="timesheet-watcher").start()
     logger.info(f"Watching {ROOT} every {POLL_SECONDS:g}s for timesheets")

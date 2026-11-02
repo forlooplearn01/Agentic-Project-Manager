@@ -17,6 +17,7 @@ from apps.agent.chat import run_chat_agent
 from apps.graph import build_graph
 from apps.utils.raid_ai import suggest_raid_items_from_text
 from apps.utils.hours_budget_ai import suggest_budget_hours
+from apps.utils import clock
 from apps.utils import hours_import, plan_file, plan_merge, plan_starter, project_folders, timesheet_service, timesheet_watcher
 from apps.utils.plan_export import build_plan_workbook
 from apps.db.plan_db import create_plan_task, list_plan_changes, plan_has_content, plan_summary, remove_plan_task, set_plan_baseline
@@ -1159,7 +1160,7 @@ def put_person_capacity(project_id: str, name: str, body: PersonCapacityRequest)
 def get_availability(project_id: str, from_date: Optional[date] = Query(None, alias="from"),
                      to_date: Optional[date] = Query(None, alias="to"), skill: Optional[str] = None):
     """Free hours per person in a window (default: the next four weeks), optionally for people whose role or skills match."""
-    start = from_date or date.today()
+    start = from_date or clock.today()
     end = to_date or start + timedelta(days=27)
     if end < start or (end - start).days > 366:
         raise HTTPException(status_code=400, detail="The window must end after it starts and be at most a year long.")
@@ -1303,6 +1304,13 @@ def create_starter_plan(project_id: str):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {"file": path.name, "folder": f"projects/{project_id}/plan"}
+
+
+@app.get("/app-config")
+def get_app_config():
+    """Settings the screens need: the frozen demo date, if one is set (apps/utils/clock.py)."""
+    frozen = clock.demo_today()
+    return {"demo_today": frozen.isoformat() if frozen else None}
 
 
 @app.get("/projects/{project_id}/weekly-summary")

@@ -9,6 +9,7 @@ from psycopg2.extras import Json, RealDictCursor
 
 from apps.db.db import get_connection, insert_task
 from apps.utils.hours import last_workday_offset, week_start
+from apps.utils import clock
 
 NO_TASK = "00000000-0000-0000-0000-000000000000"  # stands in for "no task" inside the uniqueness key of time_entries
 _KEY = f"project_id, lower(person), week_start, COALESCE(task_id, '{NO_TASK}'::uuid)"
@@ -582,7 +583,7 @@ def project_hours_report(project_id: str, as_of: date = None) -> dict:
     with the calendar between timesheets; a note says so when no hours have been logged for over a week."""
     from apps.utils.hours import compute_project_hours
     settings, tasks, entries = fetch_hours_inputs(project_id)
-    today = date.today()
+    today = clock.today()
     basis_note = None
     if as_of is None:
         as_of = today
@@ -607,7 +608,7 @@ def availability_report(project_id: str, window_start: date, window_end: date, s
     from apps.utils.hours import compute_availability
     settings, tasks, entries = fetch_hours_inputs(project_id)
     return compute_availability(list_project_people(project_id), tasks, entries, settings, window_start, window_end,
-                                as_of or date.today(), skill)
+                                as_of or clock.today(), skill)
 
 
 # ---------------------------------------------------------------- folder pickup: records, lookups, moving hours between tasks

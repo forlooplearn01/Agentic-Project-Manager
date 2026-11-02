@@ -1,0 +1,98 @@
+[
+ {
+  "q": "How many hours are left in the halvane budget?",
+  "expect_all": [
+   "524"
+  ],
+  "expect_any": [],
+  "tool": "get_project_hours"
+ },
+ {
+  "q": "Is the halvane project on track?",
+  "expect_all": [],
+  "expect_any": [
+   "at risk"
+  ],
+  "tool": "get_project_hours"
+ },
+ {
+  "q": "Who is available for QA work on halvane in the next four weeks?",
+  "expect_all": [],
+  "expect_any": [
+   "Jonas"
+  ],
+  "tool": "find_available_people"
+ },
+ {
+  "q": "What is blocked on halvane and why?",
+  "expect_all": [],
+  "expect_any": [
+   "ID-verification",
+   "payment gateway",
+   "sandbox"
+  ],
+  "tool": "search_tasks / get_project_risks"
+ },
+ {
+  "q": "What are the main risks on halvane?",
+  "expect_all": [],
+  "expect_any": [
+   "Front-end team",
+   "Open banking",
+   "Fraud model",
+   "Payment gateway"
+  ],
+  "tool": "get_project_risks"
+ },
+ {
+  "q": "What deliverables does halvane have and who is accountable or responsible for them?",
+  "expect_all": [],
+  "expect_any": [
+   "Requirements",
+   "Architecture",
+   "Onboarding",
+   "Payments",
+   "Fraud",
+   "Test"
+  ],
+  "tool": "get_project_deliverables"
+ },
+ {
+  "q": "Has the halvane plan changed since the baseline?",
+  "expect_all": [],
+  "expect_any": [
+   "74",
+   "820"
+  ],
+  "tool": "get_plan_changes"
+ },
+ {
+  "q": "When does the Halvane portal launch according to the SOW, and what is the budget?",
+  "expect_all": [
+   "920"
+  ],
+  "expect_any": [
+   "4 December",
+   "December 4",
+   "Week 12"
+  ],
+  "tool": "search_documents"
+ },
+ {
+  "q": "What meetings are scheduled for halvane?",
+  "expect_all": [],
+  "expect_any": [
+   "Week 6",
+   "Escalation: ID"
+  ],
+  "tool": "get_project_meetings"
+ },
+ {
+  "q": "What does the task \"Build onboarding API (account creation, document upload, status)\" depend on in halvane?",
+  "expect_all": [],
+  "expect_any": [
+   "Design onboarding platform"
+  ],
+  "tool": "get_project_dependencies"
+ }
+]

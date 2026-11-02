@@ -1,0 +1,155 @@
+--- NEW TASKS (SHOULD BE EXTRACTED + DECOMPOSED) ---
+
+1.
+task: Complete multi-graph PDF compilation
+owner: Rucheek
+deadline: October 22, 2026
+status: null
+blocker: null
+dependency: null
+
+2.
+task: Implement report index JSON file in output directory
+owner: Rucheek
+deadline: October 24, 2026
+status: null
+blocker: null
+dependency: null
+
+3.
+task: Send sample PDF report from dev cluster run to group
+owner: Rucheek
+deadline: October 21, 2026
+status: null
+blocker: null
+dependency: null
+
+4.
+task: Complete report generation module edge case testing and deliver Deliverable 4.5
+owner: Rucheek
+deadline: October 27, 2026
+status: null
+blocker: null
+dependency: Multi-graph PDF compilation complete
+
+5.
+task: Send Tarnwood logo PNG (300 DPI minimum) to Rucheek
+owner: Priya Nair
+deadline: October 21, 2026
+status: null
+blocker: null
+dependency: null
+
+6.
+task: Confirm whitelist approval status
+owner: Priya Nair
+deadline: October 23, 2026
+status: null
+blocker: null
+dependency: null
+
+7.
+task: Identify and brief UAT participants
+owner: Priya Nair
+deadline: October 26, 2026
+status: null
+blocker: null
+dependency: null
+
+8.
+task: Finalize integration test plan
+owner: Ram Anandkumar
+deadline: October 24, 2026
+status: null
+blocker: null
+dependency: null
+
+9.
+task: Create UAT participant guide
+owner: Ram Anandkumar
+deadline: October 26, 2026
+status: null
+blocker: null
+dependency: null
+
+10.
+task: Add LLM operating cost estimate to project closure deliverables
+owner: Ram Anandkumar
+deadline: October 27, 2026
+status: null
+blocker: null
+dependency: null
+
+
+--- UPDATE EVENTS (SHOULD NOT BE DECOMPOSED) ---
+
+1.
+event_type: status_change
+task: Complete AI agent implementation and all five graph types
+owner: Rucheek
+status: completed
+note: All five graph types done and tested including heatmap
+
+2.
+event_type: status_change
+task: Test multi-graph count enforcement and confirm five-graph cap works
+owner: Rucheek
+status: completed
+
+3.
+event_type: status_change
+task: Test LLM graph spec quality with and without sample rows
+owner: Rucheek
+status: completed
+note: Result: adaptive context assembly approach adopted
+
+4.
+event_type: status_change
+task: Respond to IT security team acknowledging data privacy concern
+owner: Priya Nair
+status: completed
+note: IT security approved adaptive context approach on October 17
+
+5.
+event_type: status_change
+task: Confirm whitelist approval status
+owner: Priya Nair
+status: in_progress
+note: Still on track; expected confirmation by October 23
+
+6.
+event_type: status_change
+task: Review integration test plan
+owner: Rucheek, Priya Nair
+status: completed
+
+
+--- SHOULD NOT BE PICKED (IGNORE) ---
+
+- PDF structure and report design details (implementation context):
+  Cover page layout and fields description
+  Table of contents structure
+  Executive summary narrative approach and example output
+  Data source and methodology section contents
+  Timestamped PDF filename format
+
+- LLM cost analysis (informational):
+  "$0.05 per 1000 input tokens" cost calculation
+  "~$50/month for 10 reports/day" estimate
+  (captured as task #10 - add to closure deliverables)
+
+- Sample PDF output discussion:
+  Rucheek reading the executive summary example aloud
+  Priya sharing it with her manager (informal)
+
+- Report index JSON structure discussion:
+  Already captured as task #2 - implement report index JSON
+
+- Integration testing weekend plan (informal scheduling):
+  "If Rucheek gives me the green light by October 24, I can run the first batch over the October 25-5 weekend"
+  (not a formal task with deadline)
+
+- General acknowledgements and reactions:
+  "That's remarkably coherent and specific"
+  "Forty-five seconds end to end. That's impressive"
+  "Our team currently spends days doing this manually"

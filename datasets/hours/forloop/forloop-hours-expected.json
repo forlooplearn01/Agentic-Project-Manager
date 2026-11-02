@@ -63,14 +63,14 @@
     },
     {
       "name": "Ram Anandkumar",
-      "role": "Infrastructure Engineer",
+      "role": "Technical Director",
       "weekly_capacity_hours": 20,
       "in_flat_csv": false,
       "in_grid_xlsx": true
     },
     {
       "name": "Rucheek",
-      "role": "Technical Director",
+      "role": "Infrastructure Engineer",
       "weekly_capacity_hours": 6,
       "in_flat_csv": true,
       "in_grid_xlsx": false
@@ -91,7 +91,7 @@
     ],
     "open_tasks_over_their_estimate": [
       {
-        "task": "Coordinate with Meridian's IT team to set up secure VPN access",
+        "task": "Coordinate with Calderwick's IT team to set up secure VPN access",
         "estimate": 12,
         "actual": 16
       },
@@ -163,8 +163,8 @@
   "tasks": [
     {
       "key": "discovery",
-      "db_task_text": "Lead technical discovery session with Meridian's IT team",
-      "plan_label": "Technical discovery session with Meridian IT",
+      "db_task_text": "Lead technical discovery session with Calderwick's IT team",
+      "plan_label": "Technical discovery session with Calderwick IT",
       "owner": "Elena Ruiz",
       "estimate_hours": 16,
       "status_assumed": "completed",
@@ -231,7 +231,7 @@
     },
     {
       "key": "vpn",
-      "db_task_text": "Coordinate with Meridian's IT team to set up secure VPN access",
+      "db_task_text": "Coordinate with Calderwick's IT team to set up secure VPN access",
       "plan_label": "VPN access to staging POS replica",
       "owner": "Ram Anandkumar",
       "estimate_hours": 12,
@@ -248,7 +248,7 @@
     },
     {
       "key": "mapping",
-      "db_task_text": "Deliver data mapping document to Meridian for sign-off",
+      "db_task_text": "Deliver data mapping document to Calderwick for sign-off",
       "plan_label": "Data mapping document and client sign-off",
       "owner": "Sofia Martins",
       "estimate_hours": 20,
@@ -435,7 +435,7 @@
     },
     {
       "key": "training",
-      "db_task_text": "Deliver training session and user guide to Meridian's staff",
+      "db_task_text": "Deliver training session and user guide to Calderwick's staff",
       "plan_label": "Training session and user guide",
       "owner": "Sofia Martins",
       "estimate_hours": 24,
@@ -469,7 +469,7 @@
     },
     {
       "key": "deploy",
-      "db_task_text": "Deploy the dashboard to Meridian's production environment",
+      "db_task_text": "Deploy the dashboard to Calderwick's production environment",
       "plan_label": "Production deployment",
       "owner": "Team",
       "estimate_hours": 16,
@@ -537,7 +537,7 @@
     },
     {
       "key": "followup",
-      "db_task_text": "Follow up with Meridian's IT contact",
+      "db_task_text": "Follow up with Calderwick's IT contact",
       "plan_label": null,
       "owner": null,
       "estimate_hours": null,
@@ -592,7 +592,7 @@
     "CRM sync - dedupe + verification": [
       "crm"
     ],
-    "Chase Meridian IT contact (VPN)": [
+    "Chase Calderwick IT contact (VPN)": [
       "followup"
     ],
     "Dashboard API endpoints": [
@@ -601,7 +601,7 @@
     "Dashboard shell + nav (React)": [
       "layout"
     ],
-    "Data mapping doc - Meridian sign-off": [
+    "Data mapping doc - Calderwick sign-off": [
       "mapping"
     ],
     "Data mapping doc - draft": [
@@ -616,7 +616,7 @@
     "Discovery session follow-ups": [
       "discovery"
     ],
-    "Discovery session prep w/ Meridian IT": [
+    "Discovery session prep w/ Calderwick IT": [
       "discovery"
     ],
     "ETL - secure connection setup": [
@@ -673,7 +673,7 @@
     "VPN blocker review": [
       "vpnreview"
     ],
-    "VPN setup - Meridian staging POS": [
+    "VPN setup - Calderwick staging POS": [
       "vpn"
     ]
   },

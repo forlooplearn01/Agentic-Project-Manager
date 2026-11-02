@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { AvailabilityReport, AvailabilityWeek } from "@/lib/types";
-import { fetchAvailability } from "@/lib/api";
+import { fetchAppConfig, fetchAvailability } from "@/lib/api";
 import { BTN_PRIMARY, INPUT, addDays, errorText, formatWeek, h, isoDate } from "./shared";
 
 // Cells at or above this share of the week's capacity read as "full"; above 100% they read as over.
@@ -40,13 +40,28 @@ export default function CapacityPanel({ projectId }: { projectId: string }) {
   const [skill, setSkill] = useState("");
   const [report, setReport] = useState<AvailabilityReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+
+  // The window starts on the app's "today", which is the frozen demo date when one is set.
+  useEffect(() => {
+    fetchAppConfig()
+      .then((c) => {
+        if (c.demo_today) {
+          setFrom(c.demo_today);
+          setTo(addDays(c.demo_today, 27));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setReady(true));
+  }, []);
 
   const load = useCallback(() => {
+    if (!ready) return;
     setError(null);
     fetchAvailability(projectId, from, to, skill)
       .then(setReport)
       .catch((e) => setError(errorText(e)));
-  }, [projectId, from, to, skill]);
+  }, [projectId, from, to, skill, ready]);
   useEffect(load, [load]);
 
   const peopleLink = `/products/task-manager?project=${encodeURIComponent(projectId)}&tab=people`;

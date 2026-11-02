@@ -1,0 +1,20 @@
+Forloop / Marrowfield Logistics — Week 1 Review
+Date: Friday 23 October 2026
+Attendees: Nirmal Babu, Ram Anandkumar, Rucheek, Dana Whitfield, Luis Ortega, Priyanka Rao
+
+Notes
+
+Ram finished the discovery sessions. The requirements and data mapping are about half written, and the
+integration architecture is started.
+
+Rucheek finished reviewing the API documentation. The WMS vendor's documentation is out of date in several
+places, so Rucheek and Dana will check each endpoint against the test environment once it is available.
+
+Dana started the WMS connector, and Rucheek started the integration for carrier A. Luis started
+normalising shipment events into the common model.
+
+Priyanka started the dashboard design.
+
+The WMS credentials and test environment have not arrived yet. Nirmal will chase Marrowfield's IT lead.
+
+Next meeting: Week 2 checkpoint on Friday 30 October.

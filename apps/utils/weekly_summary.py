@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta, timezone
 from apps.db.hours_db import availability_report, project_hours_report
 from apps.db.plan_db import list_plan_changes, plan_summary
 from apps.db.suggestions_db import counts
+from apps.utils import clock
 
 STATUS_WORDS = {"on_track": "On track", "watch": "Watch", "at_risk": "At risk", "unknown": "Not enough data"}
 
@@ -15,7 +16,7 @@ def _h(n) -> str:
 
 
 def build_weekly_summary(project_id: str, today: date = None) -> dict:
-    today = today or date.today()
+    today = today or clock.today()
     report = project_hours_report(project_id)
     burn = report["burn_check"]
     lines = [f"{project_id}: weekly summary, {today:%d %b %Y}", ""]
@@ -32,7 +33,7 @@ def build_weekly_summary(project_id: str, today: date = None) -> dict:
         diff = plan["change_hours"] or 0
         lines.append(f"Plan: {_h(plan['current_hours'])} h planned against a baseline of {_h(plan['baseline_hours'])} h ({'+' if diff > 0 else ''}{_h(diff)} h)"
                      + (f", {plan['tasks_added']} task(s) added" if plan["tasks_added"] else "") + (f", {plan['tasks_removed']} removed" if plan["tasks_removed"] else "") + ".")
-    cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+    cutoff = clock.now() - timedelta(days=7)
     recent = [c for c in list_plan_changes(project_id, 200) if c["changed_at"] >= cutoff and c["field"] not in ("plan_file_read", "plan_imported", "baseline_set")]
     if recent:
         lines += ["", "Plan changes in the last 7 days:"]

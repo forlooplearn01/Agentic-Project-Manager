@@ -1,0 +1,20 @@
+Forloop / Halvane Financial — Weekly Sync, Week 3
+Date: Wednesday 30 September 2026
+Attendees: Nirmal Babu, Ram Anandkumar, Elise Marchetti, Hye-jin Park, Kofi Mensah, Rucheek
+
+Notes
+
+Hye-jin confirmed the requirements specification is signed off by Halvane's compliance team, so it is
+complete. Elise said the architecture and data model are also done and reviewed by Ram.
+
+Kofi finished the onboarding screen mockups and Halvane approved them. He starts the front end next week.
+
+Rucheek has started the onboarding API: account creation works end to end, document upload is next.
+He asked Nirmal to chase Halvane about the ID-verification vendor, because production API access is
+needed by Week 5 and the vendor said it can take three weeks.
+
+Elise will build the document upload and secure storage in parallel with Rucheek's API work.
+
+Nirmal will ask Halvane for the anonymised sample application data, needed by Week 5 for the fraud model.
+
+Next sync: Wednesday 7 October.

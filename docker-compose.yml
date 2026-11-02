@@ -42,9 +42,13 @@ services:
         environment:
             DB_HOST: postgres
             DB_PORT: 5432
+            # Demo date: every answer that depends on today's date is worked out as of this day. Set DEMO_TODAY= (empty) for real use.
+            DEMO_TODAY: ${DEMO_TODAY-2026-10-29}
             MCP_SERVER_URL: http://mcp:8001
             # Model for AI RAID suggestions only (measured better than the app-wide default, see DECISIONS.md); set empty to use LLM_MODEL.
             RAID_AI_MODEL: ${RAID_AI_MODEL-gpt-4.1}
+            # Model for turning a meeting transcript into plan suggestions (a long transcript against a large plan needs a stronger model); empty = LLM_MODEL.
+            PLAN_SUGGEST_MODEL: ${PLAN_SUGGEST_MODEL-gpt-4.1}
         ports:
             - "8010:8000"
         volumes:

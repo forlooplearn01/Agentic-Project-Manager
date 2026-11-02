@@ -10,6 +10,8 @@ const LABELS: Record<string, string> = {
   get_project_hours: "Hours",
   find_available_people: "Who is free",
   get_project_dependencies: "Dependencies",
+  get_project_risks: "Risks",
+  get_project_deliverables: "Deliverables",
   get_recent_activity: "Recent activity",
   get_project_people: "People",
   get_project_meetings: "Meetings",

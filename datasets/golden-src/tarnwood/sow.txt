@@ -1,0 +1,273 @@
+STATEMENT OF WORK
+
+Project Codename: Tarnwood AI Analytics
+Prepared for: Tarnwood Industrial
+Prepared by: Forloop
+Version: 1.0
+Date: September 23, 2026
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. EXECUTIVE SUMMARY
+
+Tarnwood Industrial (hereinafter referred to as "Client") has engaged Forloop (hereinafter referred to as "Provider") to design, develop, and deploy an AI-powered infrastructure analytics and reporting platform. The platform will integrate with VMware Aria Operations (formerly vRealize Operations) via its REST API and support CSV-based data ingestion as a fallback data source. The system will enable Tarnwood's infrastructure team to generate dynamic visualizations and executive-level PDF reports driven by natural language user inputs and AI agent decision-making.
+
+This Statement of Work outlines the scope, deliverables, timeline, team responsibilities, assumptions, and terms governing the engagement between Tarnwood Industrial and Forloop for the AI-X-VMware project.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2. BACKGROUND AND BUSINESS NEED
+
+Tarnwood Industrial operates a large-scale VMware virtualization environment spanning multiple clusters, resource pools, and hundreds of virtual machines. The infrastructure team currently relies on manual data exports and ad hoc spreadsheet analysis to generate performance reports for executive stakeholders. This process is time-consuming, error-prone, and does not scale with the growing complexity of the environment.
+
+The Client requires an intelligent, self-service analytics platform that:
+
+a. Allows users to select between live VMware Aria Operations data (via Stat Key API endpoint) and locally stored CSV datasets as the data source.
+b. Enables natural language interaction to specify the type of graphs and metrics to visualize.
+c. Leverages an AI agent to intelligently select relevant datasets and generate multiple graphs automatically.
+d. Supports cross-cluster and cross-resource data aggregation for complex comparative analysis.
+e. Produces polished executive summary reports in PDF format, combining AI-generated narrative summaries with the generated graphs.
+f. Stores all generated reports and graphs in a designated output directory for future access and audit.
+
+This engagement will deliver a fully functional, production-ready platform within an eight-week timeline, including design, development, testing, and production deployment.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3. SCOPE OF WORK
+
+3.1 In-Scope
+
+The following activities and deliverables are within the scope of this engagement:
+
+3.1.1 Data Source Integration Module
+- Design and implement a data source selection interface allowing users to choose between CSV file ingestion and live VMware Aria Operations API integration.
+- Implement CSV ingestion: list available CSV files from a configured folder, allow user upload of new CSV files to the folder, and parse and validate CSV structure upon selection.
+- Implement VMware Aria Operations API integration: authenticate using username and password to obtain a VMwareOpsToken, use the token to query the Stat Key API endpoint, retrieve all available raw metrics datasets for the specified cluster or resource, and handle token expiry and re-authentication gracefully.
+- Implement multi-cluster data aggregation: support querying multiple clusters or resources in sequence and merging the resulting datasets for cross-cluster analysis.
+- Implement error handling for API connectivity failures, authentication failures, malformed CSV files, and empty datasets.
+
+3.1.2 AI Agent and Graph Generation Module
+- Design and integrate an AI agent that accepts natural language user input describing the desired graph type and metrics.
+- Implement dataset selection logic: the AI agent analyzes available datasets and selects the most relevant columns and rows to satisfy the user's request.
+- Implement graph generation: support at least five graph types including line charts, bar charts, scatter plots, heatmaps, and pie charts.
+- Implement multi-graph generation: the AI agent generates multiple graphs in a single session based on user input.
+- Implement graph storage: save all generated graphs as image files (PNG format) in the designated output directory with timestamped filenames.
+- Support complex graph scenarios: combine and compare data from multiple clusters or resources in a single graph.
+
+3.1.3 Report Generation Module
+- Implement a report title input prompt allowing the user to specify the title of the executive summary report.
+- Design and implement an AI-generated executive summary narrative that contextualizes the graphs and key findings.
+- Compile all generated graphs and the executive summary into a structured PDF report.
+- Apply professional formatting to the PDF including a cover page, table of contents, section headers, graph captions, and a footer with generation timestamp and report title.
+- Store the generated PDF report in the designated output directory with a timestamped filename.
+
+3.1.4 Output Management
+- Design and implement an output directory structure for storing graphs and reports.
+- Implement a report index file (JSON format) that catalogs all generated reports and graphs with metadata including generation timestamp, data source used, cluster or resource queried, and report title.
+- Ensure all output files are accessible and retrievable at any time without re-running the pipeline.
+
+3.1.5 Testing and Quality Assurance
+- Conduct unit testing for all individual modules: data source integration, AI agent, graph generation, and report generation.
+- Conduct integration testing for the end-to-end pipeline from data source selection to PDF report storage.
+- Conduct user acceptance testing (UAT) with Tarnwood's infrastructure team using real VMware Aria Operations data and pre-prepared CSV datasets.
+- Conduct performance testing for multi-cluster data aggregation scenarios.
+- Document all test cases, test results, and defect resolutions.
+
+3.1.6 Production Deployment
+- Deploy the platform to Tarnwood's designated production environment.
+- Configure environment variables, API credentials, and output directory paths for the production environment.
+- Conduct a smoke test post-deployment to verify all modules function correctly in production.
+- Provide a deployment runbook documenting all deployment steps, configuration requirements, and rollback procedures.
+
+3.1.7 Knowledge Transfer and Documentation
+- Conduct a knowledge transfer session with Tarnwood's infrastructure team covering platform architecture, usage, and maintenance.
+- Deliver a user guide documenting the data source selection workflow, graph generation workflow, and report generation workflow.
+- Deliver a technical reference document covering the API integration design, AI agent architecture, and output directory structure.
+
+3.2 Out of Scope
+
+The following are explicitly excluded from this engagement:
+
+- Integration with any data source other than VMware Aria Operations API and CSV files.
+- Development of a web-based or mobile user interface (the platform will operate as a command-line or script-based application in this phase).
+- Real-time streaming or continuous monitoring of VMware metrics.
+- Integration with ticketing systems, ITSM platforms, or alerting systems.
+- Custom VMware Aria Operations configuration or administration.
+- Procurement or licensing of VMware Aria Operations or any third-party tools.
+- Ongoing post-deployment support beyond the scope of this engagement (covered under a separate support agreement if required).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4. DELIVERABLES
+
+The following deliverables will be produced by Forloop under this engagement:
+
+4.1 Data Source Integration Module (codebase + unit tests)
+   Owner: Rucheek (AI Engineer, Forloop)
+   Deadline: Week 2 (October 6, 2026)
+
+4.2 AI Agent and Graph Generation Module (codebase + unit tests)
+   Owner: Rucheek (AI Engineer, Forloop)
+   Deadline: Week 4 (October 20, 2026)
+
+4.3 VMware Aria Operations API Integration (codebase + unit tests)
+   Owner: Priya Nair (VMware Engineer, Tarnwood)
+   Deadline: Week 3 (October 13, 2026)
+
+4.4 Multi-cluster Data Aggregation Support (codebase + unit tests)
+   Owner: Rucheek (AI Engineer, Forloop) + Priya Nair (VMware Engineer, Tarnwood)
+   Deadline: Week 4 (October 20, 2026)
+
+4.5 Report Generation Module (codebase + unit tests)
+   Owner: Rucheek (AI Engineer, Forloop)
+   Deadline: Week 5 (October 27, 2026)
+
+4.6 Integration Testing Report
+   Owner: Ram Anandkumar (Technical Director, Forloop)
+   Deadline: Week 6 (November 3, 2026)
+
+4.7 User Acceptance Testing (UAT) Report
+   Owner: Ram Anandkumar (Technical Director, Forloop) + Priya Nair (VMware Engineer, Tarnwood)
+   Deadline: Week 6 (November 3, 2026)
+
+4.8 Production Deployment + Smoke Test Results
+   Owner: Rucheek (AI Engineer, Forloop) + Priya Nair (VMware Engineer, Tarnwood)
+   Deadline: Week 7 (November 10, 2026)
+
+4.9 Deployment Runbook
+   Owner: Rucheek (AI Engineer, Forloop)
+   Deadline: Week 7 (November 10, 2026)
+
+4.10 User Guide and Technical Reference Document
+   Owner: Ram Anandkumar (Technical Director, Forloop)
+   Deadline: Week 8 (November 17, 2026)
+
+4.11 Knowledge Transfer Session
+   Owner: Nirmal Babu (Project Manager, Forloop)
+   Deadline: Week 8 (November 17, 2026)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5. PROJECT TIMELINE
+
+Week 1  (September 23 - September 29, 2026)    : Project kickoff, environment setup, API access provisioning
+Week 2  (September 30 - October 6, 2026)   : Data source integration module development and unit testing
+Week 3  (October 7 - October 13, 2026)  : VMware Aria Operations API integration and multi-cluster design
+Week 4  (October 14 - October 20, 2026)  : AI agent development, graph generation module, multi-cluster aggregation
+Week 5  (October 21 - October 27, 2026)     : Report generation module, end-to-end integration
+Week 6  (October 28 - November 3, 2026)       : Integration testing, UAT, defect resolution
+Week 7  (November 4 - November 10, 2026)      : Production deployment, smoke testing, deployment runbook
+Week 8  (November 11 - November 17, 2026)      : Knowledge transfer, documentation delivery, project closure
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6. PROJECT TEAM
+
+Forloop:
+- Nirmal Babu        | Project Manager          | Project oversight, stakeholder communication, risk management
+- Rucheek         | AI Engineer              | AI agent design, graph generation, report module, API integration
+- Ram Anandkumar          | Technical Director         | Requirements, documentation, testing coordination, UAT
+
+Tarnwood Industrial:
+- Priya Nair           | VMware Engineer          | VMware Aria Operations API access, environment setup, UAT, production deployment support
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7. ASSUMPTIONS
+
+7.1 Tarnwood will provide Forloop with valid VMware Aria Operations API credentials (username and password) with sufficient permissions to access the Stat Key API endpoint no later than September 26, 2026.
+
+7.2 Tarnwood will provide access to at least two clusters for development and testing of the multi-cluster data aggregation feature.
+
+7.3 Tarnwood will provide at least three representative CSV datasets for development and testing of the CSV ingestion module.
+
+7.4 Tarnwood's designated production environment will meet the minimum technical requirements communicated by Forloop prior to Week 7.
+
+7.5 Tarnwood will make Priya Nair available for a minimum of 20 hours per week throughout the engagement.
+
+7.6 Tarnwood will complete UAT and provide sign-off within the timeline specified in Section 5. Delays in UAT sign-off may impact the production deployment timeline.
+
+7.7 All third-party libraries and AI model APIs required for the platform are either open-source or will be licensed by Forloop under this engagement.
+
+7.8 The Stat Key API endpoint structure and response format will not change during the engagement. If VMware releases an API version update during the engagement that alters the endpoint structure, a change request may be required.
+
+7.9 The designated output directory will be accessible and have sufficient storage capacity for all generated graphs and reports throughout the engagement and beyond.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+8. DEPENDENCIES
+
+8.1 VMware Aria Operations API credentials and endpoint documentation must be provided by Tarnwood by September 26, 2026. This is a hard dependency for Week 3 development.
+
+8.2 Access to Tarnwood's production environment must be provisioned by November 1, 2026 to avoid delays to Week 7 deployment activities.
+
+8.3 Sample CSV datasets must be provided by Tarnwood by September 29, 2026 to support Week 2 CSV ingestion module development.
+
+8.4 AI agent graph generation module (Deliverable 4.2) must be completed before report generation module development begins (Deliverable 4.5).
+
+8.5 Integration testing (Deliverable 4.6) is dependent on completion of all individual modules (Deliverables 4.1 through 4.5).
+
+8.6 Production deployment (Deliverable 4.8) is dependent on UAT sign-off (Deliverable 4.7).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+9. ACCEPTANCE CRITERIA
+
+9.1 Data Source Integration Module is accepted when:
+- The user can successfully select between CSV and live API data sources.
+- CSV file listing, upload, and ingestion function correctly with valid and invalid inputs.
+- VMware Aria Operations authentication succeeds and returns a valid token.
+- Stat Key API endpoint returns raw metrics data for a specified cluster.
+- Multi-cluster data aggregation correctly merges datasets from at least two clusters.
+
+9.2 AI Agent and Graph Generation Module is accepted when:
+- The AI agent correctly interprets at least five distinct natural language graph requests.
+- At least five graph types are generated correctly with appropriate labels and titles.
+- Multi-graph generation produces at least three graphs in a single session.
+- All graphs are saved as PNG files in the output directory with correct filenames.
+
+9.3 Report Generation Module is accepted when:
+- The user can input a custom report title.
+- The generated PDF contains a cover page, table of contents, executive summary narrative, all generated graphs with captions, and a timestamped footer.
+- The PDF is saved in the output directory with a timestamped filename.
+- The report index JSON file is updated with the correct metadata for the new report.
+
+9.4 Production Deployment is accepted when:
+- All modules function correctly in the production environment.
+- Smoke test passes for both CSV and live API data source workflows.
+- Deployment runbook is reviewed and approved by Priya Nair.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+10. CHANGE MANAGEMENT
+
+Any changes to the scope, timeline, deliverables, or resources defined in this SOW must be submitted as a formal Change Request to Nirmal Babu (Project Manager, Forloop). Change Requests will be reviewed and responded to within two business days. Approved changes will be documented in a Change Request Log and may result in adjustments to the project timeline and cost.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+11. PAYMENT TERMS
+
+Payment will be structured in four milestone-based installments:
+
+Milestone 1: Project Kickoff and Environment Setup Complete (Week 1)         - 20% of total engagement fee
+Milestone 2: Data Source Integration and API Integration Complete (Week 3)   - 25% of total engagement fee
+Milestone 3: AI Agent, Graph Generation, and Report Module Complete (Week 5) - 30% of total engagement fee
+Milestone 4: Production Deployment and Project Closure (Week 8)              - 25% of total engagement fee
+
+Invoices will be submitted upon completion of each milestone. Payment is due within fifteen (15) business days of invoice receipt. Any objections to an invoice must be communicated in writing to Forloop within fifteen (15) business days of receipt.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+12. CONFIDENTIALITY
+
+Both parties agree to keep all project-related information, including but not limited to technical designs, API credentials, infrastructure details, and business data, strictly confidential. Neither party will disclose any confidential information to third parties without prior written consent from the other party.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+13. SIGNATURES
+
+By signing below, both parties agree to the terms and conditions set forth in this Statement of Work.
+
+Forloop                Tarnwood Industrial
+Nirmal Babu, Project Manager               Director of Infrastructure
+Date: September 23, 2026                          Date: September 23, 2026

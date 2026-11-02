@@ -187,7 +187,7 @@ function TaskManager() {
   const tabs: TabDef<TabId>[] = [
     { id: "tasks", label: "Tasks" },
     { id: "suggestions", label: "Suggestions", badge: pendingSuggestions, badgeTitle: `${pendingSuggestions} suggestion(s) from meetings waiting for your decision` },
-    { id: "meetings", label: "Meetings", badge: pendingMeetingCount, badgeTitle: `${pendingMeetingCount} meeting(s) waiting for approval` },
+    { id: "meetings", label: "Scheduled meetings", badge: pendingMeetingCount, badgeTitle: `${pendingMeetingCount} meeting(s) waiting for approval` },
     { id: "people", label: "People", badge: peopleWithoutEmailCount, badgeTitle: `${peopleWithoutEmailCount} person/people without an email` },
   ];
 
@@ -317,7 +317,7 @@ function TaskManager() {
               <div role="tabpanel" id="tabpanel-meetings" aria-labelledby="tab-meetings">
                 <section>
                   <div className="mb-2.5 flex items-center justify-between">
-                    <h2 className="text-[11px] font-semibold uppercase tracking-wide text-text-faint">Meetings</h2>
+                    <h2 className="text-[11px] font-semibold uppercase tracking-wide text-text-faint">Scheduled meetings</h2>
                     <button
                       type="button"
                       onClick={() => setSchedulingMeeting(true)}

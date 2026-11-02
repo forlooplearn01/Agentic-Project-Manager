@@ -1,0 +1,26 @@
+Forloop / Halvane Financial — Weekly Sync, Week 7
+Date: Wednesday 28 October 2026
+Attendees: Nirmal Babu, Ram Anandkumar, Elise Marchetti, Hye-jin Park, Kofi Mensah, Rucheek, Ana Beltrán, Jonas Weber
+
+Notes
+
+Nirmal opened by asking for blockers. Rucheek said the ID-verification vendor finally granted production
+API access this morning, so the "Integrate ID-verification service (KYC checks)" task is no longer blocked
+and he restarts it today.
+
+The payment gateway provider has still not sent the sandbox credentials. Ram will escalate to the
+provider's account manager this week. That task stays blocked.
+
+Kofi is overloaded. Elise agreed to take over "Email and SMS notifications for onboarding status" from him,
+so Elise owns it from now on.
+
+Jonas said the automated test suite for the onboarding API is finished and merged, so the
+"Write test plan and automated test suite" task is complete.
+
+Ana said the fraud model validation needs two more weeks, because the first results on the sample data are
+not good enough. "Train and validate fraud pre-screen model" will now finish in Week 10 instead of Week 9.
+
+Halvane has asked for one more thing: SMS one-time-passcode login for returning customers. Elise
+estimates about 30 hours. She will own it and aim to finish by 13 November. It is not in the plan yet.
+
+Next sync: Wednesday 4 November.

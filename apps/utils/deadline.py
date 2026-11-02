@@ -2,6 +2,7 @@ import re
 from datetime import date, timedelta
 
 from dateutil import parser as dateutil_parser
+from apps.utils import clock
 
 # Weekday name → weekday index (Monday=0 … Sunday=6)
 _WEEKDAY_INDEX = {
@@ -42,7 +43,7 @@ def resolve_deadline(text: str, today: date = None) -> str:
     if not text or not isinstance(text, str):
         return text
 
-    today = today or date.today()
+    today = today or clock.today()
     t = text.strip()
     tl = t.lower()
 

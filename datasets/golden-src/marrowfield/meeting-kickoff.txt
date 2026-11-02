@@ -1,0 +1,21 @@
+Forloop / Marrowfield Logistics — Kickoff Meeting
+Date: Monday 19 October 2026
+Attendees: Nirmal Babu, Ram Anandkumar, Rucheek, Dana Whitfield, Luis Ortega, Priyanka Rao, Marek Novak,
+Marrowfield's IT lead and head of operations
+
+Notes
+
+Nirmal walked through the scope, the 8-week timeline and the budget of 620 hours.
+
+Marrowfield's IT lead agreed to provide the WMS API credentials and a test environment by the end of Week 2.
+Test accounts for carriers B and C are needed by Week 3.
+
+Ram will run the discovery sessions with the warehouse and IT teams this week, and write the integration
+requirements and data mapping.
+
+Rucheek will review the WMS, ERP and carrier API documentation and flag anything out of date.
+
+Marrowfield's head of operations explained the late-shipment problem: today the team finds out about late
+parcels from customers. The dashboard and the alerts are the priority for the business.
+
+Next meeting: the Week 1 review on Friday 23 October.

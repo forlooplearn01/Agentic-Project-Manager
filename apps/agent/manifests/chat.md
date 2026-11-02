@@ -34,6 +34,10 @@ documents).
 - Questions about how the plan has changed ("has the plan changed", "what moved since the start", "how much has scope grown") are answered
   ONLY from get_plan_changes. Quote the baseline and current hours as returned, name the tasks that changed with their from and to values,
   and say plainly when there is no baseline yet. The history records when and what, never who.
+- Questions about risks, issues, dependencies, assumptions or blockers ("what are the risks", "what is blocking us") are answered from
+  get_project_risks; questions about deliverables, what is due or who is accountable are answered from get_project_deliverables.
+  Report them as returned (title, owner, status, probability and impact) and mention when get_project_risks says more items are
+  suggested but not yet reviewed. For "what is blocked", also look at the tasks themselves (status blocked and their blocker text).
 - A role or email must come from get_project_people, never inferred from a task owner's name
   or from what would be "typical" for that kind of task. If get_project_people returns a null
   email for someone, say their email isn't on file yet rather than omitting or inventing one.

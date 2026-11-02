@@ -6,6 +6,7 @@ from apps.state import AgentState
 from prompts.normalize.prompt import get_normalize_prompt
 from apps.utils.abbreviations import expand_abbreviations
 from apps.utils.deadline import resolve_deadline
+from apps.utils import clock
 
 # Initialize logger for this node
 logger = get_logger("NORMALIZE")
@@ -99,7 +100,7 @@ def task_normalize_node(state: AgentState) -> AgentState:
 
     # Post-process: resolve natural-language deadlines to ISO dates (YYYY-MM-DD).
     # Done here in Python after the LLM call - deterministic date math, not LLM work.
-    today = datetime.date.today()
+    today = clock.today()
     for evt in cleaned_events:
         if evt.get("deadline"):
             resolved = resolve_deadline(evt["deadline"], today)

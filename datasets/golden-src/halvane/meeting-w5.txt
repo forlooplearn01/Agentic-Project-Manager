@@ -1,0 +1,25 @@
+Forloop / Halvane Financial — Weekly Sync, Week 5
+Date: Wednesday 14 October 2026
+Attendees: Nirmal Babu, Ram Anandkumar, Elise Marchetti, Hye-jin Park, Kofi Mensah, Rucheek, Jonas Weber
+
+Notes
+
+Elise said document upload and secure storage are finished and merged.
+
+Kofi reported the onboarding front end is about half built. The estimate was too low: the document
+capture screens are more work than planned, and he now thinks the front end needs about 10 hours more.
+
+Rucheek said the onboarding API is mostly done but the estimate was also light; he asked for 12 more hours.
+Nirmal agreed to raise both estimates and note it in the plan.
+
+The ID-verification vendor has still not granted production API access. Rucheek cannot start the KYC
+integration without it, so that task is blocked. Nirmal will escalate with Halvane's Head of Digital Onboarding.
+
+The payment gateway provider has not issued sandbox credentials. The payment gateway work cannot start
+and is blocked too. Ram will raise it with the provider's account manager.
+
+Halvane delivered the anonymised sample application data. Ana can now start preparing fraud-signal features.
+
+Jonas started the test plan and the automated test suite.
+
+Next sync: Wednesday 21 October.

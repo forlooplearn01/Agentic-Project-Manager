@@ -1,0 +1,188 @@
+--- NEW TASKS (SHOULD BE EXTRACTED + DECOMPOSED) ---
+
+1.
+task: Push dataset cache key fix (include stat_key in cache key alongside cluster_name and time_range)
+owner: Rucheek
+deadline: November 4, 2026
+status: null
+blocker: null
+dependency: null
+
+2.
+task: Run regression test for cache key fix and verify multi-stat-key queries return different DataFrames
+owner: Ram Anandkumar
+deadline: November 4, 2026
+status: null
+blocker: null
+dependency: Cache key fix pushed by Rucheek
+
+3.
+task: Update UAT report to full pass after regression
+owner: Ram Anandkumar
+deadline: November 4, 2026
+status: null
+blocker: null
+dependency: Regression test passed
+
+4.
+task: Write up smoke test results document and send to Nirmal and Ram
+owner: Rucheek
+deadline: November 4, 2026
+status: null
+blocker: null
+dependency: null
+
+5.
+task: Send CLI interface screenshots to Ram for user guide
+owner: Rucheek
+deadline: November 4, 2026
+status: null
+blocker: null
+dependency: null
+
+6.
+task: Review smoke test results document against SOW acceptance criteria
+owner: Ram Anandkumar
+deadline: November 5, 2026
+status: null
+blocker: null
+dependency: Smoke test results document received from Rucheek
+
+7.
+task: Finalize and send deployment runbook draft to Priya
+owner: Rucheek
+deadline: November 5, 2026
+status: null
+blocker: null
+dependency: null
+
+8.
+task: Review and approve deployment runbook
+owner: Priya Nair
+deadline: November 6, 2026
+status: null
+blocker: null
+dependency: Deployment runbook draft received from Rucheek
+
+9.
+task: Add file locking for report index JSON using filelock library
+owner: Rucheek
+deadline: November 6, 2026
+status: null
+blocker: null
+dependency: null
+
+10.
+task: Finalize user guide with CLI screenshots and deliver
+owner: Ram Anandkumar
+deadline: November 9, 2026
+status: null
+blocker: null
+dependency: CLI screenshots received from Rucheek
+
+11.
+task: Finalize technical reference document and deliver
+owner: Ram Anandkumar
+deadline: November 11, 2026
+status: null
+blocker: null
+dependency: null
+
+12.
+task: Conduct requirements audit - cross-reference all SOW requirements against implemented functionality and flag any gaps
+owner: Ram Anandkumar
+deadline: November 10, 2026
+status: null
+blocker: null
+dependency: null
+
+13.
+task: Schedule knowledge transfer session and send invites to Tarnwood team
+owner: Nirmal Babu
+deadline: November 5, 2026
+status: null
+blocker: null
+dependency: null
+
+
+--- UPDATE EVENTS (SHOULD NOT BE DECOMPOSED) ---
+
+1.
+event_type: status_change
+task: Fix all four integration test defects
+owner: Rucheek
+status: completed
+note: All four defects regressed on October 31
+
+2.
+event_type: status_change
+task: Deliver Integration Testing Report (Deliverable 4.6)
+owner: Ram Anandkumar
+status: completed
+note: Submitted November 4
+
+3.
+event_type: status_change
+task: Conduct UAT with Rajan Verma and Lisa Chen
+owner: Priya Nair
+status: completed
+note: 16 of 18 scenarios passed; one defect (cache key bug), one config error
+
+4.
+event_type: status_change
+task: Deliver UAT Report (Deliverable 4.7)
+owner: Ram Anandkumar
+status: in_progress
+note: Submitted as conditional pass; pending cache key defect fix
+
+5.
+event_type: status_change
+task: Send Rucheek production access package
+owner: Priya Nair
+status: completed
+note: Received October 30 as planned
+
+6.
+event_type: status_change
+task: Check production server Python version and report to Rucheek
+owner: Priya Nair
+status: completed
+note: Server was on Python 3.10; upgraded to 3.11.4 on November 1 after escalation
+
+7.
+event_type: blocker
+task: Production deployment and configuration
+status: resolved
+reason: Python version was 3.10 (required 3.11); resolved by IT upgrade on November 1
+
+8.
+event_type: status_change
+task: Execute Production Deployment and Smoke Test
+owner: Rucheek
+status: in_progress
+note: All three smoke test workflows passed; smoke test results document to be delivered today
+
+
+--- SHOULD NOT BE PICKED (IGNORE) ---
+
+- UAT participant feedback details (informational summaries, not tasks):
+  Rajan's suggestion for alert threshold lines on graphs (future enhancement, not current task)
+  Lisa's quote about presenting to CIO
+  Discussion about "conservative" executive summary narrative
+
+- Production environment technical findings (informational, already addressed):
+  50,000 data points per stat key in production vs. dev
+  PyArrow backend optimization reducing parse time to 5 seconds
+  Default time range changed to 6 hours (already implemented)
+  Proxy configuration validation (already confirmed working)
+
+- Knowledge transfer session content plan (discussed but not yet assigned as formal tasks):
+  Rucheek's ninety-minute session structure breakdown
+  Ram's ten-minute documentation walkthrough plan
+  Rajan's specific heatmap query interest
+  (All covered under task #13 - schedule and send invites)
+
+- General enthusiasm and closing remarks:
+  "One more week everyone"
+  "Good to see this come together"
+  "Really proud of what the team has built"

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PREFS_CHANGED_EVENT, getDisplayName } from "@/lib/preferences";
+import { fetchAppConfig } from "@/lib/api";
+import { formatDate } from "@/lib/format";
 import {
   IconBookOpen,
   IconFileText,
@@ -61,6 +63,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [query, setQuery] = useState("");
   // Read after mount (localStorage does not exist on the server) and again whenever Settings changes it.
   const [displayName, setDisplayNameState] = useState("");
+  const [demoDate, setDemoDate] = useState<string | null>(null);
+  useEffect(() => {
+    fetchAppConfig().then((c) => setDemoDate(c.demo_today)).catch(() => {});
+  }, []);
   useEffect(() => {
     const read = () => setDisplayNameState(getDisplayName());
     read();
@@ -125,6 +131,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="mt-auto flex flex-col gap-0.5 pt-2">
+            {demoDate && (
+              <span className="mx-3 mb-1 rounded-md border border-line bg-surface px-2 py-1 text-[11px] text-text-muted" title="Every answer that depends on today's date is worked out as of this day">
+                Demo date: {formatDate(demoDate)}
+              </span>
+            )}
             <span className="flex items-center gap-2.5 px-3 py-1 text-[11px] text-text-faint opacity-60">
               <IconLayers className="h-3.5 w-3.5" />
               More products soon

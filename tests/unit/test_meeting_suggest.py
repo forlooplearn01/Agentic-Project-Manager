@@ -112,3 +112,15 @@ def test_a_failed_or_unreadable_model_call_raises_instead_of_reporting_no_sugges
         choices = [type("C", (), {"message": type("M", (), {"content": '```json\n{"items": []}\n```'})()})()]
     monkeypatch.setattr("apps.llm.complete", lambda **kw: Fenced())
     assert ask_model("some transcript", TASKS, []) == []
+
+
+def test_a_week_the_meeting_names_becomes_the_finish_week_without_a_date():
+    out = build_suggestions([ev("Write the user guide", matched="t2", finish_week=10)], TASKS, KICKOFF)
+    assert out[0]["changes"] == {"finish_week": {"from": 8, "to": 10}}
+    assert build_suggestions([ev("Write the user guide", matched="t2", finish_week=8)], TASKS, KICKOFF) == []  # the plan already says week 8
+
+
+def test_the_model_answer_may_carry_a_week_number(monkeypatch):
+    monkeypatch.setattr("apps.utils.meeting_suggest._ask", lambda prompt: {"items": [{"task_number": 2, "finish_week": 10}, {"task_number": 1, "finish_week": "soon"}]})
+    items = ask_model("some transcript", TASKS, [], date(2026, 10, 29))
+    assert [i["finish_week"] for i in items] == [10, None]

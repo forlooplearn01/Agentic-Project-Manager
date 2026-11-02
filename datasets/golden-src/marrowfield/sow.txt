@@ -1,0 +1,66 @@
+STATEMENT OF WORK
+Forloop — Warehouse and Carrier Integration for Marrowfield Logistics
+
+1. Project Overview
+
+Forloop will connect Marrowfield Logistics' warehouse management system (WMS) and ERP to the tracking APIs of
+three carriers, and deliver a live shipment tracking dashboard for Marrowfield's operations team. Forloop is
+an AI engineering company: the platform includes a machine-learning model that predicts the arrival time of
+each shipment and raises late-shipment alerts. The engagement runs for 8 weeks from kickoff on 19 October 2026,
+with go-live at the end of Week 8 (11 December 2026). The agreed budget is 620 hours.
+
+2. Team
+
+Forloop:
+- Nirmal Babu — Project Manager
+- Ram Anandkumar — Solutions Architect
+- Rucheek — Integration Engineer
+- Dana Whitfield — Senior Backend Engineer
+- Luis Ortega — Data Engineer
+- Priyanka Rao — Frontend Engineer
+- Marek Novak — QA Engineer
+
+Marrowfield Logistics: the IT lead provides WMS and ERP access; the head of operations owns acceptance.
+
+3. Scope of Work
+
+Phase 1: Discovery (Weeks 1-2)
+- Ram Anandkumar will run discovery sessions with Marrowfield's warehouse and IT teams, write the integration
+  requirements and data mapping, and design the integration architecture.
+- Rucheek will review the WMS, ERP and carrier API documentation.
+
+Phase 2: Integration build (Weeks 2-5)
+- Dana Whitfield will build the WMS connector for inventory and shipment events.
+- Rucheek will integrate the tracking APIs of carriers A, B and C.
+- Luis Ortega will integrate the ERP order feed and normalise all shipment events into one common model.
+
+Phase 3: Arrival-time prediction (Weeks 3-7)
+- Luis Ortega will prepare historical shipment data, then train and validate the arrival-time model.
+- Dana Whitfield will serve predictions through the tracking API.
+
+Phase 4: Tracking dashboard (Weeks 2-7)
+- Priyanka Rao will design and build the tracking dashboard and the late-shipment alerts.
+
+Phase 5: Testing and go-live (Weeks 4-8)
+- Marek Novak will write the test plan and run end-to-end and load tests.
+- Nirmal Babu will run user acceptance testing with Marrowfield's operations team and the handover.
+- Ram Anandkumar will lead the production deployment.
+
+4. Deliverables
+
+1. Integration Requirements and Data Mapping — Ram Anandkumar — Week 2
+2. Integration Architecture — Ram Anandkumar — Week 2
+3. WMS and ERP Connectors — Dana Whitfield — Week 5
+4. Carrier Integrations — Rucheek — Week 5
+5. Shipment Arrival-time Model — Luis Ortega — Week 6
+6. Tracking Dashboard — Priyanka Rao — Week 7
+7. Test Report and UAT Sign-off — Marek Novak — Week 8
+8. Go-live and Handover — Nirmal Babu — Week 8
+
+5. Assumptions and Dependencies
+
+- Marrowfield provides WMS API credentials and a test environment by Week 2.
+- Test accounts for carriers B and C are provided by Week 3.
+- Three carriers at launch; a fourth carrier would be a change request.
+- One warehouse at go-live.
+- Any change to scope or timeline is raised as a change request to Nirmal Babu and priced in hours.

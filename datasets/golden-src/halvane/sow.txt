@@ -1,0 +1,81 @@
+STATEMENT OF WORK
+Forloop — Customer Onboarding Portal for Halvane Financial
+
+1. Project Overview
+
+Forloop will design, build and launch a Customer Onboarding Portal for Halvane Financial, so that new
+retail customers can open an account online, verify their identity, link a payment method and be
+screened for fraud in a single guided flow. Forloop is an AI engineering company: the portal includes a
+machine-learning fraud pre-screen that scores each application and routes risky ones to Halvane's
+manual-review team. The engagement runs for an estimated 12 weeks from kickoff on 14 September 2026,
+with launch at the end of Week 12 (4 December 2026). The agreed budget is 920 hours.
+
+2. Team
+
+Forloop:
+- Nirmal Babu — Delivery Manager
+- Ram Anandkumar — Technical Director
+- Rucheek — Backend and Payments Engineer
+- Elise Marchetti — Engineering Lead
+- Kofi Mensah — Frontend Engineer
+- Ana Beltrán — ML Engineer
+- Jonas Weber — QA Engineer
+- Hye-jin Park — Business Analyst
+
+Halvane Financial: the Head of Digital Onboarding is the business owner; the compliance and risk teams
+review the requirements, the manual-review rules and the sign-off pack.
+
+3. Scope of Work
+
+Phase 1: Discovery and design (Weeks 1-2)
+- Hye-jin Park will run discovery workshops with Halvane's operations and compliance teams and write the
+  onboarding and KYC requirements specification.
+- Elise Marchetti will design the platform architecture and data model.
+- Kofi Mensah will design the onboarding user flows and screen mockups.
+
+Phase 2: Core onboarding (Weeks 3-7)
+- Rucheek will build the onboarding API (account creation, document upload, application status).
+- Kofi Mensah will build the onboarding web front end, and email and SMS notifications for status changes.
+- Elise Marchetti will build document upload and secure storage.
+- Rucheek will integrate the third-party ID-verification service for KYC checks. This depends on Halvane
+  obtaining production API access from the ID-verification vendor.
+
+Phase 3: Payments (Weeks 5-9)
+- Rucheek will integrate the payment gateway, first against its sandbox. This depends on the gateway
+  provider issuing sandbox credentials.
+- Elise Marchetti will build the payment ledger and the daily reconciliation job.
+- Kofi Mensah will build the payment method screens and the 3-D Secure flow.
+
+Phase 4: Fraud pre-screen (Weeks 6-9)
+- Ana Beltrán will prepare fraud-signal features from anonymised sample application data supplied by
+  Halvane, then train and validate the model and serve it behind the onboarding API with safe fallbacks.
+- Hye-jin Park will define the manual-review rules with Halvane's risk team.
+
+Phase 5: Testing and compliance (Weeks 5-11)
+- Jonas Weber will write the test plan and automated test suite, then run end-to-end and load tests.
+- Ram Anandkumar will lead the security review and remediation of penetration test findings.
+- Hye-jin Park will assemble the compliance sign-off pack and run user acceptance testing with Halvane.
+
+Phase 6: Launch (Weeks 11-12)
+- Ram Anandkumar will prepare the production deployment and cutover plan.
+- Nirmal Babu will deliver operations training and handover; Rucheek will provide launch support.
+
+4. Deliverables
+
+1. Requirements Specification — Hye-jin Park — Week 3
+2. Architecture and Data Model — Elise Marchetti — Week 3
+3. Onboarding Portal (API and web front end) — Rucheek and Kofi Mensah — Week 8
+4. Payments Integration — Rucheek — Week 9
+5. Fraud Pre-screen Model — Ana Beltrán — Week 9
+6. Test Report — Jonas Weber — Week 11
+7. Compliance Sign-off Pack — Hye-jin Park — Week 11
+8. Operations Handover — Nirmal Babu — Week 12
+
+5. Assumptions and Dependencies
+
+- Halvane provides anonymised sample application data by Week 5.
+- Halvane obtains production API access from the ID-verification vendor by Week 5.
+- The payment gateway provider issues sandbox credentials by Week 5.
+- The portal launches in a single country at go-live.
+- Compliance sign-off is required before production deployment.
+- Any change to scope or timeline is raised as a change request to Nirmal Babu and priced in hours.

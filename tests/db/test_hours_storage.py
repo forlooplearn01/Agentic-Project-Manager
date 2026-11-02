@@ -346,9 +346,11 @@ def test_report_is_anchored_to_the_latest_logged_week_not_to_today(project):
     assert not any("No hours have been logged since" in n for n in project_hours_report(project, date(2026, 10, 2))["notes"])
 
 
-def test_report_without_any_hours_uses_today(project):
-    r = project_hours_report(project)
-    assert r["as_of"] == date.today().isoformat()
+def test_report_without_any_hours_uses_today(project, monkeypatch):
+    monkeypatch.delenv("DEMO_TODAY", raising=False)
+    assert project_hours_report(project)["as_of"] == date.today().isoformat()
+    monkeypatch.setenv("DEMO_TODAY", "2026-10-29")  # a frozen demo date replaces the real one
+    assert project_hours_report(project)["as_of"] == "2026-10-29"
 
 
 # ---------------------------------------------------------------- what the chat tools and document search rely on

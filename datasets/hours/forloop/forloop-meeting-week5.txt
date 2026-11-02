@@ -1,10 +1,10 @@
-Forloop x Meridian - Week 5 sync, Thursday 29 October 2026
+Forloop x Calderwick - Week 5 sync, Thursday 29 October 2026
 Attendees: Sofia Martins, Elena Ruiz, Marcus Chen, Priya Patel, David Osei, Ram Anandkumar
 
 Sofia: Let's go through where we stand. Ram, VPN?
-Ram: The VPN access issue with Meridian's IT team is resolved as of this morning, so the "Review VPN access resolution" task is done.
+Ram: The VPN access issue with Calderwick's IT team is resolved as of this morning, so the "Review VPN access resolution" task is done.
 Sofia: Great. Priya, how is the frontend?
 Priya: Sales Trends and Customer Segmentation views are in progress. The Inventory Turnover view has started too, and I need until 13 November to finish it.
-Marcus: One thing that is not in the plan: Meridian asked for a data migration runbook for their production cutover. I will own that, and I can have it ready by 20 November.
+Marcus: One thing that is not in the plan: Calderwick asked for a data migration runbook for their production cutover. I will own that, and I can have it ready by 20 November.
 David: The QA test plans for the Sales Trends and Customer Segmentation views are now in progress, I started them yesterday.
 Sofia: Good. Next sync is next Thursday.

@@ -284,8 +284,8 @@ def apply_plan_version(project_id: str, parsed: dict, filename: str, force: bool
                     ref_to_task[_norm_text(row["label"])] = task_id
                     if not first_read:
                         log_plan_change(cur, project_id, task_id, row["label"], "task_added", None, row["estimate"], "plan_file")
-                if row.get("owner"):
-                    ensure_person_placeholder(project_id, row["owner"])
+                for name in str(row.get("owner") or "").split(","):  # "Ana, Bo" is two people, not one named "Ana, Bo"
+                    ensure_person_placeholder(project_id, name.strip())
             for t in removed:
                 cur.execute("UPDATE tasks SET is_active = FALSE, removed_at = NOW(), updated_at = NOW() WHERE task_id = %s", (t["task_id"],))
                 cur.execute("DELETE FROM task_dependencies WHERE task_id = %s OR depends_on_task_id = %s", (t["task_id"], t["task_id"]))

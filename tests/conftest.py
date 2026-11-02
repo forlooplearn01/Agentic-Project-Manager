@@ -7,10 +7,15 @@ exact same DB_HOST/DB_PORT and installed dependencies as the running app - no se
 test environment to keep in sync.
 """
 import json
+import os
 import shutil
 import uuid
 
 import pytest
+
+# The tests create and delete projects freely, so they must never run against the demo data (see scripts/run_tests.sh).
+if "test" not in os.getenv("DB_NAME", ""):
+    raise RuntimeError("Refusing to run the tests against the live database. Use scripts/run_tests.sh, which uses the separate test database.")
 
 from apps.db.db import ensure_duplicate_handling_schema, ensure_registers_schema, get_connection
 from apps.db.hours_db import ensure_hours_schema

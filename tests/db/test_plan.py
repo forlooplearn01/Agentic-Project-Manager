@@ -176,7 +176,7 @@ def test_the_first_plan_import_sets_phases_and_the_baseline_and_a_second_is_refu
     s = client.get(f"/projects/{test_project}/plan/summary").json()
     assert s["baseline_set_at"] and s["baseline_hours"] == 612 == s["current_hours"] and s["tasks_added"] == 0
     rows = _rows(test_project)
-    assert rows["Lead technical discovery session with Meridian's IT team"]["phase"] == "Phase 1: Discovery & Data Integration"
+    assert rows["Lead technical discovery session with Calderwick's IT team"]["phase"] == "Phase 1: Discovery & Data Integration"
     assert {c["field"] for c in list_plan_changes(test_project)} >= {"plan_imported", "baseline_set", "budget_hours", "kickoff_date"}
     second = _upload(test_project, "forloop-plan.xlsx", "plan")
     assert second.status_code == 409 and "already has a plan" in second.json()["detail"]
@@ -184,7 +184,7 @@ def test_the_first_plan_import_sets_phases_and_the_baseline_and_a_second_is_refu
 
 def test_undoing_the_first_plan_import_removes_the_baseline_it_set(test_project, monkeypatch):
     monkeypatch.setattr("apps.utils.hours_import._llm_pick", lambda *a, **k: {})
-    _task(test_project, "Lead technical discovery session with Meridian's IT team", owner="Elena Ruiz")
+    _task(test_project, "Lead technical discovery session with Calderwick's IT team", owner="Elena Ruiz")
     pv = _upload(test_project, "forloop-plan.xlsx", "plan").json()
     client.post(f"/hours/imports/{pv['import_id']}/confirm", json={})
     assert plan_summary(test_project)["baseline_set_at"]

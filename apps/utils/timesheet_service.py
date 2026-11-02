@@ -10,6 +10,7 @@ from apps.db.hours_db import (
     apply_timesheet_import, create_import_record, fetch_active_tasks_for_hours, fetch_time_entries, get_hours_settings, get_import,
 )
 from apps.utils import hours_import
+from apps.utils import clock
 
 MAX_IMPORT_ROWS = 5000
 
@@ -24,7 +25,7 @@ def preview_timesheet(project_id: str, filename: str, content: bytes, mapping_js
     people = [p["name"] for p in list_project_people(project_id)]
     settings = get_hours_settings(project_id)
     mapping = json.loads(mapping_json) if mapping_json else None
-    parsed = hours_import.parse_timesheet(filename, content, settings["kickoff_date"] or date.today(), mapping,
+    parsed = hours_import.parse_timesheet(filename, content, settings["kickoff_date"] or clock.today(), mapping,
                                           llm_mapper=hours_import.propose_mapping_with_llm, week_start_day=settings["week_start_day"])
     rows = parsed["rows"]
     if len(rows) > MAX_IMPORT_ROWS:

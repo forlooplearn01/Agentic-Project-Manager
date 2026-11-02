@@ -1,5 +1,5 @@
 MEETING MINUTES
-Forloop / Meridian Retail Group — Weekly Sync, Week 3
+Forloop / Calderwick Retail Group — Weekly Sync, Week 3
 
 Attendees: Sofia Martins, Elena Ruiz, Marcus Chen, Priya Patel, David Osei, Nirmal Babu,
 Ram Anandkumar, Rucheek
@@ -12,17 +12,17 @@ Summary:
 - The nightly CRM sync job is done and verified - deduplication is working correctly
   against the last two years of customer records.
 - Elena Ruiz reported the analytics data schema is finalized and reviewed with the team.
-- The data mapping document was delivered to Meridian and signed off on schedule.
+- The data mapping document was delivered to Calderwick and signed off on schedule.
 - Priya Patel has started on the dashboard's core layout and navigation shell; expects to
   have it ready for internal review by early next week.
-- Priya Patel flagged that the Sales Trends view is currently blocked - Meridian's IT team
+- Priya Patel flagged that the Sales Trends view is currently blocked - Calderwick's IT team
   has not yet granted VPN access to the staging POS replica, so live data can't be pulled
   in for testing. Ram Anandkumar reported he has escalated the access request with
-  Meridian's IT team twice this week with no resolution yet. Sofia Martins will follow up
-  with Meridian's IT contact today.
+  Calderwick's IT team twice this week with no resolution yet. Sofia Martins will follow up
+  with Calderwick's IT contact today.
 - Marcus Chen has started building the backend API endpoints for the dashboard views,
   prioritizing the Sales Trends endpoint first once the VPN access blocker clears.
-- New item: Meridian's operations lead requested an additional view during a check-in
+- New item: Calderwick's operations lead requested an additional view during a check-in
   call - a Returns & Refunds trend view, broken down by store and reason code. Sofia
   Martins added this to scope as a Phase 2 addition. Priya Patel will own building this
   view once the core three views are stable.
@@ -32,5 +32,5 @@ Summary:
   wants it reviewed at the leadership level rather than only tracked at the working level.
 - Given the VPN access blocker is affecting the critical path, Nirmal Babu, Ram
   Anandkumar, and Rucheek agreed to reconvene early next week specifically to review
-  whether Meridian's IT team has resolved it, rather than waiting for the regular weekly
+  whether Calderwick's IT team has resolved it, rather than waiting for the regular weekly
   sync.

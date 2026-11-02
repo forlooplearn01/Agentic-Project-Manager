@@ -465,6 +465,10 @@ export function createStarterPlan(projectId: string): Promise<{ file: string; fo
   return request(`/projects/${encodeURIComponent(projectId)}/starter-plan`, { method: "POST" });
 }
 
+export function fetchAppConfig(): Promise<{ demo_today: string | null }> {
+  return request("/app-config");
+}
+
 export function fetchWeeklySummary(projectId: string): Promise<{ subject: string; text: string }> {
   return request(`/projects/${encodeURIComponent(projectId)}/weekly-summary`);
 }

@@ -1,0 +1,99 @@
+[
+ {
+  "q": "How many hours are left in the tarnwood budget?",
+  "expect_all": [
+   "251"
+  ],
+  "expect_any": [],
+  "tool": "get_project_hours"
+ },
+ {
+  "q": "Is the tarnwood project on track?",
+  "expect_all": [],
+  "expect_any": [
+   "on track"
+  ],
+  "tool": "get_project_hours"
+ },
+ {
+  "q": "Who is available for machine learning work on tarnwood in the next four weeks?",
+  "expect_all": [],
+  "expect_any": [
+   "Mina"
+  ],
+  "tool": "find_available_people"
+ },
+ {
+  "q": "Which tasks on tarnwood are still in progress?",
+  "expect_all": [],
+  "expect_any": [
+   "Report Generation Module",
+   "whitelist",
+   "integration test plan"
+  ],
+  "tool": "search_tasks / get_project_risks"
+ },
+ {
+  "q": "What are the main risks on tarnwood?",
+  "expect_all": [],
+  "expect_any": [
+   "IT security",
+   "Aria Operations",
+   "Production network",
+   "Sample CSV"
+  ],
+  "tool": "get_project_risks"
+ },
+ {
+  "q": "What deliverables does tarnwood have and who is accountable or responsible for them?",
+  "expect_all": [],
+  "expect_any": [
+   "Data",
+   "AI",
+   "VMware",
+   "Multi-cluster",
+   "Report",
+   "Integration"
+  ],
+  "tool": "get_project_deliverables"
+ },
+ {
+  "q": "Has the tarnwood plan changed since the baseline?",
+  "expect_all": [],
+  "expect_any": [
+   "no change",
+   "not changed",
+   "hasn't changed",
+   "has not changed",
+   "unchanged",
+   "655"
+  ],
+  "tool": "get_plan_changes"
+ },
+ {
+  "q": "What does the tarnwood SOW require the report generation module's PDF to contain?",
+  "expect_all": [],
+  "expect_any": [
+   "cover page",
+   "table of contents"
+  ],
+  "tool": "search_documents"
+ },
+ {
+  "q": "What meetings are scheduled for tarnwood?",
+  "expect_all": [],
+  "expect_any": [
+   "Week 5",
+   "UAT readiness"
+  ],
+  "tool": "get_project_meetings"
+ },
+ {
+  "q": "What does the task \"Deliverable 4.10: User Guide and Technical Reference Document\" depend on in tarnwood?",
+  "expect_all": [],
+  "expect_any": [
+   "Deliverable 4.8: Production"
+  ],
+  "tool": "get_project_dependencies"
+ }
+]

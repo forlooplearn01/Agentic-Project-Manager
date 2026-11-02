@@ -1,0 +1,93 @@
+[
+ {
+  "q": "How many hours are left in the forloop budget?",
+  "expect_all": [
+   "337"
+  ],
+  "expect_any": [],
+  "tool": "get_project_hours"
+ },
+ {
+  "q": "Is the forloop project on track?",
+  "expect_all": [],
+  "expect_any": [
+   "watch"
+  ],
+  "tool": "get_project_hours"
+ },
+ {
+  "q": "Who is available for QA work on forloop in the next four weeks?",
+  "expect_all": [],
+  "expect_any": [
+   "David"
+  ],
+  "tool": "find_available_people"
+ },
+ {
+  "q": "What is blocked on forloop and why?",
+  "expect_all": [],
+  "expect_any": [
+   "VPN"
+  ],
+  "tool": "search_tasks / get_project_risks"
+ },
+ {
+  "q": "What are the main risks on forloop?",
+  "expect_all": [],
+  "expect_any": [
+   "VPN access",
+   "Sales Trends"
+  ],
+  "tool": "get_project_risks"
+ },
+ {
+  "q": "What deliverables does forloop have and who is accountable or responsible for them?",
+  "expect_all": [],
+  "expect_any": [
+   "Customer",
+   "Data",
+   "Training"
+  ],
+  "tool": "get_project_deliverables"
+ },
+ {
+  "q": "Has the forloop plan changed since the baseline?",
+  "expect_all": [],
+  "expect_any": [
+   "no change",
+   "not changed",
+   "hasn't changed",
+   "has not changed",
+   "unchanged",
+   "612"
+  ],
+  "tool": "get_plan_changes"
+ },
+ {
+  "q": "According to the SOW, how long is the forloop engagement?",
+  "expect_all": [],
+  "expect_any": [
+   "8-week",
+   "8 week",
+   "eight"
+  ],
+  "tool": "search_documents"
+ },
+ {
+  "q": "What meetings are scheduled for forloop?",
+  "expect_all": [],
+  "expect_any": [
+   "Week 4",
+   "Follow-up on"
+  ],
+  "tool": "get_project_meetings"
+ },
+ {
+  "q": "What does the task \"Implement Sales Trends view in the dashboard\" depend on in forloop?",
+  "expect_all": [],
+  "expect_any": [
+   "Build secure Extract"
+  ],
+  "tool": "get_project_dependencies"
+ }
+]

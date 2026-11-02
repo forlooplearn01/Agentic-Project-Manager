@@ -30,8 +30,8 @@ PEOPLE = {  # name -> (role from the SOW, weekly capacity on this project in hou
     "Priya Patel": ("Frontend Engineer", 40),
     "David Osei": ("QA Engineer", 32),
     "Nirmal Babu": ("Delivery Manager", 12),
-    "Ram Anandkumar": ("Infrastructure Engineer", 20),
-    "Rucheek": ("Technical Director", 6),
+    "Ram Anandkumar": ("Technical Director", 20),
+    "Rucheek": ("Infrastructure Engineer", 6),
 }
 BUDGET_BY_ROLE = {
     "Engineering Lead": 130, "Backend Engineer": 170, "Frontend Engineer": 150, "QA Engineer": 70,
@@ -43,12 +43,12 @@ CR, PMO = "Change requests", "Project management"
 # key, exact task text in the forloop project, label in the plan file (None = not in the baseline plan), phase, plan owner,
 # start week, finish week, estimate hours (None = not in the plan), status at end of Week 4 (assumed; the live DB differs)
 TASKS = [
-    ("discovery", "Lead technical discovery session with Meridian's IT team", "Technical discovery session with Meridian IT", P1, "Elena Ruiz", 1, 2, 16, "completed"),
+    ("discovery", "Lead technical discovery session with Calderwick's IT team", "Technical discovery session with Calderwick IT", P1, "Elena Ruiz", 1, 2, 16, "completed"),
     ("etl", "Build secure Extract Transform Load pipeline to ingest daily sales and inventory data", "Secure ETL pipeline: POS sales + inventory ingest", P1, "Marcus Chen", 1, 3, 60, "completed"),
     ("crm", "Implement nightly sync job to pull customer records from CRM", "Nightly CRM customer sync", P1, "Marcus Chen", 2, 3, 32, "completed"),
     ("schema", "Design analytics data schema to support dashboard metrics", "Analytics data schema (fact + dimension tables)", P1, "Elena Ruiz", 2, 3, 24, "completed"),
-    ("vpn", "Coordinate with Meridian's IT team to set up secure VPN access", "VPN access to staging POS replica", P1, "Ram Anandkumar", 1, 2, 12, "in_progress"),
-    ("mapping", "Deliver data mapping document to Meridian for sign-off", "Data mapping document and client sign-off", P1, "Sofia Martins", 1, 2, 20, "completed"),
+    ("vpn", "Coordinate with Calderwick's IT team to set up secure VPN access", "VPN access to staging POS replica", P1, "Ram Anandkumar", 1, 2, 12, "in_progress"),
+    ("mapping", "Deliver data mapping document to Calderwick for sign-off", "Data mapping document and client sign-off", P1, "Sofia Martins", 1, 2, 20, "completed"),
     ("layout", "Build dashboard's core layout and navigation shell", "Dashboard shell and navigation", P2, "Priya Patel", 3, 4, 28, "completed"),
     ("sales", "Implement Sales Trends view in the dashboard", "Sales Trends view", P2, "Priya Patel", 4, 5, 36, "in_progress"),
     ("custseg", "Implement Customer Segmentation view in the dashboard", "Customer Segmentation view", P2, "Priya Patel", 5, 6, 36, "not_started"),
@@ -59,20 +59,20 @@ TASKS = [
     ("load", "Perform load testing on the backend API", "Load testing (200 concurrent users)", P3, "David Osei", 7, 7, 24, "not_started"),
     ("uat", "Coordinate user acceptance testing with pilot group", "UAT with pilot store managers", P3, "Sofia Martins", 7, 7, 20, "not_started"),
     ("bugs", "Address critical bugs surfaced during User Acceptance Testing", "Critical bug fixes after UAT", P3, "Elena Ruiz", 7, 8, 24, "not_started"),
-    ("training", "Deliver training session and user guide to Meridian's staff", "Training session and user guide", P3, "Sofia Martins", 8, 8, 24, "not_started"),
+    ("training", "Deliver training session and user guide to Calderwick's staff", "Training session and user guide", P3, "Sofia Martins", 8, 8, 24, "not_started"),
     ("oversee", "Oversee final delivery coordination and sign-off with stakeholders", "Final delivery coordination and sign-off", P3, "Nirmal Babu", 8, 8, 16, "not_started"),
-    ("deploy", "Deploy the dashboard to Meridian's production environment", "Production deployment", P3, "Team", 8, 8, 16, "not_started"),
+    ("deploy", "Deploy the dashboard to Calderwick's production environment", "Production deployment", P3, "Team", 8, 8, 16, "not_started"),
     ("returns", "Build Returns & Refunds trend view", "Returns & Refunds trend view (CR-01)", CR, "Priya Patel", 6, 7, 24, "not_started"),
     ("qaplans", "Draft Quality Assurance test plans for Sales Trends and Customer Segmentation views", "QA test plans: Sales Trends and Customer Segmentation", P3, "David Osei", 3, 5, 12, "in_progress"),
     ("pm", None, "Project management and status reporting", PMO, "Sofia Martins", 1, 8, 40, "in_progress"),
-    ("followup", "Follow up with Meridian's IT contact", None, None, None, None, None, None, "completed"),
+    ("followup", "Follow up with Calderwick's IT contact", None, None, None, None, None, None, "completed"),
     ("vpnreview", "Review VPN access resolution", None, None, None, None, None, None, "in_progress"),
 ]
 TASK = {t[0]: t for t in TASKS}
 
 # (person, week, task key or "other", hours, free-text label as it appears in the timesheet file)
 HOURS = [
-    ("Elena Ruiz", 1, "discovery", 6, "Discovery session prep w/ Meridian IT"),
+    ("Elena Ruiz", 1, "discovery", 6, "Discovery session prep w/ Calderwick IT"),
     ("Elena Ruiz", 1, "discovery", 4, "Discovery session - data sources catalog"),
     ("Elena Ruiz", 2, "discovery", 4, "Discovery session follow-ups"),
     ("Elena Ruiz", 2, "schema", 12, "Analytics schema design (fact/dim tables)"),
@@ -91,8 +91,8 @@ HOURS = [
     *[("Marcus Chen", w, "other", 3, "Standup / meetings") for w in WEEKS],
     *[("Marcus Chen", w, "other", 1, "Admin") for w in WEEKS],
     ("Sofia Martins", 1, "mapping", 8, "Data mapping doc - draft"),
-    ("Sofia Martins", 2, "mapping", 12, "Data mapping doc - Meridian sign-off"),
-    ("Sofia Martins", 3, "followup", 2, "Chase Meridian IT contact (VPN)"),
+    ("Sofia Martins", 2, "mapping", 12, "Data mapping doc - Calderwick sign-off"),
+    ("Sofia Martins", 3, "followup", 2, "Chase Calderwick IT contact (VPN)"),
     *[("Sofia Martins", w, "pm", 5, "PM: status reports + planning") for w in WEEKS],
     *[("Nirmal Babu", w, "other", 6 if w < 4 else 5, "Delivery management / leadership check-ins") for w in WEEKS],
     ("Nirmal Babu", 4, "vpnreview", 1, "VPN blocker - leadership review"),
@@ -112,9 +112,9 @@ HOURS = [
     ("David Osei", 3, "other", 2, "Meetings"),
     ("David Osei", 4, "qaplans", 8, "QA test plans - Sales/Segmentation"),
     ("David Osei", 4, "other", 2, "Meetings"),
-    ("Ram Anandkumar", 1, "vpn", 4, "VPN setup - Meridian staging POS"),
-    ("Ram Anandkumar", 2, "vpn", 6, "VPN setup - Meridian staging POS"),
-    ("Ram Anandkumar", 3, "vpn", 6, "VPN setup - Meridian staging POS"),
+    ("Ram Anandkumar", 1, "vpn", 4, "VPN setup - Calderwick staging POS"),
+    ("Ram Anandkumar", 2, "vpn", 6, "VPN setup - Calderwick staging POS"),
+    ("Ram Anandkumar", 3, "vpn", 6, "VPN setup - Calderwick staging POS"),
     ("Ram Anandkumar", 4, "vpnreview", 3, "VPN access resolution review"),
     *[("Ram Anandkumar", w, "other", 2, "Meetings / admin") for w in WEEKS],
 ]
@@ -176,7 +176,7 @@ def write_plan():
     wb = Workbook()
     ws = wb.active
     ws.title = "Plan"
-    ws["A1"] = "Forloop - Customer Insights Dashboard for Meridian Retail Group"
+    ws["A1"] = "Forloop - Customer Insights Dashboard for Calderwick Retail Group"
     ws["A1"].font = Font(bold=True, size=13)
     ws["A2"] = "Project plan, baseline v1 (change requests appended below)"
     ws["A3"] = f"Kickoff: {KICKOFF:%d %b %Y}    Duration: 8 weeks"
@@ -221,7 +221,7 @@ def write_flat_csv():
         w = csv.writer(f)
         w.writerow(["Week Ending", "Employee", "Project", "Activity", "Hours", "Comments"])
         for friday, name, label, hours in rows:
-            project = "" if label == "Admin" else "Forloop - Meridian"  # a few rows leave the project blank
+            project = "" if label == "Admin" else "Forloop - Calderwick"  # a few rows leave the project blank
             comment = "approved" if friday < week_friday(4) else "submitted"
             w.writerow([f"{friday:%d-%b-%Y}", name, project, label, fmt_num(hours), comment])
         w.writerow([])
@@ -233,7 +233,7 @@ def write_week5_csv():
         w = csv.writer(f)
         w.writerow(["Week Ending", "Employee", "Project", "Activity", "Hours", "Comments"])
         for person, _, hours, label in sorted(HOURS_WEEK5, key=lambda r: r[0]):
-            w.writerow([f"{week_friday(WEEK5):%d-%b-%Y}", person, "Forloop - Meridian", label, fmt_num(hours), "submitted"])
+            w.writerow([f"{week_friday(WEEK5):%d-%b-%Y}", person, "Forloop - Calderwick", label, fmt_num(hours), "submitted"])
 
 
 def write_grid_xlsx():
@@ -244,7 +244,7 @@ def write_grid_xlsx():
         ws["A1"] = "WEEKLY TIMESHEET"
         ws["A1"].font = Font(bold=True, size=13)
         ws["A2"], ws["B2"] = "Employee:", person
-        ws["A3"], ws["B3"] = "Project:", "Forloop - Meridian Retail Group"
+        ws["A3"], ws["B3"] = "Project:", "Forloop - Calderwick Retail Group"
         r = 5
         for week in WEEKS:
             entries = [(label, hours) for p, w, _, hours, label in HOURS if p == person and w == week]

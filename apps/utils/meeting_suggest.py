@@ -8,6 +8,7 @@ One model call reads the transcript against the plan's numbered tasks (prompts/p
 The PMO approves or rejects each; approved ones are merged into the plan file (apps/utils/plan_merge.py). DECISIONS.md "Plan and meetings by folder"."""
 import io
 import json
+import os
 import re
 from datetime import date
 
@@ -16,11 +17,15 @@ from apps.db.suggestions_db import OPEN_STATES, create_suggestion, list_suggesti
 from apps.logger import get_logger
 from apps.utils.hours import week_start
 from apps.utils.hours_import import HoursImportError, map_status, resolve_person
+from apps.utils import clock
 
 logger = get_logger("MEETING_SUGGEST")
 
 TRANSCRIPT_SUFFIXES = (".txt", ".md", ".vtt", ".srt", ".docx")
 MAX_TRANSCRIPT_BYTES = 2 * 1024 * 1024
+# Model for this call only; None = the app-wide LLM_MODEL. A long transcript against a 50-task plan needs a stronger model than the default (DECISIONS.md).
+SUGGEST_MODEL = os.getenv("PLAN_SUGGEST_MODEL") or None
+SUGGEST_CHUNK_CHARS = 60000  # about 15,000 tokens: far above a long meeting
 _TIMESTAMP = re.compile(r"^\s*(?:\d+\s*)?\d{1,2}:\d{2}(?::\d{2})?[.,]?\d*\s*-->\s*\d{1,2}:\d{2}(?::\d{2})?[.,]?\d*.*$")
 
 
@@ -72,7 +77,7 @@ def _norm(t) -> str:
 def _ask(prompt: str) -> dict:
     """One model call that must come back as JSON (fences around it are tolerated). Raises when it does not."""
     from apps.llm import complete
-    response = complete(messages=[{"role": "user", "content": prompt}], temperature=0, response_format={"type": "json_object"})
+    response = complete(messages=[{"role": "user", "content": prompt}], temperature=0, response_format={"type": "json_object"}, model=SUGGEST_MODEL)
     raw = (response.choices[0].message.content or "").strip()
     raw = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw)
     try:
@@ -84,11 +89,11 @@ def _ask(prompt: str) -> dict:
 def ask_model(text: str, tasks: list, people: list, today: date = None) -> list:
     """One model call per chunk of the transcript, shown the plan's numbered tasks and the people on the project.
     -> items [{task_id | None, task_text, owner, status, deadline (ISO or as said), blocker, quote, confidence}]. Nothing is applied."""
-    from apps.nodes.extract import CHUNK_THRESHOLD, _chunk_text
+    from apps.nodes.extract import _chunk_text
     from apps.utils.deadline import resolve_deadline
     from prompts.plan_suggest.prompt import get_plan_suggest_prompt
-    today = today or date.today()
-    chunks = [text] if len(text) <= CHUNK_THRESHOLD else _chunk_text(text)
+    today = today or clock.today()
+    chunks = [text] if len(text) <= SUGGEST_CHUNK_CHARS else _chunk_text(text)  # one call for any normal transcript: chunks would repeat items
     plan_tasks = tasks[:150]  # a plan longer than this is shown by its first tasks only
     items = []
     for chunk in chunks:
@@ -107,7 +112,9 @@ def ask_model(text: str, tasks: list, people: list, today: date = None) -> list:
             if deadline:
                 deadline = resolve_deadline(deadline, today)
             conf = raw.get("confidence") if raw.get("confidence") in ("high", "medium", "low") else "medium"
-            items.append({"task_id": str(task["task_id"]) if task else None, "task_text": task["task_text"] if task else name,
+            week = raw.get("finish_week")
+            items.append({"finish_week": week if isinstance(week, int) and not isinstance(week, bool) and 1 <= week <= 104 else None,
+                          "task_id": str(task["task_id"]) if task else None, "task_text": task["task_text"] if task else name,
                           "owner": (raw.get("owner") or "").strip() or None, "status": raw.get("status"), "deadline": deadline,
                           "blocker": (raw.get("blocker") or "").strip() or None, "quote": (raw.get("quote") or "").strip()[:240] or None, "confidence": conf})
     return items
@@ -127,7 +134,7 @@ def build_suggestions(items: list, tasks: list, kickoff, start_day: int = 0, peo
         owner = (e.get("owner") or "").strip() or None
         if owner and people:
             owner = resolve_person(owner, people) or owner
-        week = finish_week_of(e.get("deadline"), kickoff, start_day)
+        week = e.get("finish_week") or finish_week_of(e.get("deadline"), kickoff, start_day)
         evidence = {"evidence": e["quote"]} if e.get("quote") else {}
         task = by_id.get(str(e.get("task_id"))) if e.get("task_id") else None
         if e.get("task_id") and task is None:
@@ -167,10 +174,12 @@ def suggest_from_text(project_id: str, text: str, source_name: str, file_id: str
     items = ask_model(text, tasks, people)
     suggestions = build_suggestions(items, tasks, settings.get("kickoff_date"), int(settings.get("week_start_day") or 0), people)
     existing = list_suggestions(project_id, states=OPEN_STATES)
-    made = []
+    made, seen = [], set()
     for s in suggestions:
-        if _is_open_duplicate(s, existing):
+        key = (s["kind"], _norm(s["task_text"]), json.dumps(s["changes"], sort_keys=True))
+        if key in seen or _is_open_duplicate(s, existing):  # the same thing said twice in one transcript is suggested once
             continue
+        seen.add(key)
         made.append(create_suggestion(project_id, s["kind"], s["task_text"], s["fields"], s["changes"], s["task_id"], file_id, source_name, s["confidence"]))
     logger.info(f"{project_id}/{source_name}: {len(made)} suggestion(s) from {len(items)} thing(s) the meeting said about the plan")
     return {"suggestions": len(made), "new": sum(1 for m in made if m["kind"] == "new_task"), "changes": sum(1 for m in made if m["kind"] == "change"),

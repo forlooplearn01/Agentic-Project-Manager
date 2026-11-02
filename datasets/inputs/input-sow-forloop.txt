@@ -1,13 +1,17 @@
 STATEMENT OF WORK
-Forloop — Customer Insights Dashboard for Meridian Retail Group
+Forloop — Customer Insights Dashboard for Calderwick Retail Group
 
 1. Project Overview
 
 Forloop will design, build, and deliver a Customer Insights Dashboard for
-Meridian Retail Group, enabling Meridian's marketing and operations teams to visualize
+Calderwick Retail Group, enabling Calderwick's marketing and operations teams to visualize
 customer behavior, sales trends, and inventory turnover in a single, real-time interface.
 This Statement of Work covers the full engagement from data integration through
 production launch, over an estimated 8-week timeline.
+
+Forloop is an AI engineering company: we design, build and operate data and machine-learning
+products for enterprise clients. This engagement applies the same data-platform and analytics
+practices to Calderwick's reporting needs.
 
 2. Team
 
@@ -17,57 +21,57 @@ production launch, over an estimated 8-week timeline.
 - Priya Patel — Frontend Engineer
 - David Osei — QA Engineer
 - Nirmal Babu — Delivery Manager
-- Ram Anandkumar — Infrastructure Engineer
-- Rucheek — Technical Director
+- Ram Anandkumar — Technical Director
+- Rucheek — Infrastructure Engineer
 
 3. Scope of Work
 
 Phase 1: Discovery & Data Integration (Weeks 1-3)
 
-- Elena Ruiz will lead a technical discovery session with Meridian's IT team to catalog
+- Elena Ruiz will lead a technical discovery session with Calderwick's IT team to catalog
   existing data sources (POS system, inventory database, CRM exports).
 - Marcus Chen will build a secure ETL pipeline to ingest daily sales and inventory data
-  from Meridian's POS system into our analytics warehouse. This is foundational and must
+  from Calderwick's POS system into our analytics warehouse. This is foundational and must
   be completed before any dashboard visualizations can be built.
-- Marcus Chen will implement a nightly sync job to pull customer records from Meridian's
+- Marcus Chen will implement a nightly sync job to pull customer records from Calderwick's
   CRM, deduplicating against existing records.
 - Elena Ruiz will design the analytics data schema (fact and dimension tables) to support
   the dashboard's planned metrics.
-- Ram Anandkumar will coordinate with Meridian's IT team to set up secure VPN access to
+- Ram Anandkumar will coordinate with Calderwick's IT team to set up secure VPN access to
   the staging POS replica, needed for the ETL pipeline and dashboard testing.
-- Sofia Martins will deliver a data mapping document to Meridian for sign-off by end of
+- Sofia Martins will deliver a data mapping document to Calderwick for sign-off by end of
   Week 2.
 
 Phase 2: Dashboard Development (Weeks 3-6)
 
 - Priya Patel will build the dashboard's core layout and navigation shell, following
-  Meridian's brand guidelines.
+  Calderwick's brand guidelines.
 - Priya Patel will implement the Sales Trends view, showing daily/weekly/monthly revenue
   broken down by store location. This depends on the ETL pipeline being complete.
-- Priya Patel will implement the Customer Segmentation view, allowing Meridian to filter
+- Priya Patel will implement the Customer Segmentation view, allowing Calderwick to filter
   customers by purchase frequency and average order value. This depends on the CRM sync
   job being complete.
 - Priya Patel will implement the Inventory Turnover view, highlighting slow-moving and
   out-of-stock SKUs by location.
 - Marcus Chen will build the backend API endpoints powering each dashboard view, with
   response caching for performance.
-- Elena Ruiz will implement role-based access control so Meridian's regional managers
+- Elena Ruiz will implement role-based access control so Calderwick's regional managers
   only see data for their own stores.
 
 Phase 3: Testing & Launch (Weeks 6-8)
 
 - David Osei will conduct end-to-end QA across all three dashboard views, testing against
-  real Meridian data samples.
+  real Calderwick data samples.
 - David Osei will perform load testing on the backend API to confirm it can handle
-  Meridian's expected 200 concurrent users.
+  Calderwick's expected 200 concurrent users.
 - Sofia Martins will coordinate user acceptance testing (UAT) with a pilot group of five
-  Meridian store managers, targeting Week 7.
+  Calderwick store managers, targeting Week 7.
 - Elena Ruiz will address any critical bugs surfaced during UAT before production sign-off.
-- Sofia Martins will deliver a training session and user guide to Meridian's staff ahead
+- Sofia Martins will deliver a training session and user guide to Calderwick's staff ahead
   of go-live.
-- Nirmal Babu will oversee final delivery coordination and sign-off with Meridian's
+- Nirmal Babu will oversee final delivery coordination and sign-off with Calderwick's
   stakeholders ahead of go-live.
-- The team will deploy the dashboard to Meridian's production environment, targeting a
+- The team will deploy the dashboard to Calderwick's production environment, targeting a
   go-live date of the end of Week 8.
 
 4. Timeline
