@@ -107,6 +107,20 @@ def check_forloop(_sugs):
     return {"463 h logged, 237 h left, 737 h forecast": (h["logged_hours"], h["hours_left_in_budget"], h["forecast_at_completion"]) == (463.0, 237.0, 737.0)}
 
 
+def check_halvane_followup(pid):
+    """The transcript asks everyone to reconvene 'this Friday at 2 pm Eastern': a pending meeting on a Friday at 14:00 with the three real people on it."""
+    from datetime import datetime
+    real = {"nirmalbabu14@gmail.com", "ram@shanthee.com", "rucheekrk28@gmail.com"}
+    pending = [m for m in call("GET", f"/projects/{pid}/meetings")["meetings"] if m["status"] == "pending_approval"]
+    proposed = [m for m in pending if m["title"] != "Escalation: ID verification and payment gateway access"]
+    when = [datetime.fromisoformat(m["start_iso"]) for m in proposed]
+    return {"A follow-up meeting is proposed (new, pending approval)": len(proposed) == 1,
+            "...on a Friday at 14:00, still in the future": len(when) == 1 and when[0].weekday() == 4 and (when[0].hour, when[0].minute) == (14, 0) and when[0] > datetime.now(),
+            "...with Nirmal, Ram and Rucheek invited": len(proposed) == 1 and real <= set(proposed[0]["attendee_emails"])}
+
+
+EXTRA_CHECKS = {"halvane": check_halvane_followup}  # checks that look at more than the suggestions
+
 PROJECTS = {"forloop": ("timesheet", check_forloop), "tarnwood": ("meeting", check_tarnwood), "halvane": ("meeting", check_halvane), "marrowfield": ("plan", check_marrowfield)}
 
 
@@ -127,7 +141,7 @@ def run_once(pid: str, approve: bool) -> dict:
         rec = wait_for(pid, "plan" if kind == "plan" else "meeting", before)
     took = time.time() - t0
     sugs = call("GET", f"/projects/{pid}/suggestions")["suggestions"] if kind == "meeting" else []
-    result = {"read": bool(rec and rec["status"] in ("applied",)), "seconds": round(took), "suggestions": len(sugs), "checks": check(sugs) if rec else {}}
+    result = {"read": bool(rec and rec["status"] in ("applied",)), "seconds": round(took), "suggestions": len(sugs), "checks": {**check(sugs), **(EXTRA_CHECKS[pid](pid) if pid in EXTRA_CHECKS else {})} if rec else {}}
     if approve and kind == "meeting" and sugs:
         out = call("POST", f"/projects/{pid}/suggestions/approve", {"ids": [s["suggestion_id"] for s in sugs]})
         states = Counter(s["state"] for s in call("GET", f"/projects/{pid}/suggestions")["suggestions"])

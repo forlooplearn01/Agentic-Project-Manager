@@ -6,6 +6,8 @@ real browser and briefly listen on localhost for the OAuth redirect):
     source venv/bin/activate
     python3 scripts/get_google_refresh_token.py
 
+Add --no-browser to print the sign-in link instead of opening it (when the default browser is not logged in to the right account).
+
 Prerequisites (one-time, in Google Cloud Console - console.cloud.google.com):
 1. Create or select a project.
 2. APIs & Services > Library > enable the "Google Calendar API".
@@ -58,11 +60,16 @@ def main():
         }
     }
 
-    print("Opening a browser window - log in with the Google account the agent should act as, "
-          "and approve calendar access...\n")
+    no_browser = "--no-browser" in sys.argv  # prints the link instead, to paste into the right browser profile
+    if no_browser:
+        print("Copy the link below into the browser profile that is logged in to the Google account the agent should act as, "
+              "and approve calendar access. Keep this window open until it says Success.\n")
+    else:
+        print("Opening a browser window - log in with the Google account the agent should act as, "
+              "and approve calendar access...\n")
 
     flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
-    credentials = flow.run_local_server(port=0)
+    credentials = flow.run_local_server(port=0, open_browser=not no_browser)
 
     print("\nSuccess. Add this line to .env:\n")
     print(f"GOOGLE_OAUTH_REFRESH_TOKEN={credentials.refresh_token}\n")

@@ -115,6 +115,35 @@ def test_a_plan_that_cannot_be_read_or_drops_most_of_the_plan_is_held(world):
 
 # ---------------------------------------------------------------- a meeting becomes suggestions
 
+def test_a_transcript_that_asks_for_a_meeting_also_proposes_it(world, monkeypatch):
+    """Both come out of the one file: the plan suggestions, and a proposed follow-up meeting (the agent is replaced; nothing reaches a calendar)."""
+    from apps.utils import meeting_followup
+    w = world
+    make_plan(w["plan"], BASE)
+    scan(w)
+    set_kickoff(w)
+    asked = []
+    monkeypatch.setattr(meeting_followup, "run_agent", lambda text, pid: asked.append(pid) or {
+        "followup_warranted": True, "reason": "VPN still blocked", "scheduled_meeting": {"meeting_id": "m-1", "title": "VPN follow-up", "start_iso": "2026-11-05T14:00:00"}})
+    r = read_meeting(w, monkeypatch, name="call.txt", text=TRANSCRIPT + "We agreed to reconvene on Thursday at 2pm.\n")
+    assert r[0]["status"] == "applied" and r[0]["suggestions"] == 2 and r[0]["followup"] == "proposed" and asked == [w["p"]]
+    from apps.db.plan_sync import list_folder_files
+    saved = next(f for f in list_folder_files(w["p"], "meeting") if f["filename"] == "call.txt")
+    assert saved["summary"]["followup"] == "proposed" and saved["summary"]["meeting_id"] == "m-1"
+
+
+def test_a_failing_follow_up_does_not_lose_the_suggestions(world, monkeypatch):
+    from apps.utils import meeting_followup
+    w = world
+    make_plan(w["plan"], BASE)
+    scan(w)
+    set_kickoff(w)
+    monkeypatch.setattr(meeting_followup, "run_agent", lambda *a: (_ for _ in ()).throw(RuntimeError("down")))
+    r = read_meeting(w, monkeypatch, name="call.txt", text=TRANSCRIPT + "Let's reconvene on Thursday.\n")
+    assert r[0]["status"] == "applied" and r[0]["suggestions"] == 2 and r[0]["followup"] == "error"
+    assert (w["meetings"] / "processed" / "call.txt").exists()
+
+
 def test_a_transcript_becomes_suggestions_and_changes_nothing(world, monkeypatch):
     w = world
     make_plan(w["plan"], BASE)

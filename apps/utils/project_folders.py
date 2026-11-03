@@ -14,7 +14,7 @@ from apps.db.plan_sync import (
 )
 from apps.db.suggestions_db import project_ids_with_work
 from apps.logger import get_logger
-from apps.utils import hours_import, meeting_suggest, plan_file as pf
+from apps.utils import hours_import, meeting_followup, meeting_suggest, plan_file as pf
 from apps.utils import timesheet_watcher as tw
 
 logger = get_logger("PROJECT_FOLDERS")
@@ -110,8 +110,9 @@ def process_meeting_file(project_id: str, path: Path, root=None) -> dict:
         update_folder_file(file_id, status="failed", reason=f"Unexpected error while reading the transcript: {e}",
                            summary_extra={"folder_file": tw._move(path, inbox / tw.NEEDS_REVIEW)})
         return {"project": project_id, "file": name, "status": "failed", "reason": str(e)}
-    update_folder_file(file_id, summary_extra={**result, "state": "done", "folder_file": tw._move(path, inbox / tw.PROCESSED)})
-    return {"project": project_id, "file": name, "status": "applied", **result}
+    followup = meeting_followup.propose_followup(project_id, text, name)  # a meeting the transcript asks for is proposed too, and waits for approval
+    update_folder_file(file_id, summary_extra={**result, **followup, "state": "done", "folder_file": tw._move(path, inbox / tw.PROCESSED)})
+    return {"project": project_id, "file": name, "status": "applied", **result, **followup}
 
 
 # ---------------------------------------------------------------- the loop

@@ -7,11 +7,11 @@ Four projects, each loaded once, frozen as a golden export, and restorable to ex
 |---|---|---|---|
 | `forloop` | Calderwick Retail Group | Week 4 of 8, **Watch**: VPN blocked, forecast 9 h over; Jira key FLP | `forloop-timesheet-week5.csv` into `projects/forloop/timesheets/`: 363 to 463 h logged, 237 h left, forecast 737 h |
 | `tarnwood` | Tarnwood Industrial | AI analytics on VMware data, week 6 of 8, **On track**; 53 tasks; weeks run Wed to Tue | `meeting-06.txt` (a meeting) into `projects/tarnwood/meetings/`: about a dozen suggestions |
-| `halvane` | Halvane Financial | Customer onboarding portal, week 7 of 12, **At risk**: two blocked tasks, a change request, a stretched front-end team | `drop-week7-sync.txt` into `projects/halvane/meetings/`: five suggestions (status, owner, week, completion, one new task) |
+| `halvane` | Halvane Financial | Customer onboarding portal, week 7 of 12, **At risk**: two blocked tasks, a change request, a stretched front-end team | `drop-week7-sync.txt` into `projects/halvane/meetings/`: five suggestions (status, owner, week, completion, one new task) AND a proposed follow-up meeting (this Friday 2:00 PM Eastern, 30 min, the three real people), waiting in Scheduled meetings. Nothing reaches the calendar until you approve it |
 | `marrowfield` | Marrowfield Logistics | Warehouse and carrier integration, just kicked off (week 2 of 8), **On track** | `marrowfield-plan.xlsx` into `projects/marrowfield/plan/` (a new version of the plan): history and numbers move |
 
 All names are invented (searched for real companies with the same names: none found). The three real people (Nirmal Babu, Ram Anandkumar, Rucheek) are on every
-project with their email; every other person is simulated and has none. Each project has one meeting waiting for approval: approving it creates a REAL calendar
+project with their email; every other person is simulated and has none. Each project has one meeting waiting for approval (halvane gets a second one when its demo file is dropped): approving it creates a REAL calendar
 event and sends invites to those three, so do it once to see it work, not on every rehearsal.
 
 ## Commands

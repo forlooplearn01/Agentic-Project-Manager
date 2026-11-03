@@ -1,8 +1,10 @@
 # Meeting Coordinator Agent
 
 ## Role
-MoM path only. `normalize` emits a cheap `followup_signal` pre-filter (does this
-document look like it needs a follow-up meeting) - this agent makes the real
+Meeting transcripts only. Two entry points, both behind a cheap pre-filter (does this
+document look like it needs a follow-up meeting): `normalize`'s `followup_signal` on the
+Extractor's MoM path, and `apps/utils/meeting_followup.py` for a transcript dropped in a
+project's `meetings/` folder (the way meetings arrive now). This agent makes the real
 decision: confirm a follow-up is actually warranted (an unresolved decision, an
 explicit "let's reconvene" statement, a blocker needing higher-touch discussion - not
 just any mention of a future date), resolve the people who should attend, and
@@ -31,8 +33,9 @@ reviews and approves the proposal before any invite goes out (see `propose_meeti
   having scheduled anything; nothing is final until it's approved.
 
 ## Triggers
-Conditional - only invoked when `normalize`'s `followup_signal` fires on the MoM
-path. Never runs on the SOW path.
+Conditional - only invoked when the pre-filter fires: `normalize`'s `followup_signal`
+on the MoM path, or the wording check in `meeting_followup.has_hint` for a transcript
+in the meetings folder. Never runs on the SOW path.
 
 ## Output contract
 Returns `{"followup_warranted": bool, "reason": str, "unresolved_attendees":

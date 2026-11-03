@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from datetime import datetime, timedelta
 from typing import Optional, List
 
@@ -23,6 +24,17 @@ from apps.db.db import resolve_person_email, list_project_people
 # Switching later is a .env change (GOOGLE_AUTH_MODE + the mode's own vars), not a
 # code change - see INTEGRATIONS.md for the full comparison and setup steps.
 # ---------------------------------------------------------------------------
+
+MEETING_TIMEZONE = os.getenv("MEETING_TIMEZONE", "America/New_York")
+
+
+def _event_time(iso: str) -> dict:
+    """Google rejects a time with no UTC offset unless it names a time zone ("Missing time zone definition"), and a meeting proposed by the
+    agent or a golden project is stored as a plain local time like 2026-11-03T10:00:00. Those are read in MEETING_TIMEZONE."""
+    if re.search(r"(Z|[+-]\d{2}:?\d{2})$", iso.strip()):
+        return {"dateTime": iso}
+    return {"dateTime": iso, "timeZone": MEETING_TIMEZONE}
+
 
 def _get_auth_mode() -> str:
     return os.getenv("GOOGLE_AUTH_MODE", "oauth").strip().lower()
@@ -290,8 +302,8 @@ def schedule_meeting(
         event_body = {
             "summary": title,
             "description": description or "",
-            "start": {"dateTime": start_iso},
-            "end": {"dateTime": end_iso},
+            "start": _event_time(start_iso),
+            "end": _event_time(end_iso),
             "attendees": [{"email": email} for email in attendee_emails],
             "conferenceData": {
                 "createRequest": {

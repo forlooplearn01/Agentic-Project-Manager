@@ -63,7 +63,10 @@ function FolderCard({ title, path, children }: { title: string; path: string; ch
 function fileLine(f: FolderFile) {
   const s = f.summary as Record<string, number>;
   if (f.status === "applied" && f.kind === "plan") return `${s.tasks ?? 0} tasks${s.added ? `, ${s.added} added` : ""}${s.changed ? `, ${s.changed} changed` : ""}${s.removed ? `, ${s.removed} removed` : ""}`;
-  if (f.status === "applied" && f.kind === "meeting") return `${s.suggestions ?? 0} suggestion${s.suggestions === 1 ? "" : "s"}`;
+  if (f.status === "applied" && f.kind === "meeting") {
+    const proposed = (f.summary as Record<string, unknown>).followup === "proposed";
+    return `${s.suggestions ?? 0} suggestion${s.suggestions === 1 ? "" : "s"}${proposed ? ", a follow-up meeting proposed (see Scheduled meetings)" : ""}`;
+  }
   return f.reason ?? "";
 }
 
@@ -132,7 +135,7 @@ export default function SuggestionsPanel({ projectId, onChanged }: { projectId: 
           )}
         </FolderCard>
         <FolderCard title="Meeting transcripts" path={folders?.meetings.folder ?? `projects/${projectId}/meetings`}>
-          Drop a transcript here (.txt, .md, .vtt, .srt or .docx). The tasks in it come back below as suggestions for you to approve. Nothing changes until you do.
+          Drop a transcript here (.txt, .md, .vtt, .srt or .docx). The tasks in it come back below as suggestions for you to approve, and a follow-up meeting it asks for is proposed under Scheduled meetings. Nothing changes until you approve.
         </FolderCard>
       </div>
 

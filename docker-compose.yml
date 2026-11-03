@@ -49,6 +49,7 @@ services:
             RAID_AI_MODEL: ${RAID_AI_MODEL-gpt-4.1}
             # Model for turning a meeting transcript into plan suggestions (a long transcript against a large plan needs a stronger model); empty = LLM_MODEL.
             PLAN_SUGGEST_MODEL: ${PLAN_SUGGEST_MODEL-gpt-4.1}
+            MEETING_COORDINATOR_MODEL: ${MEETING_COORDINATOR_MODEL-gpt-4.1}
         ports:
             - "8010:8000"
         volumes:

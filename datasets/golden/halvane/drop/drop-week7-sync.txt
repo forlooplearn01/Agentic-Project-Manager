@@ -23,4 +23,6 @@ not good enough. "Train and validate fraud pre-screen model" will now finish in 
 Halvane has asked for one more thing: SMS one-time-passcode login for returning customers. Elise
 estimates about 30 hours. She will own it and aim to finish by 13 November. It is not in the plan yet.
 
+The payment gateway blocker needs a decision, not another status update, so Nirmal asked everyone to reconvene this Friday at 2:00 PM Eastern for 30 minutes to decide whether to wait for the provider or switch to the fallback.
+
 Next sync: Wednesday 4 November.
