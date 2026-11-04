@@ -603,10 +603,19 @@ def project_hours_report(project_id: str, as_of: date = None) -> dict:
     return report
 
 
-def availability_report(project_id: str, window_start: date, window_end: date, skill: str = None, as_of: date = None) -> dict:
+def availability_report(project_id: str, window_start: date, window_end: date, skill: str = None, as_of: date = None,
+                        whole_weeks: bool = False) -> dict:
+    """whole_weeks: widen the window to whole weeks (by the project's week start), so a question about "the first week of November" always gets
+    the figures of the calendar week and never a window cut across two of them."""
     from apps.db.db import list_project_people
-    from apps.utils.hours import compute_availability
+    from apps.utils.hours import compute_availability, week_start
     settings, tasks, entries = fetch_hours_inputs(project_id)
+    if whole_weeks:
+        start_day = int((settings or {}).get("week_start_day") or 0)
+        end = window_end
+        if end > window_start and week_start(end, start_day) == end:  # "Monday 2 to Monday 9" means that one week, not the one after it as well
+            end -= timedelta(days=1)
+        window_start, window_end = week_start(window_start, start_day), week_start(end, start_day) + timedelta(days=6)
     return compute_availability(list_project_people(project_id), tasks, entries, settings, window_start, window_end,
                                 as_of or clock.today(), skill)
 

@@ -254,9 +254,21 @@ def test_timesheet_endpoints_round_trip(project):
 
 def test_availability_endpoint(project):
     client.put(f"/projects/{project}/people/Ana Diaz/capacity", json={"weekly_capacity_hours": 40, "skills": ["python"]})
-    r = client.get(f"/projects/{project}/availability", params={"from": "2026-10-26", "to": "2026-10-30", "skill": "backend"}).json()
+    r = client.get(f"/projects/{project}/availability", params={"from": "2030-01-07", "to": "2030-01-11", "skill": "backend"}).json()
     assert [p["name"] for p in r["people"]] == ["Ana Diaz"] and r["people"][0]["available_hours"] == 40
     assert client.get(f"/projects/{project}/availability", params={"from": "2026-10-30", "to": "2026-10-26"}).status_code == 400
+
+
+def test_availability_report_can_widen_the_window_to_whole_weeks(project):
+    from datetime import date
+    from apps.db.hours_db import availability_report
+    r = availability_report(project, date(2030, 1, 9), date(2030, 1, 16), whole_weeks=True)  # Wednesday to the Wednesday after
+    assert (r["window"]["from"], r["window"]["to"]) == ("2030-01-07", "2030-01-20")
+    assert availability_report(project, date(2030, 1, 9), date(2030, 1, 16))["window"]["from"] == "2030-01-09"
+    one = availability_report(project, date(2030, 1, 7), date(2030, 1, 14), whole_weeks=True)  # Monday to the Monday after: one week
+    assert (one["window"]["from"], one["window"]["to"]) == ("2030-01-07", "2030-01-13")
+    day = availability_report(project, date(2030, 1, 7), date(2030, 1, 7), whole_weeks=True)  # a single Monday is still its own week
+    assert (day["window"]["from"], day["window"]["to"]) == ("2030-01-07", "2030-01-13")
 
 
 def test_budget_suggestion_keeps_only_a_verbatim_quote_with_the_number(project, monkeypatch):

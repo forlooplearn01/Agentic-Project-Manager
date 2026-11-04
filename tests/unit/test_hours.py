@@ -197,6 +197,83 @@ def test_availability_flags_an_over_allocated_week_and_summarises():
     assert s["capacity_in_window"] == 40 + 20 and s["planned_load_in_window"] == 60 and s["available_hours"] == 0
 
 
+def test_availability_for_a_past_window_is_what_was_worked_not_zero_planned():
+    settings = {"kickoff_date": KICKOFF}
+    # Bo (capacity 20) logged 18 h in the week of 12 Oct and 25 h in the week of 19 Oct; today is 28 Oct
+    entries = [{"person": "Bo", "week_start": date(2026, 10, 12), "task_id": None, "hours": 18.0},
+               {"person": "Bo", "week_start": date(2026, 10, 19), "task_id": None, "hours": 25.0}]
+    r = compute_availability(_people(), [], entries, settings, date(2026, 10, 12), date(2026, 10, 23), date(2026, 10, 28))
+    bo = next(p for p in r["people"] if p["name"] == "Bo")
+    assert bo["capacity_in_window"] == 40 and bo["planned_load_in_window"] == 0 and bo["logged_in_past_weeks"] == 43
+    assert bo["available_hours"] == -3 and [w["kind"] for w in bo["weeks"]] == ["actual", "actual"]
+    assert bo["over_weeks"] == 1  # 25 h in a 20 h week
+    assert r["summary"]["logged_in_past_weeks"] == 43
+    assert any("show the hours logged" in n for n in r["notes"]) and not any("No hours are logged" in n for n in r["notes"])
+    assert r["window"]["today"] == "2026-10-28"
+
+
+def test_availability_window_across_today_counts_logged_for_past_weeks_and_planned_for_the_rest():
+    settings = {"kickoff_date": KICKOFF}
+    tasks = [{"task_id": "t", "task_text": "Build X", "owner": "Bo", "status": "in_progress", "estimate_hours": 10,
+              "plan_finish_week": 6, "hours_still_needed": None, "deadline": None}]
+    entries = [{"person": "Bo", "week_start": date(2026, 10, 19), "task_id": None, "hours": 12.0}]
+    r = compute_availability(_people(), tasks, entries, settings, date(2026, 10, 19), date(2026, 11, 6), date(2026, 10, 28))
+    bo = next(p for p in r["people"] if p["name"] == "Bo")
+    # 5 days of the week that is over + Wed to Fri of this week + 5 days of next week = 13 days at 4 h
+    assert bo["capacity_in_window"] == 52 and bo["logged_in_past_weeks"] == 12 and bo["planned_load_in_window"] == 10
+    assert bo["available_hours"] == 52 - 12 - 10
+
+
+def test_availability_does_not_count_the_days_already_gone_of_this_week_as_free():
+    settings = {"kickoff_date": KICKOFF}
+    # today is Thursday 29 Oct: asking about the whole week of 26 Oct, only Thursday and Friday can still be planned
+    r = compute_availability(_people(), [], [], settings, date(2026, 10, 26), date(2026, 11, 8), date(2026, 10, 29))
+    ana = next(p for p in r["people"] if p["name"] == "Ana")
+    assert [w["capacity"] for w in ana["weeks"]] == [16, 40] and ana["capacity_in_window"] == 56 and ana["available_hours"] == 56
+
+
+def test_a_past_week_is_counted_whole_not_set_against_a_few_days_of_capacity():
+    settings = {"kickoff_date": KICKOFF}
+    # Bo (capacity 20) logged 19 h in the week of 19 Oct. Asked about Fri 23 Oct to Thu 29 Oct (today), that week is judged whole:
+    # 20 h of capacity against 19 logged, not 19 logged against one day (4 h), which used to read as "15 h over".
+    entries = [{"person": "Bo", "week_start": date(2026, 10, 19), "task_id": None, "hours": 19.0}]
+    r = compute_availability(_people(), [], entries, settings, date(2026, 10, 23), date(2026, 10, 29), date(2026, 10, 29))
+    bo = next(p for p in r["people"] if p["name"] == "Bo")
+    assert r["window"]["from"] == "2026-10-19" and r["window"]["requested_from"] == "2026-10-23"
+    past, current = bo["weeks"]
+    assert past["kind"] == "actual" and past["capacity"] == 20 and past["load"] == 19 and not past["over"]
+    assert current["kind"] == "planned" and current["capacity"] == 4  # only today is left of this week inside the window
+    assert bo["capacity_in_window"] == 24 and bo["available_hours"] == 5 and bo["over_weeks"] == 0
+    assert any("widened" in n for n in r["notes"])
+
+
+def test_a_window_inside_the_past_weeks_is_widened_at_both_ends():
+    r = compute_availability(_people(), [], [], {"kickoff_date": KICKOFF}, date(2026, 10, 14), date(2026, 10, 21), date(2026, 10, 29))
+    assert (r["window"]["from"], r["window"]["to"]) == ("2026-10-12", "2026-10-25")
+    assert [w["week"] for w in r["people"][0]["weeks"]] == ["2026-10-12", "2026-10-19"]
+
+
+def test_hours_report_gives_one_persons_hours_in_one_week():
+    entries = [{"person": "Bo", "week_start": date(2026, 10, 5), "task_id": None, "hours": 5.0},
+               {"person": "Bo", "week_start": date(2026, 10, 5), "task_id": None, "hours": 2.5},
+               {"person": "Bo", "week_start": date(2026, 10, 12), "task_id": None, "hours": 10.0},
+               {"person": "Ana", "week_start": date(2026, 10, 5), "task_id": None, "hours": 30.0}]
+    r = compute_project_hours({"budget_hours": 100, "kickoff_date": KICKOFF}, [], entries, END_OF_WEEK_4)
+    assert r["logged_by_person_week"] == {"Ana": {"2026-10-05": 30}, "Bo": {"2026-10-05": 7.5, "2026-10-12": 10}}
+    assert r["logged_by_person"]["Bo"] == 17.5 and r["logged_by_week"]["2026-10-05"] == 37.5  # the totals stay as they were
+
+
+def test_availability_can_be_filtered_by_a_persons_name():
+    r = compute_availability(_people(), [], [], {"kickoff_date": KICKOFF}, date(2026, 10, 26), date(2026, 10, 30), date(2026, 10, 26), "Bo")
+    assert [p["name"] for p in r["people"]] == ["Bo"]
+
+
+def test_availability_past_window_with_no_hours_says_so_instead_of_reporting_free_time():
+    # a model that guessed the wrong year used to get "0 planned, 36 free" for such a window
+    r = compute_availability(_people(), [], [], {"kickoff_date": KICKOFF}, date(2023, 10, 30), date(2023, 11, 5), date(2026, 10, 29))
+    assert any("No hours are logged" in n and "2026-10-29" in n for n in r["notes"])
+
+
 @pytest.mark.parametrize("query,expected", [
     ("backend", ["Ana"]), ("engineering work", ["Ana", "Bo"]), ("QA", ["Bo"]), ("python", ["Ana"]), ("designer", ["Cy"]),
     ("", ["Ana", "Bo", "Cy"]),

@@ -7,9 +7,10 @@ import json
 from datetime import timedelta
 
 from apps.db.db import get_connection, list_deliverables, list_raid_items
-from apps.db.hours_db import availability_report, project_hours_report
+from apps.db.hours_db import availability_report, fetch_hours_inputs, project_hours_report
 from apps.db.plan_db import plan_summary
 from apps.utils import clock, golden
+from apps.utils.hours import week_start
 
 STATUS = {"on_track": "on track", "watch": "watch", "at_risk": "at risk"}
 # per project: skill for the availability question, the SOW question and its expected words, the "blocked / open" question
@@ -19,10 +20,32 @@ SPECIFIC = {
     "tarnwood": dict(skill="machine learning", sow=("What does the tarnwood SOW require the report generation module's PDF to contain?", [], ["cover page", "table of contents"]),
                      blocked=("Which tasks on tarnwood are still in progress?", [], ["Report Generation Module", "whitelist", "integration test plan"])),
     "halvane": dict(skill="QA", sow=("When does the Halvane portal launch according to the SOW, and what is the budget?", ["920"], ["4 December", "December 4", "Week 12"]),
-                    blocked=("What is blocked on halvane and why?", [], ["ID-verification", "payment gateway", "sandbox"])),
+                    blocked=("What is blocked on halvane and why?", [], ["vendor", "credentials"])),  # the why is in the register's issues, not in the task names
     "marrowfield": dict(skill="data", sow=("How many carriers does the Marrowfield project integrate at launch, and what happens if a fourth is wanted?", [], ["three", "3", "change request"]),
                         blocked=("What dependencies could delay marrowfield?", [], ["WMS", "credentials", "test accounts"])),
 }
+
+
+def capacity_questions(pid: str) -> list:
+    """Two questions about one person's weeks: what is planned for next week (free or over), and what was logged two weeks back. The numbers come
+    from the same calculation as the Capacity page, by the project's whole weeks."""
+    today = clock.today()
+    start_day = int((fetch_hours_inputs(pid)[0] or {}).get("week_start_day") or 0)  # a project's weeks need not start on Monday
+    nxt = week_start(today, start_day) + timedelta(days=7)
+    back = week_start(today, start_day) - timedelta(days=14)
+    ahead = availability_report(pid, nxt, nxt + timedelta(days=6))["people"]
+    behind = {p["name"]: p["weeks"][0]["load"] for p in availability_report(pid, back, back + timedelta(days=6))["people"] if p["weeks"] and p["weeks"][0]["load"]}
+    person = next((p for p in ahead if p["weeks"] and p["weeks"][0]["load"] and p["name"] in behind), None)
+    if not person:
+        return []
+    free = round(person["weeks"][0]["capacity"] - person["weeks"][0]["load"], 1)
+    day = lambda d: f"{d:%A} {d.day} {d:%B}"
+    return [
+        dict(q=f"For {pid}, how many hours does {person['name']} have free in the week starting {day(nxt)}? Say if they are over.",
+             expect_all=[], expect_any=[f"{abs(free):g}"], tool="find_available_people"),
+        dict(q=f"For {pid}, how many hours did {person['name']} log in the week starting {day(back)}?",
+             expect_all=[f"{behind[person['name']]:g}"], expect_any=[], tool="find_available_people"),
+    ]
 
 
 def build(pid: str) -> list:
@@ -59,6 +82,7 @@ def build(pid: str) -> list:
         dict(q=sp["sow"][0], expect_all=sp["sow"][1], expect_any=sp["sow"][2], tool="search_documents"),
         dict(q=f"What meetings are scheduled for {pid}?", expect_all=[], expect_any=[words(m, 2) for m in meetings], tool="get_project_meetings"),
     ]
+    qs += capacity_questions(pid)
     if dep:
         qs.append(dict(q=f'What does the task "{dep[0]}" depend on in {pid}?', expect_all=[], expect_any=[words(dep[1], 3)], tool="get_project_dependencies"))
     return qs

@@ -27,9 +27,8 @@
   "q": "What is blocked on halvane and why?",
   "expect_all": [],
   "expect_any": [
-   "ID-verification",
-   "payment gateway",
-   "sandbox"
+   "vendor",
+   "credentials"
   ],
   "tool": "search_tasks / get_project_risks"
  },
@@ -38,8 +37,8 @@
   "expect_all": [],
   "expect_any": [
    "Front-end team",
-   "Open banking",
    "Fraud model",
+   "Open banking",
    "Payment gateway"
   ],
   "tool": "get_project_risks"
@@ -86,6 +85,22 @@
    "Escalation: ID"
   ],
   "tool": "get_project_meetings"
+ },
+ {
+  "q": "For halvane, how many hours does Jonas Weber have free in the week starting Monday 2 November? Say if they are over.",
+  "expect_all": [],
+  "expect_any": [
+   "10.3"
+  ],
+  "tool": "find_available_people"
+ },
+ {
+  "q": "For halvane, how many hours did Jonas Weber log in the week starting Monday 12 October?",
+  "expect_all": [
+   "5"
+  ],
+  "expect_any": [],
+  "tool": "find_available_people"
  },
  {
   "q": "What does the task \"Build onboarding API (account creation, document upload, status)\" depend on in halvane?",

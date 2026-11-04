@@ -325,6 +325,25 @@ def _get_plan_changes(project_id: str, limit: int = 15) -> dict:
             "all_changes": [] if baseline_at else changes[:min(max(limit, 1), 50)]}
 
 
+def _search_tasks_with_blockers(query: str = None, owner: str = None, status: str = None, project_id: str = None):
+    """search_tasks for the chat. A blocked task carries no reason of its own: why it is held up is written in the project's risk register (its live
+    issues). When the result has blocked tasks, those issues come with it, so whichever tool the model opens first it has the same facts."""
+    found = search_tasks(query=query, owner=owner, status=status, project_id=project_id)
+    try:
+        tasks = json.loads(found) if isinstance(found, str) else found
+    except ValueError:
+        return found
+    if not project_id or not isinstance(tasks, list) or not any(t.get("status") == "blocked" for t in tasks):
+        return found
+    known = {p.lower(): p for p in _known_project_ids()}
+    pid = known.get(project_id.lower())
+    live = [] if not pid else [{k: r[k] for k in ("title", "description", "owner", "status", "probability", "impact")}
+                               for r in list_raid_items(pid, item_type="issue") if r["review_state"] == "confirmed" and r["status"] in ("open", "mitigating")]
+    return {"tasks": tasks, "live_issues_in_the_risk_register": live,
+            "note": "A blocked task has no reason of its own. The live issues from the project's risk register are what is holding the work up; "
+                    "give the reason from them, and name the task dependencies as well if you have them."}
+
+
 def _find_available_people(project_id: str, skill: str = None, from_date: str = None, to_date: str = None) -> dict:
     try:
         start = date.fromisoformat(from_date) if from_date else clock.today()
@@ -333,7 +352,13 @@ def _find_available_people(project_id: str, skill: str = None, from_date: str = 
         return {"error": "Dates must be YYYY-MM-DD."}
     if end < start:
         return {"error": "to_date is before from_date."}
-    return availability_report(project_id, start, end, skill)
+    report = availability_report(project_id, start, end, skill, whole_weeks=True)
+    for person in report["people"]:  # over several weeks the window totals are not "the week's" figures: say so in their names
+        n = len(person["weeks"])
+        if n > 1:
+            for key in ("capacity_in_window", "planned_load_in_window", "available_hours", "logged_in_past_weeks"):
+                person[f"{key}_across_all_{n}_weeks"] = person.pop(key)
+    return report
 
 
 CHAT_TOOL_SCHEMAS = [
@@ -369,7 +394,8 @@ CHAT_TOOL_SCHEMAS = [
         "function": {
             "name": "search_tasks",
             "description": "Search tasks by text, owner, status, and/or project. All filters "
-                            "optional - status 'blocked' finds blocked tasks, omit query/owner/status "
+                            "optional - status 'blocked' finds blocked tasks (and then also returns the project's live "
+                            "risk-register issues, which are why work is held up), omit query/owner/status "
                             "to list a project's recent tasks. Each result includes jira_issue_key "
                             "(null if that task hasn't synced to Jira). Capped at 20 results with no "
                             "indication more exist - never count these results to answer a 'how many' "
@@ -418,7 +444,8 @@ CHAT_TOOL_SCHEMAS = [
             "description": "Hours for one project, computed by the app: the hours budget, hours logged, hours left in the budget, "
                             "forecast at completion (logged + remaining on open tasks), budget minus forecast, a burn check "
                             "(budget used vs work done vs work due by now, status on_track / watch / at_risk), recent weekly burn, "
-                            "hours logged by person and week, hours not tied to any task, open tasks with no estimate, open tasks over "
+                            "hours logged: logged_by_person is each person's total since kickoff, logged_by_week is the whole team per week, and "
+                            "logged_by_person_week is one person's hours in one week (use it for 'how many hours did X log in week Y'), hours not tied to any task, open tasks with no estimate, open tasks over "
                             "their estimate, and a 'notes' list of caveats. Use it for 'how many hours are left', 'are we over "
                             "budget', 'how many hours has X logged', 'how many hours are left on <task>' (pass task_query). Report "
                             "the numbers as returned and always mention the relevant 'notes' (for example a missing budget or tasks "
@@ -455,9 +482,12 @@ CHAT_TOOL_SCHEMAS = [
             "name": "find_available_people",
             "description": "Free hours per person for a date window (default: the next four weeks): weekly capacity for the working "
                             "days in the window minus the remaining hours of their open tasks spread to each task's due date. "
-                            "Optionally filter by skill or role (for example 'backend', 'QA', 'infrastructure') - it matches each "
-                            "person's role and skill tags, so try the closest role words. People with no capacity set have unknown "
-                            "free hours, and tasks without an estimate or due date are listed per person as unknown; say so.",
+                            "Optionally filter by skill, role or a person's name (for example 'backend', 'QA', 'Elise') - it matches each "
+                            "person's name, role and skill tags, so try the closest role words. One name per call, or no filter and pick the people from the result. People with no capacity set have unknown "
+                            "free hours, and tasks without an estimate or due date are listed per person as unknown; say so. A window may be in the past: "
+                            "weeks before today then show the hours LOGGED (what was really worked), not planned work - say which you are reporting. "
+                            "The window is always widened to whole weeks (by the project's week start day, named in window.weeks_start_on), so one call covers any run of weeks: quote each week from the person's "
+                            "\"weeks\" list (kind actual or planned, capacity, load, over), not from the window totals, and say whether it is logged or planned.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -474,7 +504,7 @@ CHAT_TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "get_project_dependencies",
-            "description": "The dependency graph for a project as a list of {task, task_status, depends_on, depends_on_status, owners} - which task waits on which, by NAME with both statuses. Use it for 'what does X depend on' and 'what is X blocking' questions and report the names and statuses, never task ids.",
+            "description": "The dependency graph for a project as a list of {task, task_status, depends_on, depends_on_status, owners} - which task waits on which, by NAME with both statuses. Use it for 'what does X depend on' and 'what waits on X'; report the names and statuses, never task ids. A dependency alone does not make a task blocked: a task is blocked only when its own status is 'blocked' (search_tasks with status blocked lists them).",
             "parameters": {
                 "type": "object",
                 "properties": {"project_id": {"type": "string"}},
@@ -576,7 +606,7 @@ CHAT_TOOL_SCHEMAS = [
 CHAT_TOOL_IMPLS = {
     "list_projects": list_projects,
     "get_project_overview": _get_project_overview,
-    "search_tasks": search_tasks,
+    "search_tasks": _search_tasks_with_blockers,
     "get_task_by_id": get_task_by_id,
     "get_owner_workload": fetch_owner_workload,
     "get_project_hours": _get_project_hours,

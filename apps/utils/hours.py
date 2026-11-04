@@ -8,6 +8,7 @@ reports them. DECISIONS.md "Hours" has the reasoning; the rules in short:
   burn check            = work DONE vs work DUE BY NOW (not vs budget used): a task counts as done in proportion to its
                           hours (logged / (logged + remaining), capped at 90% until it is marked completed), and as due in
                           proportion to how much of its planned weeks (plan start..finish) have passed."""
+import calendar
 from datetime import date, timedelta
 
 IN_PROGRESS_CREDIT_CAP = 0.9  # an open task never counts as more than 90% done until someone marks it completed
@@ -76,7 +77,7 @@ def compute_project_hours(settings: dict, tasks: list, entries: list, as_of: dat
     budget = _num((settings or {}).get("budget_hours"))
     kickoff = (settings or {}).get("kickoff_date")
 
-    logged_by_task, by_person, by_week = {}, {}, {}
+    logged_by_task, by_person, by_week, by_person_week = {}, {}, {}, {}
     actual_total = 0.0
     for e in entries:
         h = float(e["hours"])
@@ -85,6 +86,8 @@ def compute_project_hours(settings: dict, tasks: list, entries: list, as_of: dat
             logged_by_task[e["task_id"]] = logged_by_task.get(e["task_id"], 0.0) + h
         by_person[e["person"]] = by_person.get(e["person"], 0.0) + h
         by_week[e["week_start"]] = by_week.get(e["week_start"], 0.0) + h
+        pw = by_person_week.setdefault(e["person"], {})
+        pw[e["week_start"]] = pw.get(e["week_start"], 0.0) + h
 
     start_day = int((settings or {}).get("week_start_day") or 0)
     elapsed = weeks_elapsed(kickoff, as_of, start_day) if kickoff else None
@@ -195,6 +198,7 @@ def compute_project_hours(settings: dict, tasks: list, entries: list, as_of: dat
         "open_tasks_over_their_estimate": open_over,
         "logged_by_person": {p: _r(h) for p, h in sorted(by_person.items())},
         "logged_by_week": {w.isoformat(): _r(h) for w, h in sorted(by_week.items())},
+        "logged_by_person_week": {p: {w.isoformat(): _r(x) for w, x in sorted(ws.items())} for p, ws in sorted(by_person_week.items())},
         "tasks": rows,
         "notes": notes,
     }
@@ -225,7 +229,7 @@ def _due_date(task: dict, kickoff, start_day: int = 0):
 def _skill_match(person: dict, query: str) -> bool:
     if not query:
         return True
-    hay = " ".join([person.get("role") or "", *(person.get("skills") or [])]).lower()
+    hay = " ".join([person.get("name") or "", person.get("role") or "", *(person.get("skills") or [])]).lower()  # the name too: people ask "for Elise and Kofi"
     terms = [w for w in query.lower().replace("/", " ").replace(",", " ").split() if len(w) >= 2 and w not in _SKILL_STOP_WORDS]
     # A term matches if it is inside the person's role/skill text, or a longer role word is inside the term ("engineer" in "engineering").
     return any(w in hay or any(part in w for part in hay.split() if len(part) > 3) for w in terms)
@@ -247,7 +251,25 @@ def compute_availability(people: list, tasks: list, entries: list, settings: dic
     for e in entries:
         if e.get("task_id") is not None:
             logged[e["task_id"]] = logged.get(e["task_id"], 0.0) + float(e["hours"])
+    requested = (window_start, window_end)
+
+    def over(d: date) -> bool:
+        return week_start(d, start_day) + timedelta(days=6) < as_of
+
+    # Hours are logged per week, so a week that is already over can only be judged whole: widen the window to cover it, rather than set a whole
+    # week's logged hours against a few days of capacity.
+    if over(window_start):
+        window_start = week_start(window_start, start_day)
+    if over(window_end):
+        window_end = week_start(window_end, start_day) + timedelta(days=6)
     window_days = business_days(window_start, window_end)
+
+    def counts(d: date) -> bool:
+        """A day has capacity to give if it is today or later, or if its whole week is over (then its load is what was logged in it).
+        The days already gone of the current week are neither: they cannot be planned any more and are not free time."""
+        return d >= as_of or over(d)
+
+    counted_days = [d for d in window_days if counts(d)]
     grid = {}  # week start -> working days of that week inside the window
     for d in window_days:
         grid.setdefault(week_start(d, start_day), []).append(d)
@@ -282,23 +304,37 @@ def compute_availability(people: list, tasks: list, entries: list, settings: dic
             for d in overlap:
                 ws = week_start(d, start_day)
                 planned_by_week[ws] = planned_by_week.get(ws, 0.0) + rem / len(span)
-        capacity = None if cap is None else cap * len(window_days) / 5
+        capacity = None if cap is None else cap * len(counted_days) / 5
         weeks = []
+        past_logged = 0.0  # hours actually worked in the weeks of the window that are already over
         for ws, days in sorted(grid.items()):
-            week_cap = None if cap is None else cap * len(days) / 5
+            week_cap = None if cap is None else cap * len([d for d in days if counts(d)]) / 5
             past = ws + timedelta(days=6) < as_of
             logged_w = logged_by.get((p["name"].lower(), ws), 0.0)
             week_load = logged_w if past else planned_by_week.get(ws, 0.0)
+            if past:
+                past_logged += logged_w
             weeks.append({"week": ws.isoformat(), "kind": "actual" if past else "planned", "capacity": _r(week_cap), "load": _r(week_load),
                           "logged": _r(logged_w), "over": week_cap is not None and week_load > week_cap + 0.05})
         out.append({
-            "name": p["name"], "role": p.get("role"), "skills": p.get("skills") or [],
+            "name": p["name"], "role": p.get("role"), "skills": p.get("skills") or [], "weeks": weeks,  # by week first: the figure to quote for a named week
             "weekly_capacity_hours": _r(cap), "capacity_in_window": _r(capacity), "planned_load_in_window": _r(load),
-            "available_hours": None if capacity is None else _r(capacity - load),
-            "unknown_items": unknown, "weeks": weeks, "over_weeks": sum(1 for w in weeks if w["over"]),
+            "logged_in_past_weeks": _r(past_logged),
+            "available_hours": None if capacity is None else _r(capacity - load - past_logged),
+            "unknown_items": unknown, "over_weeks": sum(1 for w in weeks if w["over"]),
         })
     out.sort(key=lambda r: (r["available_hours"] is None, -(r["available_hours"] or 0)))
     notes = []
+    has_past = any(w["kind"] == "actual" for r in out for w in r["weeks"])
+    if (window_start, window_end) != requested:
+        notes.append(f"The window was widened to {window_start.isoformat()} to {window_end.isoformat()} because a week that is over is counted "
+                     "whole (hours are logged per week).")
+    if has_past:  # planned work only exists from today on, so an earlier week can only say what was really worked
+        notes.append(f"Weeks before today ({as_of.isoformat()}) show the hours logged in them, not planned work; "
+                     "available hours there are capacity minus hours logged.")
+        if window_end < as_of and not any(r["logged_in_past_weeks"] for r in out):
+            notes.append("No hours are logged by anyone in this window. If it was not meant to be in the past, check the dates (today is "
+                         f"{as_of.isoformat()}).")
     if any(r["weekly_capacity_hours"] is None for r in out):
         notes.append("Some people have no weekly capacity set, so their free hours are unknown.")
     if any(r["unknown_items"] for r in out):
@@ -306,9 +342,12 @@ def compute_availability(people: list, tasks: list, entries: list, settings: dic
     known = [r for r in out if r["available_hours"] is not None]
     summary = {"people": len(out), "capacity_in_window": _r(sum(r["capacity_in_window"] for r in known)),
                "planned_load_in_window": _r(sum(r["planned_load_in_window"] for r in known)),
+               "logged_in_past_weeks": _r(sum(r["logged_in_past_weeks"] for r in known)),
                "available_hours": _r(sum(r["available_hours"] for r in known)),
                "over_allocated": sum(1 for r in out if r["over_weeks"] or (r["available_hours"] is not None and r["available_hours"] < 0)),
                "no_capacity": sum(1 for r in out if r["weekly_capacity_hours"] is None),
                "unknown_tasks": sum(len(r["unknown_items"]) for r in out)}
-    return {"window": {"from": window_start.isoformat(), "to": window_end.isoformat(), "working_days": len(window_days)},
+    return {"window": {"from": window_start.isoformat(), "to": window_end.isoformat(), "working_days": len(window_days), "today": as_of.isoformat(),
+                       "requested_from": requested[0].isoformat(), "requested_to": requested[1].isoformat(),
+                       "weeks_start_on": calendar.day_name[start_day]},
             "skill_filter": skill, "people": out, "weeks": [w.isoformat() for w in sorted(grid)], "summary": summary, "notes": notes}

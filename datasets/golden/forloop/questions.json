@@ -83,6 +83,22 @@
   "tool": "get_project_meetings"
  },
  {
+  "q": "For forloop, how many hours does Marcus Chen have free in the week starting Monday 2 November? Say if they are over.",
+  "expect_all": [],
+  "expect_any": [
+   "25.7"
+  ],
+  "tool": "find_available_people"
+ },
+ {
+  "q": "For forloop, how many hours did Marcus Chen log in the week starting Monday 12 October?",
+  "expect_all": [
+   "40"
+  ],
+  "expect_any": [],
+  "tool": "find_available_people"
+ },
+ {
   "q": "What does the task \"Implement Sales Trends view in the dashboard\" depend on in forloop?",
   "expect_all": [],
   "expect_any": [

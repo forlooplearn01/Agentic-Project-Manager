@@ -89,6 +89,22 @@
   "tool": "get_project_meetings"
  },
  {
+  "q": "For tarnwood, how many hours does Priya Nair have free in the week starting Wednesday 4 November? Say if they are over.",
+  "expect_all": [],
+  "expect_any": [
+   "18.8"
+  ],
+  "tool": "find_available_people"
+ },
+ {
+  "q": "For tarnwood, how many hours did Priya Nair log in the week starting Wednesday 14 October?",
+  "expect_all": [
+   "6"
+  ],
+  "expect_any": [],
+  "tool": "find_available_people"
+ },
+ {
   "q": "What does the task \"Deliverable 4.10: User Guide and Technical Reference Document\" depend on in tarnwood?",
   "expect_all": [],
   "expect_any": [
