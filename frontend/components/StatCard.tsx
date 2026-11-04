@@ -14,17 +14,23 @@ export default function StatCard({
   value,
   color,
   icon,
+  detail,
+  onClick,
 }: {
   label: string;
   value: string | number;
   color: StatColor;
   icon: React.ReactNode;
+  detail?: string; // who or where it is, under the label
+  onClick?: () => void;
 }) {
   const colorVar = STAT_COLOR_VAR[color];
 
+  const Tag = onClick ? "button" : "div";
   return (
-    <div
-      className="stat-card glass-panel animate-card-in rounded-2xl p-4"
+    <Tag
+      {...(onClick ? { type: "button" as const, onClick } : {})}
+      className={`stat-card glass-panel animate-card-in rounded-2xl p-4 ${onClick ? "hover-tint w-full cursor-pointer text-left transition" : ""}`}
       style={{ "--stat-color": colorVar } as React.CSSProperties}
     >
       <div className="relative flex items-center gap-3">
@@ -41,8 +47,9 @@ export default function StatCard({
         <div className="min-w-0">
           <div className="animate-count text-2xl font-semibold tracking-tight text-text-primary">{value}</div>
           <div className="text-[11px] font-medium uppercase leading-tight tracking-wide text-text-faint">{label}</div>
+          {detail && <div className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-text-muted" title={detail}>{detail}</div>}
         </div>
       </div>
-    </div>
+    </Tag>
   );
 }

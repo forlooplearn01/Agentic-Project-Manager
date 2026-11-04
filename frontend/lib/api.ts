@@ -1,5 +1,6 @@
 import type {
   ActivityEvent,
+  DashboardAttention,
   AvailabilityReport,
   HoursImportRecord,
   TimesheetInbox,
@@ -320,6 +321,10 @@ export function setTaskDeliverable(taskId: string, deliverableId: string | null)
 
 export function fetchHours(projectId: string): Promise<HoursReport> {
   return request(`/projects/${encodeURIComponent(projectId)}/hours`);
+}
+
+export function fetchDashboardAttention(): Promise<DashboardAttention> {
+  return request("/dashboard/attention");
 }
 
 export function fetchHoursSummary(): Promise<{ projects: HoursSummaryRow[] }> {

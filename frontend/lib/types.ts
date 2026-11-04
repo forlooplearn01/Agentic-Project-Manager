@@ -287,6 +287,14 @@ export interface HoursSettings {
   week_start_day: number;
 }
 
+// What needs attention across all projects: counts per project, never totals that would let a good project hide a bad one.
+export interface DashboardAttention {
+  overdue: Record<string, number>;
+  high_priority_open: Record<string, number>;
+  high_impact_risks: Record<string, number>;
+  people_over_capacity: { name: string; projects: string[] }[];
+}
+
 export interface HoursSummaryRow {
   project_id: string;
   budget_hours: number | null;

@@ -1069,6 +1069,14 @@ def get_hours_summary():
     return {"projects": rows}
 
 
+@app.get("/dashboard/attention")
+def get_dashboard_attention():
+    """Counts of what needs attention across all projects (overdue tasks, open high-priority tasks, high-impact risks, people over capacity),
+    each with the projects behind it - powers the Dashboard's tiles."""
+    from apps.utils.dashboard import attention
+    return attention()
+
+
 @app.get("/projects/{project_id}/hours/settings")
 def get_project_hours_settings(project_id: str):
     return get_hours_settings(project_id)
