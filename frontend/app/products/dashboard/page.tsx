@@ -7,16 +7,13 @@ import { getActivityFeedCollapsed, setActivityFeedCollapsed } from "@/lib/prefer
 import { formatDateTime } from "@/lib/format";
 import type { DashboardAttention, HoursSummaryRow, Meeting, ProjectRollup } from "@/lib/types";
 import { StatusPill, h as hoursText } from "@/components/hours/shared";
-import StatCard, { type StatColor } from "@/components/StatCard";
+import StatCard, { type StatColor, type StatPart } from "@/components/StatCard";
 import ActivityFeed from "@/components/ActivityFeed";
 import { IconAlertTriangle, IconCalendar, IconChecklist, IconClock, IconFlame, IconFolder, IconGauge, IconLayers, IconUsers } from "@/components/icons";
 
 // Every tile counts something that needs attention and names who owns it. Nothing is summed or averaged across projects: a healthy project
 // must not be able to offset a troubled one. A tile at zero turns green.
 const sumOf = (m: Record<string, number>) => Object.values(m).reduce((a, b) => a + b, 0);
-const ranked = (m: Record<string, number>) => Object.entries(m).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
-const breakdown = (m: Record<string, number>) => ranked(m).map(([p, n]) => `${p} ${n}`).join(" · ");
-const topOf = (m: Record<string, number>) => ranked(m)[0]?.[0];
 const tone = (count: number, problem: StatColor, loaded: boolean): StatColor => (loaded && count === 0 ? "emerald" : problem);
 
 export default function DashboardPage() {
@@ -55,21 +52,39 @@ export default function DashboardPage() {
       .catch(() => setHoursRows([]));
   }, []);
 
+  // Ties go to the project in the worse state (at risk, then watch), then by name, so a tile always opens the same project.
+  const severity = (pid: string) => {
+    const status = hoursRows.find((r) => r.project_id === pid)?.status;
+    return status === "at_risk" ? 0 : status === "watch" ? 1 : 2;
+  };
+  const ranked = (m: Record<string, number>) =>
+    Object.entries(m).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1] || severity(a[0]) - severity(b[0]) || a[0].localeCompare(b[0]));
+  const topOf = (m: Record<string, number>) => ranked(m)[0]?.[0];
+  const toWorkspace = (pid: string) => router.push(`/products/task-manager?project=${encodeURIComponent(pid)}`);
+  const toRegisters = (pid: string) => router.push(`/products/registers?project=${encodeURIComponent(pid)}`);
+  const toHours = (pid: string) => router.push(`/products/hours?project=${encodeURIComponent(pid)}`);
+  // "halvane 2 · forloop 1": each project is a link of its own; the tile itself opens the worst one.
+  const partsOf = (m: Record<string, number>, go: (pid: string) => void, text = (p: string, n: number) => `${p} ${n}`): StatPart[] =>
+    ranked(m).map(([p, n]) => ({ text: text(p, n), onClick: () => go(p) }));
+  const openTop = (m: Record<string, number>, go: (pid: string) => void) => {
+    const top = topOf(m);
+    return top ? () => go(top) : undefined;
+  };
+
   const blocked = Object.fromEntries((projects ?? []).map((p) => [p.project_id, p.blocked_tasks]));
   const openTasks = (projects ?? []).reduce((a, p) => a + p.open_tasks, 0);
   const totalTasks = (projects ?? []).reduce((a, p) => a + p.total_tasks, 0);
-  const attentionRows = hoursRows.filter((r) => r.status === "at_risk" || r.status === "watch").sort((a, b) => Number(b.status === "at_risk") - Number(a.status === "at_risk"));
+  const attentionRows = hoursRows
+    .filter((r) => r.status === "at_risk" || r.status === "watch")
+    .sort((a, b) => severity(a.project_id) - severity(b.project_id) || a.project_id.localeCompare(b.project_id));
   const overBudget = Object.fromEntries(
     hoursRows.filter((r) => r.budget_hours !== null && r.forecast_at_completion > r.budget_hours).map((r) => [r.project_id, Math.round(r.forecast_at_completion - (r.budget_hours as number))])
   );
   const overCapacity = attention?.people_over_capacity ?? [];
-  const overCapacityByProject: Record<string, number> = {};
-  overCapacity.forEach((p) => p.projects.forEach((pid) => (overCapacityByProject[pid] = (overCapacityByProject[pid] ?? 0) + 1)));
   const meetingsByProject: Record<string, number> = {};
   pendingMeetings.forEach((m) => (meetingsByProject[m.project_id] = (meetingsByProject[m.project_id] ?? 0) + 1));
-
-  const workspace = (pid?: string) => (pid ? () => router.push(`/products/task-manager?project=${encodeURIComponent(pid)}`) : undefined);
-  const withHours = (pid?: string) => () => router.push(pid ? `/products/hours?project=${encodeURIComponent(pid)}` : "/products/hours");
+  const overCapacityByProject: Record<string, number> = {};
+  overCapacity.forEach((p) => p.projects.forEach((pid) => (overCapacityByProject[pid] = (overCapacityByProject[pid] ?? 0) + 1)));
 
   return (
     <main className="mx-auto max-w-[1800px] px-6 py-8">
@@ -90,64 +105,75 @@ export default function DashboardPage() {
                 value={hoursRows.length ? attentionRows.length : "–"}
                 color={tone(attentionRows.length, attentionRows.some((r) => r.status === "at_risk") ? "red" : "amber", hoursRows.length > 0)}
                 icon={<IconFolder className="h-4.5 w-4.5" />}
-                detail={hoursRows.length ? (attentionRows.length ? attentionRows.map((r) => `${r.project_id} ${r.status === "at_risk" ? "at risk" : "watch"}`).join(" · ") : `All ${hoursRows.length} on track`) : undefined}
-                onClick={attentionRows.length ? withHours(attentionRows[0].project_id) : undefined}
+                parts={attentionRows.map((r) => ({ text: `${r.project_id} ${r.status === "at_risk" ? "at risk" : "watch"}`, onClick: () => toHours(r.project_id) }))}
+                detail={hoursRows.length && !attentionRows.length ? `All ${hoursRows.length} on track` : undefined}
+                onClick={attentionRows.length ? () => toHours(attentionRows[0].project_id) : undefined}
               />
               <StatCard
                 label="Projects forecast over budget"
                 value={hoursRows.length ? Object.keys(overBudget).length : "–"}
                 color={tone(Object.keys(overBudget).length, "red", hoursRows.length > 0)}
                 icon={<IconGauge className="h-4.5 w-4.5" />}
-                detail={hoursRows.length ? (Object.keys(overBudget).length ? ranked(overBudget).map(([p, n]) => `${p} +${n} h`).join(" · ") : "None over") : undefined}
-                onClick={Object.keys(overBudget).length ? withHours(topOf(overBudget)) : undefined}
+                parts={partsOf(overBudget, toHours, (p, n) => `${p} +${n} h`)}
+                detail={hoursRows.length && !Object.keys(overBudget).length ? "None over" : undefined}
+                onClick={openTop(overBudget, toHours)}
               />
               <StatCard
                 label="Blocked tasks"
                 value={projects ? sumOf(blocked) : "–"}
                 color={tone(sumOf(blocked), "red", !!projects)}
                 icon={<IconAlertTriangle className="h-4.5 w-4.5" />}
-                detail={projects ? breakdown(blocked) || "None blocked" : undefined}
-                onClick={workspace(topOf(blocked))}
+                parts={partsOf(blocked, toWorkspace)}
+                detail={projects && !sumOf(blocked) ? "None blocked" : undefined}
+                onClick={openTop(blocked, toWorkspace)}
               />
               <StatCard
                 label="Overdue tasks"
                 value={attention ? sumOf(attention.overdue) : "–"}
                 color={tone(attention ? sumOf(attention.overdue) : 0, "amber", !!attention)}
                 icon={<IconClock className="h-4.5 w-4.5" />}
-                detail={attention ? breakdown(attention.overdue) || "None overdue" : undefined}
-                onClick={attention ? workspace(topOf(attention.overdue)) : undefined}
+                parts={attention ? partsOf(attention.overdue, toWorkspace) : undefined}
+                detail={attention && !sumOf(attention.overdue) ? "None overdue" : undefined}
+                onClick={attention ? openTop(attention.overdue, toWorkspace) : undefined}
               />
               <StatCard
                 label="Open high-impact risks"
                 value={attention ? sumOf(attention.high_impact_risks) : "–"}
                 color={tone(attention ? sumOf(attention.high_impact_risks) : 0, "purple", !!attention)}
                 icon={<IconFlame className="h-4.5 w-4.5" />}
-                detail={attention ? breakdown(attention.high_impact_risks) || "None open" : undefined}
-                onClick={attention && topOf(attention.high_impact_risks) ? () => router.push(`/products/registers?project=${encodeURIComponent(topOf(attention.high_impact_risks) as string)}`) : undefined}
+                parts={attention ? partsOf(attention.high_impact_risks, toRegisters) : undefined}
+                detail={attention && !sumOf(attention.high_impact_risks) ? "None open" : undefined}
+                onClick={attention ? openTop(attention.high_impact_risks, toRegisters) : undefined}
               />
               <StatCard
                 label="People over capacity"
                 value={attention ? overCapacity.length : "–"}
                 color={tone(overCapacity.length, "amber", !!attention)}
                 icon={<IconUsers className="h-4.5 w-4.5" />}
-                detail={attention ? (overCapacity.length ? `${overCapacity.slice(0, 3).map((p) => p.name.split(" ")[0]).join(", ")}${overCapacity.length > 3 ? ` +${overCapacity.length - 3}` : ""}` : "Nobody over") : undefined}
-                onClick={overCapacity.length ? withHours(topOf(overCapacityByProject)) : undefined}
+                parts={[
+                  ...overCapacity.slice(0, 3).map((p) => ({ text: p.name.split(" ")[0], onClick: () => toHours(p.projects[0]) })),
+                  ...(overCapacity.length > 3 ? [{ text: `+${overCapacity.length - 3}` }] : []),
+                ]}
+                detail={attention && !overCapacity.length ? "Nobody over" : undefined}
+                onClick={openTop(overCapacityByProject, toHours)}
               />
               <StatCard
                 label="High-priority tasks still open"
                 value={attention ? sumOf(attention.high_priority_open) : "–"}
                 color={tone(attention ? sumOf(attention.high_priority_open) : 0, "amber", !!attention)}
                 icon={<IconChecklist className="h-4.5 w-4.5" />}
-                detail={attention ? breakdown(attention.high_priority_open) || "None open" : undefined}
-                onClick={attention ? workspace(topOf(attention.high_priority_open)) : undefined}
+                parts={attention ? partsOf(attention.high_priority_open, toWorkspace) : undefined}
+                detail={attention && !sumOf(attention.high_priority_open) ? "None open" : undefined}
+                onClick={attention ? openTop(attention.high_priority_open, toWorkspace) : undefined}
               />
               <StatCard
                 label="Meetings awaiting approval"
                 value={pendingMeetingsCount ?? "–"}
                 color={tone(pendingMeetingsCount ?? 0, "purple", pendingMeetingsCount !== null)}
                 icon={<IconCalendar className="h-4.5 w-4.5" />}
-                detail={pendingMeetingsCount === null ? undefined : breakdown(meetingsByProject) || "Nothing waiting"}
-                onClick={workspace(topOf(meetingsByProject))}
+                parts={partsOf(meetingsByProject, toWorkspace)}
+                detail={pendingMeetingsCount === 0 ? "Nothing waiting" : undefined}
+                onClick={openTop(meetingsByProject, toWorkspace)}
               />
               <StatCard
                 label="Open tasks"
