@@ -7,7 +7,7 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 const jetbrainsMono = JetBrains_Mono({ variable: "--font-jetbrains-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Agentic Project Manager",
+  title: "Shanthee",
   description: "Autonomous agents plan and update your project - an SOW creates the plan, meeting minutes update it.",
 };
 

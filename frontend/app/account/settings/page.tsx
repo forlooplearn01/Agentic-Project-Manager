@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchHoursSettings, fetchProjects, saveHoursSettings } from "@/lib/api";
 import { formatDateWith } from "@/lib/format";
 import {
+  DEFAULT_DISPLAY_NAME,
   DISPLAY_NAME_MAX,
   getActivityFeedCollapsed,
   getDateFormat,
@@ -173,7 +174,7 @@ export default function AccountSettingsPage() {
                 setDisplayNameState(e.target.value);
                 setDisplayName(e.target.value);
               }}
-              placeholder="Agentic Project Manager"
+              placeholder={DEFAULT_DISPLAY_NAME}
               aria-label="Display name"
               className="w-56 rounded-lg border border-line bg-surface-solid px-3 py-1.5 text-[13px] text-text-primary outline-none placeholder:text-text-faint focus:border-accent-to"
             />

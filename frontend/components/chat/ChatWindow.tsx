@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fetchChatHistory, sendChatMessage } from "@/lib/api";
+import { DEFAULT_DISPLAY_NAME, PREFS_CHANGED_EVENT, getDisplayName } from "@/lib/preferences";
 import type { ChatMessage } from "@/lib/types";
 import { IconPlus } from "@/components/icons";
 import MessageBubble from "./MessageBubble";
@@ -37,6 +38,14 @@ export default function ChatWindow() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  // Same initial as the sidebar mark: the saved display name, else the default.
+  const [initial, setInitial] = useState(DEFAULT_DISPLAY_NAME.charAt(0).toUpperCase());
+  useEffect(() => {
+    const read = () => setInitial((getDisplayName() || DEFAULT_DISPLAY_NAME).charAt(0).toUpperCase());
+    read();
+    window.addEventListener(PREFS_CHANGED_EVENT, read);
+    return () => window.removeEventListener(PREFS_CHANGED_EVENT, read);
+  }, []);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -99,7 +108,7 @@ export default function ChatWindow() {
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-32px)] w-full max-w-3xl flex-col px-6">
+    <div className="mx-auto flex h-[calc(100vh-76px)] w-full max-w-3xl flex-col px-6">
       <div className="pt-4" />
 
       <div className="flex-1 overflow-y-auto py-8">
@@ -108,7 +117,7 @@ export default function ChatWindow() {
             <div>
               <div className="mb-3 flex justify-center">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-from to-accent-to text-lg font-semibold text-white shadow-[0_0_32px_-8px_var(--color-accent-to)]">
-                  A
+                  {initial}
                 </div>
               </div>
               <h1 className="text-[17px] font-medium text-text-primary">What do you need to know?</h1>

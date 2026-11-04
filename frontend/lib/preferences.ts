@@ -164,6 +164,8 @@ export function setShowChatSources(show: boolean) {
 
 export const PREFS_CHANGED_EVENT = "prefs-changed";
 export const DISPLAY_NAME_MAX = 40;
+// Shown in the sidebar until a name is set in Settings.
+export const DEFAULT_DISPLAY_NAME = "Shanthee";
 
 export function getDisplayName(): string {
   try {
