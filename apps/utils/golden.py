@@ -87,11 +87,16 @@ def _hide_emails(text: str, people: list) -> str:
     return text
 
 
+def _placeholder_email(name: str) -> str:
+    return name.lower().replace(" ", ".") + "@example.com"
+
+
 def _show_emails(text: str) -> str:
     names = set(_TOKEN.findall(text))
     if not names:
         return text
-    known = json.loads((GOLDEN_DIR / EMAILS_FILE).read_text()) if (GOLDEN_DIR / EMAILS_FILE).exists() else {}
+    path = GOLDEN_DIR / EMAILS_FILE
+    known = json.loads(path.read_text()) if path.exists() else {}
     missing = sorted(n for n in names if n not in known)
     if missing:  # fall back to any project that has them on its roster
         conn = get_connection()
@@ -100,6 +105,9 @@ def _show_emails(text: str) -> str:
             known.update(dict(cur.fetchall()))
         conn.close()
         missing = sorted(n for n in names if n not in known)
+    if missing and not path.exists():  # a fresh checkout: the real addresses are deliberately not in the repository, so use ones that go nowhere
+        known.update({n: _placeholder_email(n) for n in missing})
+        missing = []
     if missing:
         raise RuntimeError(f"No email known for {', '.join(missing)}: add them to datasets/golden/{EMAILS_FILE} as {{\"Name\": \"address\"}}.")
     return _TOKEN.sub(lambda m: known[m.group(1)], text)

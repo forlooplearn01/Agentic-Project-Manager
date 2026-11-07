@@ -1,6 +1,7 @@
 """LLM_EXTRA_BODY puts server-specific JSON fields (for example vLLM's chat_template_kwargs) into every request; unset, nothing is added."""
 import importlib
 
+import dotenv
 import litellm
 
 from apps import llm
@@ -9,6 +10,7 @@ from apps import llm
 def _sent_kwargs(monkeypatch, extra_body_env):
     seen = {}
     monkeypatch.setattr(litellm, "completion", lambda **kw: seen.update(kw))
+    monkeypatch.setattr(dotenv, "load_dotenv", lambda *a, **kw: False)  # the real .env may set LLM_EXTRA_BODY; the test controls it
     if extra_body_env is None:
         monkeypatch.delenv("LLM_EXTRA_BODY", raising=False)
     else:

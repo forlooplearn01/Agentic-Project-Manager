@@ -31,7 +31,7 @@ A restore does not undo Jira issues or calendar events. Rehearse with `PLAN_JIRA
 
 ## What is where
 - `<project>/golden.json` and `files/`: the export (rows of every table, the plan / meeting / timesheet files, a manifest of key numbers). Real email addresses are NOT in it:
-  they are `<<email:Name>>`, filled in from `emails.local.json` (gitignored, made by an export; create it by hand as `{"Name": "address"}` on a new machine).
+  they are `<<email:Name>>`, filled in from `emails.local.json` (gitignored, made by an export). On a new machine with no such file, a restore uses `first.last@example.com` placeholders, so nothing real can be emailed; to use real addresses create the file by hand as `{"Name": "address"}` (a file that exists but misses someone is still an error).
 - `<project>/drop/`: the ready-to-run file. `<project>/questions.json`: the 10 chat questions with answers worked out from the data.
 - `../golden-src/<project>/`: the source texts (SOW, meetings) the build used. `tarnwood` is made from `../simulation-ai-x-vmware` by `scripts/golden_build/transform_sim.py`.
 - Rebuild a project from its spec: `python -m scripts.golden_build.<project>` (then re-export). `python -m scripts.golden_build.questions` regenerates the questions.
