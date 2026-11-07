@@ -25,6 +25,17 @@ if _raw_extra_headers:
     except json.JSONDecodeError:
         _EXTRA_HEADERS = None
 
+# Extra JSON fields sent in every request body, for server-specific switches. Example: a vLLM server
+# running a model with a "thinking" mode, where '{"chat_template_kwargs": {"enable_thinking": false}}'
+# skips the hidden reasoning (6.5 s down to 0.3 s for a one-word answer on Gemma 4).
+_EXTRA_BODY = None
+_raw_extra_body = os.getenv("LLM_EXTRA_BODY")
+if _raw_extra_body:
+    try:
+        _EXTRA_BODY = json.loads(_raw_extra_body)
+    except json.JSONDecodeError:
+        _EXTRA_BODY = None
+
 
 def complete(messages: list, tools: list = None, response_format: dict = None, temperature: float = 0, model: str = None):
     """Single choke point for every LLM call in this app - apps/agent/react_loop.py and
@@ -44,6 +55,8 @@ def complete(messages: list, tools: list = None, response_format: dict = None, t
         kwargs["api_base"] = _API_BASE
     if _EXTRA_HEADERS:
         kwargs["extra_headers"] = _EXTRA_HEADERS
+    if _EXTRA_BODY:
+        kwargs["extra_body"] = _EXTRA_BODY
     if _FALLBACK_MODEL:
         kwargs["fallbacks"] = [_FALLBACK_MODEL]
     if tools is not None:
