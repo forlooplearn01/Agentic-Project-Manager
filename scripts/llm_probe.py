@@ -9,10 +9,13 @@ and a few requests at once. Prints PASS / FAIL per check; nothing is written any
 """
 import argparse
 import json
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-from apps.llm import complete
+os.environ.pop("LLM_FALLBACK_MODEL", None)  # test the server under test only: a fallback would let a dead server look like a pass
+
+from apps.llm import complete  # noqa: E402
 
 NEEDLE = "PLUM-4417"
 TOOL = [{

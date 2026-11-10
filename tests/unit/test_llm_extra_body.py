@@ -11,6 +11,7 @@ def _sent_kwargs(monkeypatch, extra_body_env):
     seen = {}
     monkeypatch.setattr(litellm, "completion", lambda **kw: seen.update(kw))
     monkeypatch.setattr(dotenv, "load_dotenv", lambda *a, **kw: False)  # the real .env may set LLM_EXTRA_BODY; the test controls it
+    monkeypatch.delenv("LLM_FALLBACK_MODEL", raising=False)  # with a fallback configured, complete() takes a different path
     if extra_body_env is None:
         monkeypatch.delenv("LLM_EXTRA_BODY", raising=False)
     else:
